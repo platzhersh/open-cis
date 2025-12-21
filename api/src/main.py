@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import settings
@@ -51,7 +52,12 @@ app.include_router(observations_router, prefix="/api/observations", tags=["obser
 
 @app.get("/health")
 async def health_check():
-    return {
-        "status": "healthy",
-        "database": "connected" if prisma.is_connected() else "disconnected",
+    db_connected = prisma.is_connected()
+    status = "healthy" if db_connected else "degraded"
+    response_data = {
+        "status": status,
+        "database": "connected" if db_connected else "disconnected",
     }
+    if not db_connected:
+        return JSONResponse(status_code=503, content=response_data)
+    return response_data
