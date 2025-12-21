@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String
+  role      Role       @default(CLINICIAN)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  auditLogs AuditLog[]
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  resource   String
+  resourceId String?
+  ehrId      String?
+  timestamp  DateTime @default(now())
+  metadata   Json?
+}
+
+model PatientRegistry {
+  id         String    @id @default(cuid())
+  ehrId      String    @unique
+  mrn        String    @unique
+  givenName  String
+  familyName String
+  birthDate  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+enum Role {
+  ADMIN
+  CLINICIAN
+  NURSE
+  READONLY
+}

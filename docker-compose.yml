@@ -1,0 +1,50 @@
+services:
+  ehrbase:
+    image: ehrbase/ehrbase:2.0.0
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://ehrbase-db:5432/ehrbase
+      DB_USER: ehrbase
+      DB_PASS: ehrbase
+      SECURITY_AUTHTYPE: NONE
+    depends_on:
+      ehrbase-db:
+        condition: service_healthy
+
+  ehrbase-db:
+    image: ehrbase/ehrbase-postgres:16.2
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      EHRBASE_USER: ehrbase
+      EHRBASE_PASSWORD: ehrbase
+    volumes:
+      - ehrbase-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app-db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cis
+      POSTGRES_PASSWORD: cis
+      POSTGRES_DB: cis
+    volumes:
+      - app-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cis -d cis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ehrbase-data:
+  app-data:
