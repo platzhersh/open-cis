@@ -6,6 +6,6 @@ watchPatterns = ["src/**", "public/**", "index.html", "package.json", "vite.conf
 [deploy]
 startCommand = "npx serve dist -s -l $PORT"
 healthcheckPath = "/"
-healthcheckTimeout = 300
+healthcheckTimeout = 10
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
