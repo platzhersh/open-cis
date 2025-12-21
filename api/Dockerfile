@@ -2,13 +2,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY pyproject.toml ./
+# Install dependencies (paths relative to repo root since Railway uses repo root as build context)
+COPY api/pyproject.toml ./
 RUN pip install --no-cache-dir .
 
 # Copy source
-COPY src ./src
-COPY prisma ./prisma
+COPY api/src ./src
+COPY api/prisma ./prisma
 
 # Generate Prisma client
 RUN prisma generate
