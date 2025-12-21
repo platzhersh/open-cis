@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
-from src.patients.router import router as patients_router
 from src.encounters.router import router as encounters_router
 from src.observations.router import router as observations_router
+from src.patients.router import router as patients_router
 
 
 @asynccontextmanager

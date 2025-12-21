@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
-from src.patients.schemas import PatientCreate, PatientUpdate, PatientResponse
+from src.patients.schemas import PatientCreate, PatientResponse, PatientUpdate
 
 
 class PatientService:
@@ -17,7 +19,9 @@ class PatientService:
                 "ehrId": ehr_id,
                 "givenName": data.given_name,
                 "familyName": data.family_name,
-                "birthDate": data.birth_date,
+                "birthDate": datetime.combine(data.birth_date, datetime.min.time())
+                if data.birth_date
+                else None,
             }
         )
 
@@ -86,18 +90,21 @@ class PatientService:
 
     async def update_patient(self, patient_id: str, data: PatientUpdate) -> PatientResponse | None:
         """Update a patient."""
-        update_data = {}
+        update_data: dict[str, str | datetime | None] = {}
         if data.given_name is not None:
             update_data["givenName"] = data.given_name
         if data.family_name is not None:
             update_data["familyName"] = data.family_name
         if data.birth_date is not None:
-            update_data["birthDate"] = data.birth_date
+            update_data["birthDate"] = datetime.combine(data.birth_date, datetime.min.time())
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},
-            data=update_data,
+            data=update_data,  # type: ignore[arg-type]
         )
+
+        if patient is None:
+            return None
 
         return PatientResponse(
             id=patient.id,

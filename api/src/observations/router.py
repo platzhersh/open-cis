@@ -12,7 +12,7 @@ async def record_vital_signs(data: VitalSignsCreate):
     try:
         return await observation_service.record_vital_signs(data)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.get("/vital-signs/patient/{patient_id}")

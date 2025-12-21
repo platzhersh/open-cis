@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from src.patients.schemas import PatientCreate, PatientUpdate, PatientResponse
+from src.patients.schemas import PatientCreate, PatientResponse, PatientUpdate
 from src.patients.service import patient_service
 
 router = APIRouter()

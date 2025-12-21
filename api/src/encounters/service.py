@@ -5,8 +5,8 @@ from typing import Any
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import ENCOUNTERS_QUERY
-from src.patients.repository import find_patient_by_id
 from src.encounters.schemas import EncounterCreate, EncounterResponse
+from src.patients.repository import find_patient_by_id
 
 
 class EncounterService:

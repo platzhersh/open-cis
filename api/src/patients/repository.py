@@ -25,12 +25,14 @@ async def find_all_patients(skip: int = 0, limit: int = 100):
 
 async def create_patient(data: dict):
     """Create a new patient."""
-    return await prisma.patientregistry.create(data=data)
+    return await prisma.patientregistry.create(data=data)  # type: ignore[arg-type]
 
 
 async def update_patient(patient_id: str, data: dict):
     """Update a patient."""
-    return await prisma.patientregistry.update(where={"id": patient_id}, data=data)
+    return await prisma.patientregistry.update(
+        where={"id": patient_id}, data=data  # type: ignore[arg-type]
+    )
 
 
 async def delete_patient(patient_id: str):

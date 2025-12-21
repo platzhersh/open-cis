@@ -12,7 +12,7 @@ async def create_medication_order(data: MedicationOrderCreate):
     try:
         return await medication_service.create_medication_order(data)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.get("/patient/{patient_id}")
