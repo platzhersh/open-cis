@@ -100,7 +100,7 @@ class PatientService:
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},
-            data=update_data,
+            data=update_data,  # type: ignore[arg-type]
         )
 
         if patient is None:
