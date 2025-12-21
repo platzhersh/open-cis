@@ -4,6 +4,8 @@ dockerfilePath = "ehrbase/Dockerfile"
 
 [deploy]
 healthcheckPath = "/management/health"
-healthcheckTimeout = 60
+# EHRBase is a Spring Boot app that needs 2-3 minutes to start
+# (JVM warmup + Flyway migrations on first run)
+healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
