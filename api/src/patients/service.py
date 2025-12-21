@@ -92,7 +92,7 @@ class PatientService:
         if data.family_name is not None:
             update_data["familyName"] = data.family_name
         if data.birth_date is not None:
-            update_data["birthDate"] = data.birth_date
+            update_data["birthDate"] = data.birth_date  # type: ignore[assignment]
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},

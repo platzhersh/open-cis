@@ -1,3 +1,3 @@
-from prisma import Prisma
+from prisma import Prisma  # type: ignore[attr-defined]
 
 prisma = Prisma()

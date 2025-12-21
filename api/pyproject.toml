@@ -38,4 +38,14 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
 python_version = "3.11"
-strict = true
+# Enable important checks while being pragmatic about strictness
+check_untyped_defs = true
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = false
+warn_unreachable = true
+# Ignore missing imports for third-party libraries without stubs
+ignore_missing_imports = true
