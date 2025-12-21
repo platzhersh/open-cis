@@ -5,7 +5,9 @@ import { RouterLink } from 'vue-router'
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <h1 class="text-3xl font-bold tracking-tight">
+        Dashboard
+      </h1>
       <p class="text-muted-foreground">
         Welcome to Open CIS - Clinical Information System
       </p>
@@ -16,14 +18,18 @@ import { RouterLink } from 'vue-router'
         to="/patients"
         class="block p-6 bg-card rounded-lg border hover:border-primary transition-colors"
       >
-        <h3 class="text-lg font-semibold">Patients</h3>
+        <h3 class="text-lg font-semibold">
+          Patients
+        </h3>
         <p class="text-sm text-muted-foreground mt-1">
           View and manage patient records
         </p>
       </RouterLink>
 
       <div class="p-6 bg-card rounded-lg border opacity-50">
-        <h3 class="text-lg font-semibold">Encounters</h3>
+        <h3 class="text-lg font-semibold">
+          Encounters
+        </h3>
         <p class="text-sm text-muted-foreground mt-1">
           Clinical encounters and visits
         </p>
@@ -31,7 +37,9 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <div class="p-6 bg-card rounded-lg border opacity-50">
-        <h3 class="text-lg font-semibold">Observations</h3>
+        <h3 class="text-lg font-semibold">
+          Observations
+        </h3>
         <p class="text-sm text-muted-foreground mt-1">
           Vital signs and measurements
         </p>
@@ -40,7 +48,9 @@ import { RouterLink } from 'vue-router'
     </div>
 
     <div class="rounded-lg border p-6">
-      <h2 class="text-xl font-semibold mb-4">About Open CIS</h2>
+      <h2 class="text-xl font-semibold mb-4">
+        About Open CIS
+      </h2>
       <p class="text-muted-foreground">
         Open CIS is a minimal Clinical Information System built on openEHR/EHRBase
         for learning and experimentation with clinical data architecture.

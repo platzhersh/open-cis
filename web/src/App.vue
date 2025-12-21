@@ -7,7 +7,10 @@ import { RouterView } from 'vue-router'
     <header class="border-b">
       <div class="container flex h-16 items-center px-4">
         <nav class="flex items-center space-x-6">
-          <RouterLink to="/" class="text-lg font-semibold">
+          <RouterLink
+            to="/"
+            class="text-lg font-semibold"
+          >
             Open CIS
           </RouterLink>
           <RouterLink
