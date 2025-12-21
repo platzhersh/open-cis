@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 # Wait for PostgreSQL to be ready before starting EHRbase
 
 set -e
 
 # Extract host and port from DB_URL
 # DB_URL format: jdbc:postgresql://host:port/database
-if [[ -z "$DB_URL" ]]; then
+if [ -z "$DB_URL" ]; then
     echo "ERROR: DB_URL environment variable is not set"
     exit 1
 fi
@@ -27,8 +27,8 @@ ELAPSED=0
 
 # Wait for the database to be ready
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    # Try to connect to PostgreSQL using bash's built-in TCP support
-    if timeout 5 bash -c "cat < /dev/null > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
+    # Try to connect using nc (netcat) which is available in most images
+    if nc -z -w 5 "$DB_HOST" "$DB_PORT" 2>/dev/null; then
         echo "PostgreSQL is available at $DB_HOST:$DB_PORT"
         break
     fi
@@ -49,5 +49,21 @@ sleep 10
 
 echo "Starting EHRbase..."
 
-# Execute the original entrypoint/command
-exec java -jar /ehrbase.jar
+# Find the ehrbase jar (location varies by version)
+EHRBASE_JAR=""
+for path in /app/ehrbase.jar /ehrbase.jar /app/*.jar; do
+    if [ -f "$path" ]; then
+        EHRBASE_JAR="$path"
+        break
+    fi
+done
+
+if [ -z "$EHRBASE_JAR" ]; then
+    echo "ERROR: Could not find EHRbase JAR file"
+    exit 1
+fi
+
+echo "Found EHRbase JAR at: $EHRBASE_JAR"
+
+# Execute the EHRbase application
+exec java -jar "$EHRBASE_JAR"
