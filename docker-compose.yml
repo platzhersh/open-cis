@@ -13,7 +13,7 @@ services:
         condition: service_healthy
 
   ehrbase-db:
-    image: ehrbase/ehrbase-postgres:16.4
+    image: ehrbase/ehrbase-postgres:16.2
     ports:
       - "5433:5432"
     environment:
