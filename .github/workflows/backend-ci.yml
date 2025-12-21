@@ -16,6 +16,24 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+
     defaults:
       run:
         working-directory: ./api
@@ -36,6 +54,9 @@ jobs:
 
     - name: Generate Prisma client
       run: prisma generate
+
+    - name: Push database schema
+      run: prisma db push --skip-generate
 
     - name: Run ruff linter
       run: ruff check .
