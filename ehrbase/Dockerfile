@@ -2,10 +2,9 @@
 FROM ehrbase/ehrbase:2.0.0
 
 # Install netcat for database connectivity check
-# The base image uses Debian/Ubuntu, so we use apt
+# The base image uses Alpine Linux, so we use apk
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache netcat-openbsd
 
 # Copy wait-for-db script that ensures PostgreSQL is ready before starting
 COPY ehrbase/wait-for-db.sh /wait-for-db.sh
