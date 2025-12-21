@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-watchPatterns = ["src/**", "prisma/**", "pyproject.toml", "Dockerfile"]
+dockerfilePath = "api/Dockerfile"
+watchPatterns = ["api/src/**", "api/prisma/**", "api/pyproject.toml", "api/Dockerfile"]
 
 [deploy]
 startCommand = "prisma generate && uvicorn src.main:app --host 0.0.0.0 --port $PORT"
