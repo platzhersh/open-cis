@@ -1,3 +1,6 @@
+# Explicitly specify the Node.js provider to ensure npm is available
+providers = ["node"]
+
 [phases.setup]
 nixPkgs = ["nodejs_20", "npm"]
 
