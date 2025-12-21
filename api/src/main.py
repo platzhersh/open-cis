@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,14 +11,21 @@ from src.encounters.router import router as encounters_router
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    await prisma.connect()
+    # Startup - attempt database connection but don't fail if unavailable
+    try:
+        await prisma.connect()
+        logger.info("Database connected successfully")
+    except Exception as e:
+        logger.error(f"Failed to connect to database: {e}")
     yield
     # Shutdown
-    await prisma.disconnect()
+    if prisma.is_connected():
+        await prisma.disconnect()
     await ehrbase_client.close()
 
 
@@ -43,4 +51,7 @@ app.include_router(observations_router, prefix="/api/observations", tags=["obser
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "database": "connected" if prisma.is_connected() else "disconnected",
+    }
