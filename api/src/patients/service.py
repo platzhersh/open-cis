@@ -1,6 +1,6 @@
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
-from src.patients.schemas import PatientCreate, PatientUpdate, PatientResponse
+from src.patients.schemas import PatientCreate, PatientResponse, PatientUpdate
 
 
 class PatientService:

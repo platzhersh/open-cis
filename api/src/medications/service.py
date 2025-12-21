@@ -5,8 +5,8 @@ from typing import Any
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import MEDICATIONS_QUERY
-from src.patients.repository import find_patient_by_id
 from src.medications.schemas import MedicationOrderCreate, MedicationOrderResponse
+from src.patients.repository import find_patient_by_id
 
 
 class MedicationService:

@@ -1,4 +1,5 @@
 from typing import Any
+
 import httpx
 
 from src.config import settings
@@ -47,7 +48,9 @@ class EHRBaseClient:
         response.raise_for_status()
         return response.json()
 
-    async def get_ehr_by_subject(self, subject_id: str, subject_namespace: str = "cis") -> dict[str, Any] | None:
+    async def get_ehr_by_subject(
+        self, subject_id: str, subject_namespace: str = "cis"
+    ) -> dict[str, Any] | None:
         """Get an EHR by subject (patient) ID."""
         client = await self._get_client()
         response = await client.get(
@@ -73,7 +76,7 @@ class EHRBaseClient:
             json=composition,
             headers={
                 "Prefer": "return=representation",
-                "Content-Type": f"application/json"
+                "Content-Type": "application/json"
             },
             params={"templateId": template_id, "format": format},
         )

@@ -5,8 +5,8 @@ from typing import Any
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import VITAL_SIGNS_QUERY
-from src.patients.repository import find_patient_by_id
 from src.observations.schemas import VitalSignsCreate, VitalSignsResponse
+from src.patients.repository import find_patient_by_id
 
 
 class ObservationService:

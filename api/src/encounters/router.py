@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 
 from src.encounters.schemas import EncounterCreate, EncounterResponse
 from src.encounters.service import encounter_service
@@ -12,7 +12,7 @@ async def create_encounter(data: EncounterCreate):
     try:
         return await encounter_service.create_encounter(data)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.get("/patient/{patient_id}")

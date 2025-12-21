@@ -1,7 +1,7 @@
 """Tests for EHRBase client."""
 
+
 import pytest
-from unittest.mock import AsyncMock, patch
 
 from src.ehrbase.client import EHRBaseClient
 
