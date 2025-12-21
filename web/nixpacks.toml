@@ -1,6 +1,9 @@
 # Use Node.js provider for automatic npm setup
 providers = ["node"]
 
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm"]
+
 [phases.build]
 cmds = ["npm ci", "npm run build"]
 
