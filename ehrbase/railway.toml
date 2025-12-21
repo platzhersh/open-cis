@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "ehrbase/Dockerfile"
 
 [deploy]
-healthcheckPath = "/management/health"
+healthcheckPath = "/ehrbase/management/health"
 # EHRBase is a Spring Boot app that needs 2-3 minutes to start
 # (JVM warmup + Flyway migrations on first run)
 healthcheckTimeout = 300

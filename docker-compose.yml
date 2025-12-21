@@ -8,6 +8,7 @@ services:
       DB_USER: ehrbase
       DB_PASS: ehrbase
       SECURITY_AUTHTYPE: NONE
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     depends_on:
       ehrbase-db:
         condition: service_healthy
