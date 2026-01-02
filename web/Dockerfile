@@ -1,0 +1,26 @@
+FROM node:20-slim
+
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source files
+COPY . .
+
+# Build the application
+RUN pnpm run build
+
+# Install serve to run the production build
+RUN pnpm add -g serve
+
+EXPOSE 3000
+
+# Use Railway's $PORT if available, otherwise default to 3000
+CMD sh -c "echo 'Starting serve on port ${PORT:-3000}...' && serve dist -s -l ${PORT:-3000}"

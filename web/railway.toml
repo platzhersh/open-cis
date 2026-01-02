@@ -1,11 +1,10 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "pnpm install && pnpm run build"
-watchPatterns = ["src/**", "public/**", "index.html", "package.json", "pnpm-lock.yaml", "vite.config.ts", "tsconfig.json"]
+builder = "DOCKERFILE"
+dockerfilePath = "web/Dockerfile"
+watchPatterns = ["web/src/**", "web/public/**", "web/index.html", "web/package.json", "web/pnpm-lock.yaml", "web/vite.config.ts", "web/tsconfig.json", "web/Dockerfile"]
 
 [deploy]
-startCommand = "npx serve dist -s -l $PORT"
 healthcheckPath = "/"
-healthcheckTimeout = 10
+healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
