@@ -1,10 +1,10 @@
 # EHRBase Clinical Data Repository
 FROM ehrbase/ehrbase:2.0.0
 
-# Install netcat for database connectivity check
+# Install netcat and bind-tools for database connectivity check
 # The base image uses Alpine Linux, so we use apk
 USER root
-RUN apk add --no-cache netcat-openbsd
+RUN apk add --no-cache netcat-openbsd bind-tools
 
 # Copy wait-for-db script that ensures PostgreSQL is ready before starting
 COPY ehrbase/wait-for-db.sh /wait-for-db.sh

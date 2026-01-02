@@ -19,6 +19,17 @@ DB_PORT=$(echo "$DB_URL" | sed -n 's|.*://[^:]*:\([0-9]*\).*|\1|p')
 DB_PORT=${DB_PORT:-5432}
 
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
+echo "Full DB_URL: $DB_URL"
+echo "Extracted DB_HOST: $DB_HOST"
+echo "Extracted DB_PORT: $DB_PORT"
+
+# Try DNS resolution (if nslookup is available)
+if command -v nslookup > /dev/null 2>&1; then
+    echo "Testing DNS resolution..."
+    nslookup "$DB_HOST" || echo "DNS lookup failed"
+else
+    echo "nslookup not available, skipping DNS test"
+fi
 
 # Maximum wait time in seconds (5 minutes)
 MAX_WAIT=300
