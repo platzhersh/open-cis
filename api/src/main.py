@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup - attempt database connection but don't fail if unavailable
+    logger.info(f"CORS allowed origins: {settings.cors_origins}")
     try:
         await prisma.connect()
         logger.info("Database connected successfully")
