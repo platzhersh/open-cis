@@ -4,7 +4,10 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # App
     debug: bool = False
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: list[str] = [
+        "http://localhost:5173",
+        "https://open-cis-web-staging.up.railway.app",
+    ]
 
     # Database (Prisma)
     database_url: str = "postgresql://cis:cis@localhost:5432/cis"

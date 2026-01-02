@@ -2,6 +2,10 @@
 
 A minimal Clinical Information System built on openEHR/EHRBase for learning and experimentation.
 
+## Live Demo
+
+- **Staging Environment**: https://open-cis-web-staging.up.railway.app/
+
 ## Tech Stack
 
 | Layer | Technology |
