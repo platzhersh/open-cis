@@ -4,7 +4,8 @@ dockerfilePath = "api/Dockerfile"
 watchPatterns = ["api/src/**", "api/prisma/**", "api/pyproject.toml", "api/Dockerfile"]
 
 [deploy]
-startCommand = "prisma generate && uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+# Remove startCommand - let Dockerfile CMD handle it
+# startCommand = "prisma generate && uvicorn src.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
