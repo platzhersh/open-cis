@@ -22,4 +22,5 @@ EXPOSE 8000
 
 # Use Railway's $PORT if available, otherwise default to 8000
 # Use shell form to allow environment variable substitution
-CMD sh -c "echo 'Starting uvicorn on port ${PORT:-8000}...' && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# Run migrations before starting the server
+CMD sh -c "echo 'Running database migrations...' && prisma migrate deploy && echo 'Starting uvicorn on port ${PORT:-8000}...' && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
