@@ -5,14 +5,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy package files (paths relative to repo root since Railway uses repo root as build context)
+COPY web/package.json web/pnpm-lock.yaml ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source files
-COPY . .
+COPY web/ .
 
 # Build the application
 RUN pnpm run build
