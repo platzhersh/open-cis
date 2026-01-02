@@ -15,5 +15,6 @@ USER ehrbase
 
 EXPOSE 8080
 
-# Use the wait script as entrypoint to ensure DB is ready before Flyway runs
-ENTRYPOINT ["/wait-for-db.sh"]
+# Use CMD instead of ENTRYPOINT to preserve the base image's entrypoint
+# The wait script will run first, then exec into the EHRbase JAR
+CMD ["/wait-for-db.sh"]
