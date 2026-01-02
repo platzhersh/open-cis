@@ -1,11 +1,12 @@
-# Use Node.js provider for automatic npm setup
+# Use Node.js provider with pnpm
 providers = ["node"]
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm"]
+nixPkgs = ["nodejs_20"]
+cmds = ["corepack enable", "corepack prepare pnpm@latest --activate"]
 
 [phases.build]
-cmds = ["npm ci", "npm run build"]
+cmds = ["pnpm install", "pnpm run build"]
 
 [start]
 cmd = "npx serve dist -s -l $PORT"

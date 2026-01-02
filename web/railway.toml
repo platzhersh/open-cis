@@ -1,7 +1,7 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && npm run build"
-watchPatterns = ["src/**", "public/**", "index.html", "package.json", "vite.config.ts", "tsconfig.json"]
+buildCommand = "pnpm install && pnpm run build"
+watchPatterns = ["src/**", "public/**", "index.html", "package.json", "pnpm-lock.yaml", "vite.config.ts", "tsconfig.json"]
 
 [deploy]
 startCommand = "npx serve dist -s -l $PORT"
