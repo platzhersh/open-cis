@@ -15,7 +15,13 @@ Open CIS is a minimal Clinical Information System built on openEHR/EHRBase for l
 
 # Or manually:
 docker compose up -d                    # Start infrastructure
-cd api && python -m venv .venv
+
+# Python 3.11+ required - install via pyenv if needed:
+# brew install pyenv
+# pyenv install 3.11
+# pyenv local 3.11
+
+cd api && python3.11 -m venv .venv      # Or 'python -m venv .venv' if python3.11 is default
 source .venv/bin/activate               # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 prisma generate
@@ -122,7 +128,7 @@ EHRBase takes 30-60 seconds to become available after `docker compose up`. Alway
 - Backend API: `http://localhost:8000`
 - EHRBase REST API: `http://localhost:8080/ehrbase/rest`
 - App PostgreSQL: `localhost:5454`
-- EHRBase PostgreSQL: `localhost:5454`
+- EHRBase PostgreSQL: `localhost:5433`
 
 ### Environment Variables
 Copy `.env.example` to `.env` (locally) and configure:
