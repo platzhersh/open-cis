@@ -33,7 +33,7 @@ services:
   app-db:
     image: postgres:16
     ports:
-      - "5432:5432"
+      - "5454:5432"
     environment:
       POSTGRES_USER: cis
       POSTGRES_PASSWORD: cis
