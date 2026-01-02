@@ -17,8 +17,8 @@ COPY web/ .
 # Build the application
 RUN pnpm run build
 
-# Install serve to run the production build
-RUN pnpm add -g serve
+# Install serve globally using npm (pnpm global install has issues in Docker)
+RUN npm install -g serve
 
 EXPOSE 3000
 
