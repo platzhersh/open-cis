@@ -74,7 +74,9 @@ open http://localhost:5173
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+- **API Docs (Swagger)**: http://localhost:8000/docs
+- **API Docs (ReDoc)**: http://localhost:8000/redoc
+- **OpenAPI Schema**: http://localhost:8000/openapi.json
 - **EHRBase**: http://localhost:8080/ehrbase/rest
 - **App Database**: localhost:5454 (PostgreSQL)
 - **EHRBase Database**: localhost:5433 (PostgreSQL)
