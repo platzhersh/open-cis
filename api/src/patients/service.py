@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
@@ -19,7 +19,9 @@ class PatientService:
                 "ehrId": ehr_id,
                 "givenName": data.given_name,
                 "familyName": data.family_name,
-                "birthDate": datetime.combine(data.birth_date, datetime.min.time())
+                "birthDate": datetime.combine(
+                    date.fromisoformat(data.birth_date), datetime.min.time()
+                )
                 if data.birth_date
                 else None,
             }
@@ -31,7 +33,7 @@ class PatientService:
             ehr_id=patient.ehrId,
             given_name=patient.givenName,
             family_name=patient.familyName,
-            birth_date=patient.birthDate.date() if patient.birthDate else None,
+            birth_date=patient.birthDate.date().isoformat() if patient.birthDate else None,
             created_at=patient.createdAt,
             updated_at=patient.updatedAt,
         )
@@ -48,7 +50,7 @@ class PatientService:
             ehr_id=patient.ehrId,
             given_name=patient.givenName,
             family_name=patient.familyName,
-            birth_date=patient.birthDate.date() if patient.birthDate else None,
+            birth_date=patient.birthDate.date().isoformat() if patient.birthDate else None,
             created_at=patient.createdAt,
             updated_at=patient.updatedAt,
         )
@@ -65,7 +67,7 @@ class PatientService:
             ehr_id=patient.ehrId,
             given_name=patient.givenName,
             family_name=patient.familyName,
-            birth_date=patient.birthDate.date() if patient.birthDate else None,
+            birth_date=patient.birthDate.date().isoformat() if patient.birthDate else None,
             created_at=patient.createdAt,
             updated_at=patient.updatedAt,
         )
@@ -81,7 +83,7 @@ class PatientService:
                 ehr_id=p.ehrId,
                 given_name=p.givenName,
                 family_name=p.familyName,
-                birth_date=p.birthDate.date() if p.birthDate else None,
+                birth_date=p.birthDate.date().isoformat() if p.birthDate else None,
                 created_at=p.createdAt,
                 updated_at=p.updatedAt,
             )
@@ -96,7 +98,9 @@ class PatientService:
         if data.family_name is not None:
             update_data["familyName"] = data.family_name
         if data.birth_date is not None:
-            update_data["birthDate"] = datetime.combine(data.birth_date, datetime.min.time())
+            update_data["birthDate"] = datetime.combine(
+                date.fromisoformat(data.birth_date), datetime.min.time()
+            )
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},
@@ -112,7 +116,7 @@ class PatientService:
             ehr_id=patient.ehrId,
             given_name=patient.givenName,
             family_name=patient.familyName,
-            birth_date=patient.birthDate.date() if patient.birthDate else None,
+            birth_date=patient.birthDate.date().isoformat() if patient.birthDate else None,
             created_at=patient.createdAt,
             updated_at=patient.updatedAt,
         )

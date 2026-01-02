@@ -22,9 +22,14 @@ docker compose up -d
 # 2. Wait for EHRBase to be ready (can take 30-60 seconds)
 curl http://localhost:8080/ehrbase/rest/status
 
-# 3. Setup Python API
+# 3. Setup Python API (requires Python 3.11+)
+# If you don't have Python 3.11+, install via pyenv:
+#   brew install pyenv
+#   pyenv install 3.11
+#   pyenv local 3.11
+
 cd api
-python -m venv .venv
+python3.11 -m venv .venv  # Or 'python -m venv .venv' if python3.11 is default
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 prisma generate
@@ -42,6 +47,39 @@ cd api && source .venv/bin/activate && uvicorn src.main:app --reload --port 8000
 # Terminal 2 (Web):
 cd web && pnpm dev
 ```
+
+## Health Check
+
+Verify all services are running:
+
+```bash
+# Check Docker containers
+docker compose ps
+# Expected: app-db, ehrbase-db, ehrbase all "Up" and healthy
+
+# Check EHRBase (wait 30-60s after docker compose up)
+curl http://localhost:8080/ehrbase/rest/status
+# Expected: {"status":"UP"}
+
+# Check backend API
+curl http://localhost:8000/api/patients
+# Expected: [] (empty array if no patients)
+
+# Check frontend
+open http://localhost:5173
+# Expected: Patients page loads without CORS errors
+```
+
+### Service URLs
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Docs (Swagger)**: http://localhost:8000/docs
+- **API Docs (ReDoc)**: http://localhost:8000/redoc
+- **OpenAPI Schema**: http://localhost:8000/openapi.json
+- **EHRBase**: http://localhost:8080/ehrbase/rest
+- **App Database**: localhost:5454 (PostgreSQL)
+- **EHRBase Database**: localhost:5433 (PostgreSQL)
 
 ## Useful Commands
 
