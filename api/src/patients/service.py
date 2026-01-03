@@ -82,7 +82,10 @@ class PatientService:
         """List all patients with pagination, excluding soft-deleted by default."""
         where_clause = {} if include_deleted else {"deletedAt": None}
         patients = await prisma.patientregistry.find_many(
-            where=where_clause, skip=skip, take=limit, order={"createdAt": "desc"}
+            where=where_clause,  # type: ignore[arg-type]
+            skip=skip,
+            take=limit,
+            order={"createdAt": "desc"},
         )
 
         return [
@@ -132,7 +135,7 @@ class PatientService:
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},
-            data=update_data,
+            data=update_data,  # type: ignore[arg-type]
         )
 
         if patient is None:
