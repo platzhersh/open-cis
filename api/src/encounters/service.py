@@ -1,48 +1,173 @@
-"""Encounter service for managing clinical encounters."""
-
 from datetime import datetime
-from typing import Any
 
-from src.ehrbase.client import ehrbase_client
-from src.ehrbase.queries import ENCOUNTERS_QUERY
-from src.encounters.schemas import EncounterCreate, EncounterResponse
-from src.patients.repository import find_patient_by_id
+from src.db.client import prisma
+from src.encounters.schemas import (
+    EncounterCreate,
+    EncounterResponse,
+    EncounterStatus,
+    EncounterUpdate,
+)
 
 
 class EncounterService:
+    """Service for encounter operations."""
+
     async def create_encounter(self, data: EncounterCreate) -> EncounterResponse:
-        """Create a new encounter for a patient."""
-        # Get patient to retrieve EHR ID
-        patient = await find_patient_by_id(data.patient_id)
-        if not patient:
-            raise ValueError("Patient not found")
+        """Create a new encounter."""
+        # Validate that finished encounters have end_time
+        if data.status == EncounterStatus.FINISHED and data.end_time is None:
+            raise ValueError("Finished encounters must have an end_time")
 
-        start_time = data.start_time or datetime.utcnow()
+        encounter = await prisma.encounter.create(
+            data={
+                "patientId": data.patient_id,
+                "type": data.type.value,
+                "status": data.status.value,
+                "startTime": data.start_time,
+                "endTime": data.end_time,
+                "reason": data.reason,
+                "providerName": data.provider_name,
+                "location": data.location,
+            }
+        )
 
-        # For now, return a placeholder - composition creation requires templates
         return EncounterResponse(
-            id="pending",
-            patient_id=data.patient_id,
-            ehr_id=patient.ehrId,
-            composition_uid=None,
-            encounter_type=data.encounter_type,
-            start_time=start_time,
-            end_time=None,
-            notes=data.notes,
+            id=encounter.id,
+            patient_id=encounter.patientId,
+            type=encounter.type,
+            status=encounter.status,
+            start_time=encounter.startTime,
+            end_time=encounter.endTime,
+            reason=encounter.reason,
+            provider_name=encounter.providerName,
+            location=encounter.location,
+            created_at=encounter.createdAt,
+            updated_at=encounter.updatedAt,
         )
 
-    async def get_encounters_for_patient(self, patient_id: str) -> list[dict[str, Any]]:
-        """Get all encounters for a patient using AQL."""
-        patient = await find_patient_by_id(patient_id)
-        if not patient:
-            return []
+    async def get_encounter(self, encounter_id: str) -> EncounterResponse | None:
+        """Get an encounter by ID (excludes soft-deleted)."""
+        encounter = await prisma.encounter.find_first(
+            where={"id": encounter_id, "deletedAt": None}
+        )
+        if not encounter:
+            return None
 
-        result = await ehrbase_client.execute_aql(
-            ENCOUNTERS_QUERY,
-            parameters={"ehr_id": patient.ehrId}
+        return EncounterResponse(
+            id=encounter.id,
+            patient_id=encounter.patientId,
+            type=encounter.type,
+            status=encounter.status,
+            start_time=encounter.startTime,
+            end_time=encounter.endTime,
+            reason=encounter.reason,
+            provider_name=encounter.providerName,
+            location=encounter.location,
+            created_at=encounter.createdAt,
+            updated_at=encounter.updatedAt,
         )
 
-        return result.get("rows", [])
+    async def list_encounters(
+        self,
+        patient_id: str | None = None,
+        status: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+        include_deleted: bool = False,
+    ) -> list[EncounterResponse]:
+        """List encounters with optional filtering."""
+        where_clause = {} if include_deleted else {"deletedAt": None}
+
+        if patient_id:
+            where_clause["patientId"] = patient_id
+        if status:
+            where_clause["status"] = status
+
+        encounters = await prisma.encounter.find_many(
+            where=where_clause,
+            skip=skip,
+            take=limit,
+            order={"startTime": "desc"},
+        )
+
+        return [
+            EncounterResponse(
+                id=e.id,
+                patient_id=e.patientId,
+                type=e.type,
+                status=e.status,
+                start_time=e.startTime,
+                end_time=e.endTime,
+                reason=e.reason,
+                provider_name=e.providerName,
+                location=e.location,
+                created_at=e.createdAt,
+                updated_at=e.updatedAt,
+            )
+            for e in encounters
+        ]
+
+    async def update_encounter(
+        self, encounter_id: str, data: EncounterUpdate
+    ) -> EncounterResponse | None:
+        """Update an encounter."""
+        # Build update dict only with provided fields
+        update_data: dict = {}
+        if data.type is not None:
+            update_data["type"] = data.type.value
+        if data.status is not None:
+            update_data["status"] = data.status.value
+            # Validate finished status has end_time
+            if data.status == EncounterStatus.FINISHED and data.end_time is None:
+                # Check if encounter already has end_time
+                existing = await prisma.encounter.find_unique(
+                    where={"id": encounter_id}
+                )
+                if existing and existing.endTime is None:
+                    raise ValueError("Finished encounters must have an end_time")
+        if data.start_time is not None:
+            update_data["startTime"] = data.start_time
+        if data.end_time is not None:
+            update_data["endTime"] = data.end_time
+        if data.reason is not None:
+            update_data["reason"] = data.reason
+        if data.provider_name is not None:
+            update_data["providerName"] = data.provider_name
+        if data.location is not None:
+            update_data["location"] = data.location
+
+        try:
+            encounter = await prisma.encounter.update(
+                where={"id": encounter_id}, data=update_data
+            )
+        except Exception:
+            return None
+
+        return EncounterResponse(
+            id=encounter.id,
+            patient_id=encounter.patientId,
+            type=encounter.type,
+            status=encounter.status,
+            start_time=encounter.startTime,
+            end_time=encounter.endTime,
+            reason=encounter.reason,
+            provider_name=encounter.providerName,
+            location=encounter.location,
+            created_at=encounter.createdAt,
+            updated_at=encounter.updatedAt,
+        )
+
+    async def delete_encounter(self, encounter_id: str) -> bool:
+        """Soft delete an encounter."""
+        encounter = await prisma.encounter.find_unique(where={"id": encounter_id})
+        if not encounter or encounter.deletedAt is not None:
+            return False
+
+        await prisma.encounter.update(
+            where={"id": encounter_id},
+            data={"deletedAt": datetime.utcnow()},
+        )
+        return True
 
 
 encounter_service = EncounterService()

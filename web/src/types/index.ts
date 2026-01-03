@@ -34,9 +34,47 @@ export interface Observation {
   recorded_at: string
 }
 
+export type EncounterType =
+  | 'ambulatory'
+  | 'emergency'
+  | 'inpatient'
+  | 'virtual'
+  | 'home'
+  | 'field'
+
+export type EncounterStatus = 'planned' | 'in-progress' | 'finished' | 'cancelled'
+
 export interface Encounter {
   id: string
-  type: string
+  patient_id: string
+  type: EncounterType
+  status: EncounterStatus
   start_time: string
-  end_time?: string
+  end_time: string | null
+  reason: string | null
+  provider_name: string | null
+  location: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EncounterCreate {
+  patient_id: string
+  type: EncounterType
+  status: EncounterStatus
+  start_time: string
+  end_time?: string | null
+  reason?: string | null
+  provider_name?: string | null
+  location?: string | null
+}
+
+export interface EncounterUpdate {
+  type?: EncounterType
+  status?: EncounterStatus
+  start_time?: string
+  end_time?: string | null
+  reason?: string | null
+  provider_name?: string | null
+  location?: string | null
 }
