@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Plus } from 'lucide-vue-next'
 import { useEncounterStore } from '@/stores/encounter'
 import { usePatientStore } from '@/stores/patient'
+import EncounterCreateDialog from '@/components/encounters/EncounterCreateDialog.vue'
 import type { Encounter, EncounterType, EncounterStatus } from '@/types'
 
 const router = useRouter()
@@ -125,11 +126,11 @@ const handleEncounterCreated = () => {
       </button>
     </div>
 
-    <!-- Note: Create dialog component will be implemented separately -->
-    <!-- <EncounterCreateDialog
-      v-model:open="showCreateDialog"
+    <EncounterCreateDialog
+      :open="showCreateDialog"
+      @close="showCreateDialog = false"
       @created="handleEncounterCreated"
-    /> -->
+    />
 
     <div
       v-if="encounterStore.loading"
