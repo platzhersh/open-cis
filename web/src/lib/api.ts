@@ -34,7 +34,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     return undefined as T
   }
 
-  return response.json()
+  return response.json() as Promise<T>
 }
 
 export const api = {
@@ -47,6 +47,6 @@ export const api = {
   patch: <T>(endpoint: string, data: unknown) =>
     request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(data) }),
 
-  delete: <T>(endpoint: string) =>
-    request<T>(endpoint, { method: 'DELETE' }),
+  delete: (endpoint: string) =>
+    request<void>(endpoint, { method: 'DELETE' }),
 }

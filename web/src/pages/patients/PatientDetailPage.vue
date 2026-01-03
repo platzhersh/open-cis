@@ -439,7 +439,7 @@ const openDeleteDialog = () => {
           <div class="flex-1">
             <h3 class="font-semibold text-destructive">Danger Zone</h3>
             <p class="text-sm text-muted-foreground mt-1">
-              Deleting this patient is permanent and cannot be undone.
+              Deleting this patient will remove it from active lists and searches. The record will be retained in the database for audit and compliance purposes.
             </p>
             <button
               class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-destructive text-destructive-foreground h-10 px-4 py-2 hover:bg-destructive/90 mt-4"
@@ -476,7 +476,7 @@ const openDeleteDialog = () => {
           </div>
 
           <DialogDescription class="text-sm text-muted-foreground mb-4">
-            This action cannot be undone. The patient record will be permanently deleted.
+            This will remove the patient from active use. The record will be retained in the system for audit purposes but will no longer appear in searches or patient lists.
           </DialogDescription>
 
           <div class="rounded-md bg-destructive/10 p-4 mb-4">
