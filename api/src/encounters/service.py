@@ -1,4 +1,7 @@
-from datetime import datetime
+import logging
+from datetime import UTC, datetime
+
+from prisma.errors import RecordNotFoundError
 
 from src.db.client import prisma
 from src.encounters.schemas import (
@@ -8,6 +11,8 @@ from src.encounters.schemas import (
     EncounterType,
     EncounterUpdate,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class EncounterService:
@@ -143,8 +148,11 @@ class EncounterService:
             updated_encounter = await prisma.encounter.update(
                 where={"id": encounter_id}, data=update_data  # type: ignore[arg-type]
             )
-        except Exception:
+        except RecordNotFoundError:
             return None
+        except Exception as e:
+            logger.error(f"Failed to update encounter {encounter_id}: {e}", exc_info=True)
+            raise
 
         if updated_encounter is None:
             return None
@@ -171,7 +179,7 @@ class EncounterService:
 
         await prisma.encounter.update(
             where={"id": encounter_id},
-            data={"deletedAt": datetime.utcnow()},
+            data={"deletedAt": datetime.now(UTC)},
         )
         return True
 

@@ -25,7 +25,7 @@ const form = ref<PatientCreate>({
 })
 
 const errors = ref<Record<string, string>>({})
-const mrnStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
+const mrnStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle')
 const submitting = ref(false)
 
 // MRN validation regex: 3-20 alphanumeric characters and hyphens
@@ -63,8 +63,14 @@ const checkMrnExists = useDebounceFn(async (mrn: string) => {
   }
 
   mrnStatus.value = 'checking'
-  const exists = await store.checkMrnExists(mrn)
-  mrnStatus.value = exists ? 'taken' : 'available'
+  try {
+    const exists = await store.checkMrnExists(mrn)
+    mrnStatus.value = exists ? 'taken' : 'available'
+  } catch (error) {
+    console.error('Failed to check MRN existence:', error)
+    mrnStatus.value = 'error'
+    errors.value.mrn = 'Failed to verify MRN uniqueness. Please try again.'
+  }
 }, 500)
 
 watch(() => form.value.mrn, (newMrn) => {

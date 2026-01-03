@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
@@ -117,7 +117,7 @@ class PatientService:
 
         await prisma.patientregistry.update(
             where={"id": patient_id},
-            data={"deletedAt": datetime.utcnow()},
+            data={"deletedAt": datetime.now(UTC)},
         )
         return True
 
