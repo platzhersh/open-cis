@@ -39,8 +39,10 @@ class PatientService:
         )
 
     async def get_patient(self, patient_id: str) -> PatientResponse | None:
-        """Get a patient by ID."""
-        patient = await prisma.patientregistry.find_unique(where={"id": patient_id})
+        """Get a patient by ID (excludes soft-deleted)."""
+        patient = await prisma.patientregistry.find_first(
+            where={"id": patient_id, "deletedAt": None}
+        )
         if not patient:
             return None
 
@@ -56,8 +58,10 @@ class PatientService:
         )
 
     async def get_patient_by_mrn(self, mrn: str) -> PatientResponse | None:
-        """Get a patient by MRN."""
-        patient = await prisma.patientregistry.find_unique(where={"mrn": mrn})
+        """Get a patient by MRN (excludes soft-deleted)."""
+        patient = await prisma.patientregistry.find_first(
+            where={"mrn": mrn, "deletedAt": None}
+        )
         if not patient:
             return None
 
@@ -72,9 +76,14 @@ class PatientService:
             updated_at=patient.updatedAt,
         )
 
-    async def list_patients(self, skip: int = 0, limit: int = 100) -> list[PatientResponse]:
-        """List all patients with pagination."""
-        patients = await prisma.patientregistry.find_many(skip=skip, take=limit)
+    async def list_patients(
+        self, skip: int = 0, limit: int = 100, include_deleted: bool = False
+    ) -> list[PatientResponse]:
+        """List all patients with pagination, excluding soft-deleted by default."""
+        where_clause = {} if include_deleted else {"deletedAt": None}
+        patients = await prisma.patientregistry.find_many(
+            where=where_clause, skip=skip, take=limit, order={"createdAt": "desc"}
+        )
 
         return [
             PatientResponse(
@@ -90,6 +99,25 @@ class PatientService:
             for p in patients
         ]
 
+    async def mrn_exists(self, mrn: str) -> bool:
+        """Check if MRN already exists (excluding soft-deleted patients)."""
+        patient = await prisma.patientregistry.find_first(
+            where={"mrn": mrn, "deletedAt": None}
+        )
+        return patient is not None
+
+    async def delete_patient(self, patient_id: str) -> bool:
+        """Soft delete a patient by setting deletedAt timestamp."""
+        patient = await prisma.patientregistry.find_unique(where={"id": patient_id})
+        if not patient or patient.deletedAt is not None:
+            return False
+
+        await prisma.patientregistry.update(
+            where={"id": patient_id},
+            data={"deletedAt": datetime.utcnow()},
+        )
+        return True
+
     async def update_patient(self, patient_id: str, data: PatientUpdate) -> PatientResponse | None:
         """Update a patient."""
         update_data: dict[str, str | datetime | None] = {}
@@ -104,7 +132,7 @@ class PatientService:
 
         patient = await prisma.patientregistry.update(
             where={"id": patient_id},
-            data=update_data,  # type: ignore[arg-type]
+            data=update_data,
         )
 
         if patient is None:

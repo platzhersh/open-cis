@@ -58,6 +58,10 @@ class PatientUpdate(BaseModel):
             ) from e
 
 
+class MrnExistsResponse(BaseModel):
+    exists: bool = Field(..., description="Whether the MRN already exists")
+
+
 class PatientResponse(BaseModel):
     id: str = Field(..., description="Internal patient ID")
     mrn: str = Field(

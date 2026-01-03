@@ -29,6 +29,11 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     throw new Error(error.detail || `Request failed: ${response.status}`)
   }
 
+  // Handle 204 No Content responses
+  if (response.status === 204) {
+    return undefined as T
+  }
+
   return response.json()
 }
 

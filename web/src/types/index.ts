@@ -16,6 +16,16 @@ export interface PatientCreate {
   birth_date?: string
 }
 
+export interface PatientUpdate {
+  given_name?: string
+  family_name?: string
+  birth_date?: string | null
+}
+
+export interface MrnExistsResponse {
+  exists: boolean
+}
+
 export interface Observation {
   id: string
   type: string
