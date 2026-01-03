@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { usePatientStore } from '@/stores/patient'
+import PatientCreateDialog from '@/components/patients/PatientCreateDialog.vue'
 
 const store = usePatientStore()
+const showCreateDialog = ref(false)
 
 onMounted(() => {
   store.fetchPatients()
 })
+
+const handlePatientCreated = () => {
+  showCreateDialog.value = false
+  store.fetchPatients()
+}
 </script>
 
 <template>
@@ -23,10 +30,16 @@ onMounted(() => {
       </div>
       <button
         class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90"
+        @click="showCreateDialog = true"
       >
         Add Patient
       </button>
     </div>
+
+    <PatientCreateDialog
+      v-model:open="showCreateDialog"
+      @created="handlePatientCreated"
+    />
 
     <div
       v-if="store.loading"

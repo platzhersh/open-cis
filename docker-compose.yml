@@ -7,6 +7,8 @@ services:
       DB_URL: jdbc:postgresql://ehrbase-db:5432/ehrbase
       DB_USER: ehrbase
       DB_PASS: ehrbase
+      DB_USER_ADMIN: ehrbase_admin
+      DB_PASS_ADMIN: ehrbase_admin
       SECURITY_AUTHTYPE: NONE
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     depends_on:
@@ -22,6 +24,8 @@ services:
       POSTGRES_PASSWORD: postgres
       EHRBASE_USER: ehrbase
       EHRBASE_PASSWORD: ehrbase
+      EHRBASE_USER_ADMIN: ehrbase_admin
+      EHRBASE_PASSWORD_ADMIN: ehrbase_admin
     volumes:
       - ehrbase-data:/var/lib/postgresql/data
     healthcheck:

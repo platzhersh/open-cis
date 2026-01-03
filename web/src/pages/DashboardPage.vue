@@ -26,15 +26,17 @@ import { RouterLink } from 'vue-router'
         </p>
       </RouterLink>
 
-      <div class="p-6 bg-card rounded-lg border opacity-50">
+      <RouterLink
+        to="/encounters"
+        class="block p-6 bg-card rounded-lg border hover:border-primary transition-colors"
+      >
         <h3 class="text-lg font-semibold">
           Encounters
         </h3>
         <p class="text-sm text-muted-foreground mt-1">
           Clinical encounters and visits
         </p>
-        <span class="text-xs text-muted-foreground">(Coming soon)</span>
-      </div>
+      </RouterLink>
 
       <div class="p-6 bg-card rounded-lg border opacity-50">
         <h3 class="text-lg font-semibold">

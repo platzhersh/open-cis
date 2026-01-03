@@ -32,14 +32,37 @@ model AuditLog {
 }
 
 model PatientRegistry {
-  id         String    @id @default(cuid())
-  ehrId      String    @unique
-  mrn        String    @unique
+  id         String      @id @default(cuid())
+  ehrId      String      @unique
+  mrn        String      @unique
   givenName  String
   familyName String
   birthDate  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  deletedAt  DateTime?
+  encounters Encounter[]
+}
+
+model Encounter {
+  id           String           @id @default(cuid())
+  patientId    String
+  type         String           // ambulatory, emergency, inpatient, virtual, home, field
+  status       String           // planned, in-progress, finished, cancelled
+  startTime    DateTime
+  endTime      DateTime?
+  reason       String?
+  providerName String?
+  location     String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+  patient      PatientRegistry  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([startTime])
+  @@index([status])
+  @@map("encounters")
 }
 
 enum Role {
