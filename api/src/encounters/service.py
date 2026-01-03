@@ -1,5 +1,6 @@
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from prisma.errors import RecordNotFoundError
 
@@ -118,8 +119,6 @@ class EncounterService:
     ) -> EncounterResponse | None:
         """Update an encounter."""
         # Build update dict only with provided fields
-        from typing import Any
-
         update_data: dict[str, Any] = {}
         if data.type is not None:
             update_data["type"] = data.type.value
@@ -154,8 +153,8 @@ class EncounterService:
             logger.error(f"Failed to update encounter {encounter_id}: {e}", exc_info=True)
             raise
 
-        if updated_encounter is None:
-            return None
+        # Prisma update() returns the updated record on success
+        assert updated_encounter is not None
 
         return EncounterResponse(
             id=updated_encounter.id,
