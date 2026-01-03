@@ -159,7 +159,7 @@ const handleOpenChange = (open: boolean) => {
           Create a new patient record. Required fields are marked with *.
         </DialogDescription>
 
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="handleSubmit">
           <!-- MRN Field -->
           <div class="space-y-2">
             <label for="mrn" class="text-sm font-medium">

@@ -143,7 +143,7 @@ const startEditing = () => {
 
 const cancelEditing = () => {
   if (hasChanges.value) {
-    if (!confirm('Discard unsaved changes?')) return
+    if (!window.confirm('Discard unsaved changes?')) return
   }
   isEditing.value = false
 }
@@ -200,12 +200,6 @@ const openDeleteDialog = () => {
 const formatDateTime = (dateStr: string | null): string => {
   if (!dateStr) return 'Not recorded'
   return new Date(dateStr).toLocaleString()
-}
-
-const formatDateTimeInput = (dateStr: string | null | undefined): string => {
-  if (!dateStr) return ''
-  // Convert ISO string to datetime-local format (YYYY-MM-DDTHH:mm)
-  return dateStr.slice(0, 16)
 }
 
 const calculateDuration = (startTime: string, endTime: string | null): string => {

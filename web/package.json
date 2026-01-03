@@ -13,13 +13,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "serve": "14.2.5",
     "@vueuse/core": "^10.7.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-vue-next": "^0.303.0",
     "pinia": "^2.1.0",
     "radix-vue": "^1.4.0",
+    "serve": "14.2.5",
     "tailwind-merge": "^2.2.0",
     "vue": "^3.4.0",
     "vue-router": "^4.2.0"
@@ -41,6 +41,7 @@
     "typescript": "^5.3.0",
     "vite": "^5.0.0",
     "vitest": "4.0.15",
+    "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^2.0.0"
   }
 }

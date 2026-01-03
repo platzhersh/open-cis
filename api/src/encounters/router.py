@@ -17,7 +17,7 @@ async def create_encounter(data: EncounterCreate):
     try:
         return await encounter_service.create_encounter(data)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.get("", response_model=list[EncounterResponse])
@@ -56,7 +56,7 @@ async def update_encounter(encounter_id: str, data: EncounterUpdate):
             raise HTTPException(status_code=404, detail="Encounter not found")
         return encounter
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.delete("/{encounter_id}", status_code=204)

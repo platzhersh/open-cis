@@ -2,7 +2,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'radix-vue'
-import { X, Loader2, Pencil, Trash2, AlertTriangle, Plus } from 'lucide-vue-next'
+import { X, Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 import { usePatientStore } from '@/stores/patient'
 import { useEncounterStore } from '@/stores/encounter'
 import type { PatientUpdate } from '@/types'
@@ -123,7 +123,7 @@ const startEditing = () => {
 
 const cancelEditing = () => {
   if (hasChanges.value) {
-    if (!confirm('Discard unsaved changes?')) return
+    if (!window.confirm('Discard unsaved changes?')) return
   }
   isEditing.value = false
 }

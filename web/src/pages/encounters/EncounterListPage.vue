@@ -5,7 +5,7 @@ import { Plus } from 'lucide-vue-next'
 import { useEncounterStore } from '@/stores/encounter'
 import { usePatientStore } from '@/stores/patient'
 import EncounterCreateDialog from '@/components/encounters/EncounterCreateDialog.vue'
-import type { Encounter, EncounterType, EncounterStatus } from '@/types'
+import type { EncounterType, EncounterStatus } from '@/types'
 
 const router = useRouter()
 const encounterStore = useEncounterStore()
@@ -95,7 +95,7 @@ const navigateToEncounter = (encounterId: string) => {
   router.push(`/encounters/${encounterId}`)
 }
 
-const navigateToPatient = (patientId: string, event: Event) => {
+const navigateToPatient = (patientId: string, event: MouseEvent) => {
   event.stopPropagation()
   router.push(`/patients/${patientId}`)
 }

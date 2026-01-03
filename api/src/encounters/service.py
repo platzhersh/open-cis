@@ -5,6 +5,7 @@ from src.encounters.schemas import (
     EncounterCreate,
     EncounterResponse,
     EncounterStatus,
+    EncounterType,
     EncounterUpdate,
 )
 
@@ -34,8 +35,8 @@ class EncounterService:
         return EncounterResponse(
             id=encounter.id,
             patient_id=encounter.patientId,
-            type=encounter.type,
-            status=encounter.status,
+            type=EncounterType(encounter.type),
+            status=EncounterStatus(encounter.status),
             start_time=encounter.startTime,
             end_time=encounter.endTime,
             reason=encounter.reason,
@@ -56,8 +57,8 @@ class EncounterService:
         return EncounterResponse(
             id=encounter.id,
             patient_id=encounter.patientId,
-            type=encounter.type,
-            status=encounter.status,
+            type=EncounterType(encounter.type),
+            status=EncounterStatus(encounter.status),
             start_time=encounter.startTime,
             end_time=encounter.endTime,
             reason=encounter.reason,
@@ -76,7 +77,7 @@ class EncounterService:
         include_deleted: bool = False,
     ) -> list[EncounterResponse]:
         """List encounters with optional filtering."""
-        where_clause = {} if include_deleted else {"deletedAt": None}
+        where_clause: dict[str, str | None] = {} if include_deleted else {"deletedAt": None}
 
         if patient_id:
             where_clause["patientId"] = patient_id
@@ -84,7 +85,7 @@ class EncounterService:
             where_clause["status"] = status
 
         encounters = await prisma.encounter.find_many(
-            where=where_clause,
+            where=where_clause,  # type: ignore[arg-type]
             skip=skip,
             take=limit,
             order={"startTime": "desc"},
@@ -94,8 +95,8 @@ class EncounterService:
             EncounterResponse(
                 id=e.id,
                 patient_id=e.patientId,
-                type=e.type,
-                status=e.status,
+                type=EncounterType(e.type),
+                status=EncounterStatus(e.status),
                 start_time=e.startTime,
                 end_time=e.endTime,
                 reason=e.reason,
@@ -112,7 +113,9 @@ class EncounterService:
     ) -> EncounterResponse | None:
         """Update an encounter."""
         # Build update dict only with provided fields
-        update_data: dict = {}
+        from typing import Any
+
+        update_data: dict[str, Any] = {}
         if data.type is not None:
             update_data["type"] = data.type.value
         if data.status is not None:
@@ -137,24 +140,27 @@ class EncounterService:
             update_data["location"] = data.location
 
         try:
-            encounter = await prisma.encounter.update(
-                where={"id": encounter_id}, data=update_data
+            updated_encounter = await prisma.encounter.update(
+                where={"id": encounter_id}, data=update_data  # type: ignore[arg-type]
             )
         except Exception:
             return None
 
+        if updated_encounter is None:
+            return None
+
         return EncounterResponse(
-            id=encounter.id,
-            patient_id=encounter.patientId,
-            type=encounter.type,
-            status=encounter.status,
-            start_time=encounter.startTime,
-            end_time=encounter.endTime,
-            reason=encounter.reason,
-            provider_name=encounter.providerName,
-            location=encounter.location,
-            created_at=encounter.createdAt,
-            updated_at=encounter.updatedAt,
+            id=updated_encounter.id,
+            patient_id=updated_encounter.patientId,
+            type=EncounterType(updated_encounter.type),
+            status=EncounterStatus(updated_encounter.status),
+            start_time=updated_encounter.startTime,
+            end_time=updated_encounter.endTime,
+            reason=updated_encounter.reason,
+            provider_name=updated_encounter.providerName,
+            location=updated_encounter.location,
+            created_at=updated_encounter.createdAt,
+            updated_at=updated_encounter.updatedAt,
         )
 
     async def delete_encounter(self, encounter_id: str) -> bool:

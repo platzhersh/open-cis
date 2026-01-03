@@ -69,6 +69,7 @@ export default [
         URLSearchParams: 'readonly',
         RequestInit: 'readonly',
         Response: 'readonly',
+        MouseEvent: 'readonly',
       },
     },
     plugins: {

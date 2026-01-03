@@ -4,7 +4,7 @@ import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, Di
 import { X, Loader2, ChevronDown } from 'lucide-vue-next'
 import { useEncounterStore } from '@/stores/encounter'
 import { usePatientStore } from '@/stores/patient'
-import type { EncounterCreate, EncounterType, EncounterStatus, Patient } from '@/types'
+import type { EncounterCreate, EncounterType, EncounterStatus, Patient, Encounter } from '@/types'
 
 const props = defineProps<{
   open: boolean
@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'created', encounter: any): void
+  (e: 'created', encounter: Encounter): void
 }>()
 
 const encounterStore = useEncounterStore()
@@ -283,7 +283,7 @@ onMounted(() => {
           Record a new patient encounter. Required fields are marked with *.
         </DialogDescription>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form class="space-y-6" @submit.prevent="handleSubmit">
           <!-- Patient Selector -->
           <div class="space-y-2">
             <label for="patient" class="text-sm font-medium">
@@ -343,9 +343,9 @@ onMounted(() => {
                 :class="{ 'border-primary bg-primary/5': form.type === type.value }"
               >
                 <input
+                  v-model="form.type"
                   type="radio"
                   :value="type.value"
-                  v-model="form.type"
                   class="sr-only"
                   @change="validateField('type')"
                 />
@@ -377,9 +377,9 @@ onMounted(() => {
                 :class="{ 'border-primary bg-primary/5': form.status === status.value }"
               >
                 <input
+                  v-model="form.status"
                   type="radio"
                   :value="status.value"
-                  v-model="form.status"
                   class="sr-only"
                   @change="validateField('status')"
                 />
