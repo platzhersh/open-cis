@@ -18,6 +18,16 @@ const router = createRouter({
       name: 'patient-detail',
       component: () => import('@/pages/patients/PatientDetailPage.vue'),
     },
+    {
+      path: '/encounters',
+      name: 'encounters',
+      component: () => import('@/pages/encounters/EncounterListPage.vue'),
+    },
+    {
+      path: '/encounters/:id',
+      name: 'encounter-detail',
+      component: () => import('@/pages/encounters/EncounterDetailPage.vue'),
+    },
   ],
 })
 

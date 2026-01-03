@@ -19,6 +19,12 @@ import { RouterView } from 'vue-router'
           >
             Patients
           </RouterLink>
+          <RouterLink
+            to="/encounters"
+            class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            Encounters
+          </RouterLink>
         </nav>
       </div>
     </header>

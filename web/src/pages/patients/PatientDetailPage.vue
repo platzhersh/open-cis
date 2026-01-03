@@ -2,13 +2,15 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'radix-vue'
-import { X, Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
+import { X, Loader2, Pencil, Trash2, AlertTriangle, Plus } from 'lucide-vue-next'
 import { usePatientStore } from '@/stores/patient'
+import { useEncounterStore } from '@/stores/encounter'
 import type { PatientUpdate } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const store = usePatientStore()
+const encounterStore = useEncounterStore()
 
 const patientId = route.params.id as string
 
@@ -25,7 +27,37 @@ const deleting = ref(false)
 
 onMounted(() => {
   store.fetchPatient(patientId)
+  encounterStore.fetchEncounters(patientId)
 })
+
+// Get recent encounters (max 5)
+const recentEncounters = computed(() => {
+  return encounterStore.encounters.slice(0, 5)
+})
+
+// Format encounter type for display
+const formatEncounterType = (type: string) => {
+  const types: Record<string, string> = {
+    ambulatory: 'Ambulatory',
+    emergency: 'Emergency',
+    inpatient: 'Inpatient',
+    virtual: 'Virtual',
+    home: 'Home',
+    field: 'Field',
+  }
+  return types[type] || type
+}
+
+// Get badge color for status
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    planned: 'bg-blue-100 text-blue-800',
+    'in-progress': 'bg-yellow-100 text-yellow-800',
+    finished: 'bg-green-100 text-green-800',
+    cancelled: 'bg-gray-100 text-gray-800',
+  }
+  return colors[status] || 'bg-gray-100 text-gray-800'
+}
 
 // Initialize edit form when entering edit mode
 watch(isEditing, (editing) => {
@@ -335,16 +367,53 @@ const openDeleteDialog = () => {
         </div>
       </div>
 
-      <!-- Clinical Data Placeholders -->
+      <!-- Clinical Data -->
       <div class="grid gap-4 md:grid-cols-3">
-        <div class="rounded-lg border p-6 opacity-50">
-          <h3 class="font-semibold">
-            Recent Encounters
-          </h3>
-          <p class="text-sm text-muted-foreground mt-1">
-            Coming soon
-          </p>
+        <!-- Recent Encounters -->
+        <div class="rounded-lg border p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">
+              Recent Encounters
+            </h3>
+            <RouterLink
+              to="/encounters"
+              class="text-xs text-muted-foreground hover:text-foreground"
+            >
+              View all →
+            </RouterLink>
+          </div>
+
+          <div v-if="encounterStore.loading" class="text-sm text-muted-foreground">
+            Loading...
+          </div>
+
+          <div v-else-if="recentEncounters.length === 0" class="text-sm text-muted-foreground">
+            No encounters yet
+          </div>
+
+          <div v-else class="space-y-3">
+            <RouterLink
+              v-for="encounter in recentEncounters"
+              :key="encounter.id"
+              :to="`/encounters/${encounter.id}`"
+              class="block p-3 rounded-md hover:bg-accent transition-colors"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-medium">{{ formatEncounterType(encounter.type) }}</span>
+                <span
+                  class="text-xs px-2 py-0.5 rounded-full"
+                  :class="getStatusColor(encounter.status)"
+                >
+                  {{ encounter.status }}
+                </span>
+              </div>
+              <div class="text-xs text-muted-foreground">
+                {{ new Date(encounter.start_time).toLocaleDateString() }}
+              </div>
+            </RouterLink>
+          </div>
         </div>
+
         <div class="rounded-lg border p-6 opacity-50">
           <h3 class="font-semibold">
             Vital Signs
