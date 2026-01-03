@@ -13,8 +13,8 @@ export const useEncounterStore = defineStore('encounter', () => {
     loading.value = true
     error.value = null
     try {
-      const params = patientId ? { patient_id: patientId } : {}
-      encounters.value = await api.get<Encounter[]>('/api/encounters', { params })
+      const params: Record<string, string> | undefined = patientId ? { patient_id: patientId } : undefined
+      encounters.value = await api.get<Encounter[]>('/api/encounters', params)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch encounters'
     } finally {

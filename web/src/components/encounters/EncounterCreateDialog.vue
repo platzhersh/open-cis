@@ -205,6 +205,12 @@ const selectPatient = (patient: Patient) => {
   validateField('patient_id')
 }
 
+const handlePatientSearchBlur = () => {
+  window.setTimeout(() => {
+    showPatientDropdown.value = false
+  }, 200)
+}
+
 // Handle form submission
 const handleSubmit = async () => {
   validateField('all')
@@ -300,7 +306,7 @@ onMounted(() => {
                   :class="{ 'border-destructive': errors.patient_id }"
                   :disabled="!!props.patientId"
                   @focus="showPatientDropdown = true"
-                  @blur="() => setTimeout(() => showPatientDropdown = false, 200)"
+                  @blur="handlePatientSearchBlur"
                 />
                 <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
