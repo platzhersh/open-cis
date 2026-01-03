@@ -34,9 +34,9 @@ class EHRBaseClient:
         headers = {"Prefer": "return=representation"}
 
         if ehr_id:
-            response = await client.put(f"/ehr/{ehr_id}", headers=headers)
+            response = await client.put(f"/openehr/v1/ehr/{ehr_id}", headers=headers)
         else:
-            response = await client.post("/ehr", headers=headers)
+            response = await client.post("/openehr/v1/ehr", headers=headers)
 
         response.raise_for_status()
         return response.json()
@@ -44,7 +44,7 @@ class EHRBaseClient:
     async def get_ehr(self, ehr_id: str) -> dict[str, Any]:
         """Get an EHR by ID."""
         client = await self._get_client()
-        response = await client.get(f"/ehr/{ehr_id}")
+        response = await client.get(f"/openehr/v1/ehr/{ehr_id}")
         response.raise_for_status()
         return response.json()
 
@@ -54,7 +54,7 @@ class EHRBaseClient:
         """Get an EHR by subject (patient) ID."""
         client = await self._get_client()
         response = await client.get(
-            "/ehr",
+            "/openehr/v1/ehr",
             params={"subject_id": subject_id, "subject_namespace": subject_namespace}
         )
         if response.status_code == 404:
@@ -72,7 +72,7 @@ class EHRBaseClient:
         """Create a composition in an EHR."""
         client = await self._get_client()
         response = await client.post(
-            f"/ehr/{ehr_id}/composition",
+            f"/openehr/v1/ehr/{ehr_id}/composition",
             json=composition,
             headers={
                 "Prefer": "return=representation",
@@ -86,7 +86,7 @@ class EHRBaseClient:
     async def get_composition(self, ehr_id: str, composition_uid: str) -> dict[str, Any]:
         """Get a composition by UID."""
         client = await self._get_client()
-        response = await client.get(f"/ehr/{ehr_id}/composition/{composition_uid}")
+        response = await client.get(f"/openehr/v1/ehr/{ehr_id}/composition/{composition_uid}")
         response.raise_for_status()
         return response.json()
 
@@ -101,14 +101,14 @@ class EHRBaseClient:
         if parameters:
             payload["query_parameters"] = parameters
 
-        response = await client.post("/query/aql", json=payload)
+        response = await client.post("/openehr/v1/query/aql", json=payload)
         response.raise_for_status()
         return response.json()
 
     async def list_templates(self) -> list[dict[str, Any]]:
         """List all available templates."""
         client = await self._get_client()
-        response = await client.get("/definition/template/adl1.4")
+        response = await client.get("/openehr/v1/definition/template/adl1.4")
         response.raise_for_status()
         return response.json()
 
@@ -116,7 +116,7 @@ class EHRBaseClient:
         """Upload an operational template (OPT)."""
         client = await self._get_client()
         response = await client.post(
-            "/definition/template/adl1.4",
+            "/openehr/v1/definition/template/adl1.4",
             content=template_content,
             headers={"Content-Type": "application/XML"}
         )
