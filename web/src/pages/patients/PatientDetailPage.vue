@@ -137,7 +137,13 @@ const saveChanges = async () => {
 
   saving.value = true
   try {
-    const patient = await store.updatePatient(patientId, editForm.value)
+    // Sanitize payload: convert empty birth_date string to undefined
+    const payload: PatientUpdate = { ...editForm.value }
+    if (payload.birth_date === '') {
+      payload.birth_date = undefined
+    }
+
+    const patient = await store.updatePatient(patientId, payload)
     if (patient) {
       isEditing.value = false
     }

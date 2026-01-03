@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 
 class EncounterType(str, Enum):
@@ -56,6 +56,14 @@ class EncounterUpdate(BaseModel):
     reason: str | None = Field(None, max_length=500)
     provider_name: str | None = Field(None, max_length=100)
     location: str | None = Field(None, max_length=100)
+
+    @model_validator(mode="after")
+    def validate_time_range(self) -> "EncounterUpdate":
+        """Validate that end_time is after start_time when both are provided."""
+        if self.start_time is not None and self.end_time is not None:
+            if self.end_time < self.start_time:
+                raise ValueError("end_time must be after start_time")
+        return self
 
 
 class EncounterResponse(BaseModel):
