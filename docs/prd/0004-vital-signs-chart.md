@@ -56,7 +56,7 @@ This feature uses well-established openEHR Clinical Knowledge Manager (CKM) arch
 | Archetype ID | Description | CKM Link |
 |--------------|-------------|----------|
 | `openEHR-EHR-OBSERVATION.blood_pressure.v2` | Blood pressure measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.3574) |
-| `openEHR-EHR-OBSERVATION.pulse.v2` | Pulse/heart rate measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.170) |
+| `openEHR-EHR-OBSERVATION.pulse.v2` | Pulse/heart rate measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.4295) |
 | `openEHR-EHR-COMPOSITION.encounter.v1` | Container for encounter-based observations | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.1366) |
 
 ### Template Definition
