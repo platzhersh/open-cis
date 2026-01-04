@@ -19,6 +19,13 @@ COPY api/templates ./templates
 # Generate Prisma client
 RUN prisma generate
 
+# Create non-root user for security
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE 8000
 
 # Use Railway's $PORT if available, otherwise default to 8000
