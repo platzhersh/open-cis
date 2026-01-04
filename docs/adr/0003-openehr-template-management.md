@@ -1,6 +1,9 @@
-# ADR-0001: openEHR Template Management
+# 3. openEHR Template Management
+
+Date: 2026-01-03
 
 ## Status
+
 Accepted
 
 ## Context
@@ -9,16 +12,11 @@ Open CIS uses EHRBase as its openEHR Clinical Data Repository. EHRBase requires 
 
 Templates define the structure of clinical data by constraining openEHR archetypes. For example, a "Vital Signs" template combines observation archetypes for blood pressure and pulse within an encounter composition archetype.
 
-### Problem
-
-1. Templates must be uploaded to EHRBase before the application can store clinical data
-2. Developers may forget to upload templates when setting up a new environment
-3. Different environments (dev, staging, prod) need consistent template configurations
-4. Creating proper OPT files from scratch requires specialized tooling and expertise
+Templates must be uploaded to EHRBase before the application can store clinical data, but developers may forget this step when setting up a new environment. Different environments like development, staging, and production need consistent template configurations to ensure the same clinical data structures work everywhere. Creating proper OPT files from scratch requires specialized tooling and expertise that would slow down development and introduce a barrier to entry for new contributors.
 
 ## Decision
 
-We will implement automatic template registration on API startup, using pre-built templates from the openEHR community:
+We will implement automatic template registration on API startup, using pre-built templates from the openEHR community.
 
 1. **Template Storage**: OPT files are stored in `api/templates/` directory, named `{template_id}.opt`
 

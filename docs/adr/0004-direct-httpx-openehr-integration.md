@@ -1,11 +1,14 @@
-# ADR-0003: Direct httpx Integration for openEHR API
+# 4. Direct httpx Integration for openEHR API
+
+Date: 2026-01-04
 
 ## Status
+
 Accepted
 
 ## Context
 
-Open CIS needs to interact with EHRBase (an openEHR Clinical Data Repository) to create, retrieve, and query clinical compositions. We must decide how to implement this integration: use an existing SDK/library or build a custom client using a low-level HTTP library.
+Open CIS needs to interact with EHRBase, an openEHR Clinical Data Repository, to create, retrieve, and query clinical compositions. We must decide how to implement this integration: use an existing SDK or library, or build a custom client using a low-level HTTP library.
 
 ### Problem
 
