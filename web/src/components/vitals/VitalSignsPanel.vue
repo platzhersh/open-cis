@@ -48,13 +48,9 @@ async function loadVitals() {
   })
 }
 
-function handleReadingCreated() {
+async function handleReadingCreated() {
   showRecordDialog.value = false
-}
-
-function handleSelectReading(reading: VitalSignsReading) {
-  selectedReading.value = reading
-  showOpenEHRPanel.value = true
+  await loadVitals()
 }
 
 function handleShowOpenEHR(reading: VitalSignsReading) {
@@ -151,7 +147,7 @@ watch(dateRange, (val) => {
       <!-- Chart -->
       <VitalSignsChart
         :readings="store.readings"
-        @select-reading="handleSelectReading"
+        @select-reading="handleShowOpenEHR"
       />
 
       <!-- Table -->

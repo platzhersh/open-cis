@@ -34,13 +34,21 @@ watch(
         const composition = await store.fetchRawComposition(reading.id, props.patientId, 'FLAT')
         rawComposition.value = composition
 
-        for (const archetypeId of reading.openehr_metadata.archetype_ids) {
-          if (!archetypeInfos.value.has(archetypeId)) {
-            const info = await store.fetchArchetypeInfo(archetypeId)
+        const archetypesToFetch = reading.openehr_metadata.archetype_ids.filter(
+          archetypeId => !archetypeInfos.value.has(archetypeId)
+        )
+
+        if (archetypesToFetch.length > 0) {
+          const archetypeResults = await Promise.all(
+            archetypesToFetch.map(archetypeId => store.fetchArchetypeInfo(archetypeId))
+          )
+
+          archetypesToFetch.forEach((archetypeId, index) => {
+            const info = archetypeResults[index]
             if (info) {
               archetypeInfos.value.set(archetypeId, info)
             }
-          }
+          })
         }
       } catch (e) {
         console.error('Failed to load openEHR data:', e)
@@ -52,9 +60,9 @@ watch(
   { immediate: true }
 )
 
-async function switchFormat(format: string) {
+// Load composition when format changes
+watch(activeFormat, async (format) => {
   if (!props.reading || !props.reading.id) return
-  activeFormat.value = format
   loading.value = true
   try {
     rawComposition.value = await store.fetchRawComposition(
@@ -65,7 +73,7 @@ async function switchFormat(format: string) {
   } finally {
     loading.value = false
   }
-}
+})
 
 async function copyToClipboard(text: string, identifier: string) {
   try {
@@ -203,19 +211,17 @@ function handleOpenChange(open: boolean) {
             <!-- Raw Composition Data -->
             <div class="space-y-2">
               <h3 class="font-medium">Raw Composition Data</h3>
-              <TabsRoot :default-value="activeFormat" class="w-full">
+              <TabsRoot v-model="activeFormat" class="w-full">
                 <TabsList class="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 w-full">
                   <TabsTrigger
                     value="FLAT"
                     class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm flex-1"
-                    @click="switchFormat('FLAT')"
                   >
                     FLAT
                   </TabsTrigger>
                   <TabsTrigger
                     value="STRUCTURED"
                     class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm flex-1"
-                    @click="switchFormat('STRUCTURED')"
                   >
                     STRUCTURED
                   </TabsTrigger>

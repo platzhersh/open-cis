@@ -62,7 +62,7 @@ export const useVitalsStore = defineStore('vitals', () => {
     loading.value = true
     error.value = null
     try {
-      await api.delete(`/api/observations/vital-signs/${encodeURIComponent(compositionUid)}?patient_id=${patientId}`)
+      await api.delete(`/api/observations/vital-signs/${encodeURIComponent(compositionUid)}?patient_id=${encodeURIComponent(patientId)}`)
       readings.value = readings.value.filter((r) => r.id !== compositionUid)
       total.value = Math.max(0, total.value - 1)
       if (currentReading.value?.id === compositionUid) {

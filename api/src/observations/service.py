@@ -194,11 +194,7 @@ class ObservationService:
             return False
 
         try:
-            client = await ehrbase_client._get_client()
-            response = await client.delete(
-                f"/openehr/v1/ehr/{patient.ehrId}/composition/{composition_uid}"
-            )
-            return response.status_code == 204
+            return await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
         except Exception:
             return False
 
@@ -211,17 +207,14 @@ class ObservationService:
             return None
 
         try:
-            client = await ehrbase_client._get_client()
-            response = await client.get(
-                f"/openehr/v1/ehr/{patient.ehrId}/composition/{composition_uid}",
-                params={"format": format},
+            composition = await ehrbase_client.get_composition_formatted(
+                patient.ehrId, composition_uid, format
             )
-            if response.status_code == 200:
-                return {
-                    "format": format,
-                    "template_id": self.TEMPLATE_ID,
-                    "composition": response.json(),
-                }
+            return {
+                "format": format,
+                "template_id": self.TEMPLATE_ID,
+                "composition": composition,
+            }
         except Exception:
             pass
         return None
