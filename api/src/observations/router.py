@@ -205,7 +205,7 @@ async def get_archetype_info(archetype_id: str) -> dict:
     ckm_links = {
         "openEHR-EHR-OBSERVATION.blood_pressure.v2": "https://ckm.openehr.org/ckm/archetypes/1013.1.3574",
         "openEHR-EHR-OBSERVATION.pulse.v2": "https://ckm.openehr.org/ckm/archetypes/1013.1.4295",
-        "openEHR-EHR-COMPOSITION.encounter.v1": "https://ckm.openehr.org/ckm/archetypes/1013.1.1366",
+        "openEHR-EHR-COMPOSITION.encounter.v1": "https://ckm.openehr.org/ckm/archetypes/1013.1.120",
     }
 
     descriptions = {
