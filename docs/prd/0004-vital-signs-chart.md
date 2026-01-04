@@ -1,8 +1,8 @@
 # PRD-0004: Vital Signs Chart with openEHR Transparency
 
-**Version:** 1.0
-**Date:** 2026-01-03
-**Status:** Draft
+**Version:** 1.1
+**Date:** 2026-01-04
+**Status:** In Progress
 **Owner:** Open CIS Project
 
 ---
@@ -55,57 +55,70 @@ This feature uses well-established openEHR Clinical Knowledge Manager (CKM) arch
 
 | Archetype ID | Description | CKM Link |
 |--------------|-------------|----------|
-| `openEHR-EHR-OBSERVATION.blood_pressure.v2` | Blood pressure measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.3574) |
-| `openEHR-EHR-OBSERVATION.pulse.v2` | Pulse/heart rate measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.4295) |
+| `openEHR-EHR-OBSERVATION.blood_pressure.v1` | Blood pressure measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.3574) |
+| `openEHR-EHR-OBSERVATION.pulse.v1` | Pulse/heart rate measurement | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.4295) |
 | `openEHR-EHR-COMPOSITION.encounter.v1` | Container for encounter-based observations | [CKM](https://ckm.openehr.org/ckm/archetypes/1013.1.120) |
+
+> **Note on Archetype Versions:** The implementation uses v1 archetypes (not v2) because we're using a community template from 2017. The fundamental data model is the same between versions; v2 adds optional fields and improved constraints. See ADR-0001 for details.
 
 ### Template Definition
 
-We will create an Operational Template (OPT) that combines these archetypes:
+We use the **IDCR - Vital Signs Encounter.v1** template from the [RippleOSI/Ripple-openEHR](https://github.com/RippleOSI/Ripple-openEHR) repository.
 
-**Template ID:** `open-cis.vital-signs.v1`
+**Template ID:** `IDCR - Vital Signs Encounter.v1`
+
+**Source:** https://github.com/RippleOSI/Ripple-openEHR (repository inactive since ~2017)
+
+**Why This Template:**
+- Production-ready: Created by clinical informaticists for real-world use
+- Proper OPT format with full archetype constraints
+- Comprehensive: Includes blood pressure, pulse, temperature, respiration, oximetry, and more
+- Open source: MIT licensed, freely available
 
 **Structure:**
 ```
 COMPOSITION (openEHR-EHR-COMPOSITION.encounter.v1)
-├── context
-│   ├── start_time
-│   └── setting (ambulatory, emergency, etc.)
-├── OBSERVATION (openEHR-EHR-OBSERVATION.blood_pressure.v2)
-│   └── data
-│       └── events[at0006] (any event)
-│           ├── time
-│           └── data
-│               ├── items[at0004] (systolic) - magnitude, units
-│               └── items[at0005] (diastolic) - magnitude, units
-└── OBSERVATION (openEHR-EHR-OBSERVATION.pulse.v2)
-    └── data
-        └── events[at0003] (any event)
-            ├── time
-            └── data
-                └── items[at0004] (rate) - magnitude, units
+└── SECTION (openEHR-EHR-SECTION.vital_signs.v1)
+    ├── OBSERVATION (openEHR-EHR-OBSERVATION.blood_pressure.v1)
+    │   └── data
+    │       └── events[at0006] (any event)
+    │           ├── time
+    │           └── data
+    │               ├── items[at0004] (systolic) - magnitude, units
+    │               └── items[at0005] (diastolic) - magnitude, units
+    ├── OBSERVATION (openEHR-EHR-OBSERVATION.pulse.v1)
+    │   └── data
+    │       └── events[at0003] (any event)
+    │           ├── time
+    │           └── data
+    │               └── items[at0004] (rate) - magnitude, units
+    ├── OBSERVATION (openEHR-EHR-OBSERVATION.body_temperature.v1)
+    ├── OBSERVATION (openEHR-EHR-OBSERVATION.respiration.v1)
+    ├── OBSERVATION (openEHR-EHR-OBSERVATION.indirect_oximetry.v1)
+    └── ... (additional observations)
 ```
 
 ### FLAT Format Example
 
-When creating a composition, the FLAT format maps UI fields to openEHR paths:
+When creating a composition, the FLAT format maps UI fields to openEHR paths. Note the section-based structure (`vital_signs/`) and indexed events (`:0`):
 
 ```json
 {
   "ctx/language": "en",
   "ctx/territory": "US",
   "ctx/time": "2026-01-03T10:30:00Z",
-  "open-cis.vital-signs.v1/context/start_time": "2026-01-03T10:30:00Z",
-  "open-cis.vital-signs.v1/blood_pressure/any_event/systolic|magnitude": 120,
-  "open-cis.vital-signs.v1/blood_pressure/any_event/systolic|unit": "mm[Hg]",
-  "open-cis.vital-signs.v1/blood_pressure/any_event/diastolic|magnitude": 80,
-  "open-cis.vital-signs.v1/blood_pressure/any_event/diastolic|unit": "mm[Hg]",
-  "open-cis.vital-signs.v1/blood_pressure/any_event/time": "2026-01-03T10:30:00Z",
-  "open-cis.vital-signs.v1/pulse/any_event/rate|magnitude": 72,
-  "open-cis.vital-signs.v1/pulse/any_event/rate|unit": "/min",
-  "open-cis.vital-signs.v1/pulse/any_event/time": "2026-01-03T10:30:00Z"
+  "vital_signs/blood_pressure:0/any_event:0/systolic|magnitude": 120,
+  "vital_signs/blood_pressure:0/any_event:0/systolic|unit": "mm[Hg]",
+  "vital_signs/blood_pressure:0/any_event:0/diastolic|magnitude": 80,
+  "vital_signs/blood_pressure:0/any_event:0/diastolic|unit": "mm[Hg]",
+  "vital_signs/blood_pressure:0/any_event:0/time": "2026-01-03T10:30:00Z",
+  "vital_signs/pulse_heart_beat:0/any_event:0/rate|magnitude": 72,
+  "vital_signs/pulse_heart_beat:0/any_event:0/rate|unit": "/min",
+  "vital_signs/pulse_heart_beat:0/any_event:0/time": "2026-01-03T10:30:00Z"
 }
 ```
+
+> **Note:** The template uses `pulse_heart_beat` instead of `pulse` in the FLAT paths. The `:0` indices allow multiple observations of the same type within a single composition.
 
 ---
 
@@ -121,7 +134,7 @@ This is the simplified view used in the API and frontend:
 export interface VitalSignsReading {
   id: string                    // composition_uid from EHRBase
   patient_id: string
-  encounter_id?: string         // optional link to encounter
+  encounter_id: string          // required - vital signs must be linked to an encounter
   recorded_at: string           // ISO 8601 timestamp
 
   // Blood pressure
@@ -150,9 +163,9 @@ export interface OpenEHRMetadata {
 
 export interface PathMapping {
   field: string                 // UI field name (e.g., "systolic")
-  archetype_id: string          // e.g., "openEHR-EHR-OBSERVATION.blood_pressure.v2"
+  archetype_id: string          // e.g., "openEHR-EHR-OBSERVATION.blood_pressure.v1"
   archetype_path: string        // e.g., "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value"
-  flat_path: string             // e.g., "open-cis.vital-signs.v1/blood_pressure/any_event/systolic"
+  flat_path: string             // e.g., "vital_signs/blood_pressure:0/any_event:0/systolic"
   value: any                    // actual value
   unit?: string                 // unit if applicable
 }
@@ -169,7 +182,7 @@ from pydantic import BaseModel, Field
 
 class VitalSignsCreate(BaseModel):
     patient_id: str
-    encounter_id: str | None = None
+    encounter_id: str           # Required - vital signs must be linked to an encounter
     recorded_at: datetime
 
     # Blood pressure (optional - can record just pulse)
@@ -208,7 +221,7 @@ class OpenEHRMetadataResponse(BaseModel):
 class VitalSignsResponse(BaseModel):
     id: str
     patient_id: str
-    encounter_id: str | None
+    encounter_id: str
     recorded_at: datetime
     systolic: int | None
     diastolic: int | None
@@ -287,35 +300,35 @@ Response: 201 Created
   "created_at": "2026-01-03T10:30:05Z",
   "openehr_metadata": {
     "composition_uid": "f47ac10b-58cc-4372-a567-0e02b2c3d479::open-cis::1",
-    "template_id": "open-cis.vital-signs.v1",
+    "template_id": "IDCR - Vital Signs Encounter.v1",
     "archetype_ids": [
       "openEHR-EHR-COMPOSITION.encounter.v1",
-      "openEHR-EHR-OBSERVATION.blood_pressure.v2",
-      "openEHR-EHR-OBSERVATION.pulse.v2"
+      "openEHR-EHR-OBSERVATION.blood_pressure.v1",
+      "openEHR-EHR-OBSERVATION.pulse.v1"
     ],
     "ehr_id": "7d44b88c-4199-4bad-97dc-d78268e01398",
     "path_mappings": [
       {
         "field": "systolic",
-        "archetype_id": "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+        "archetype_id": "openEHR-EHR-OBSERVATION.blood_pressure.v1",
         "archetype_path": "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude",
-        "flat_path": "open-cis.vital-signs.v1/blood_pressure/any_event/systolic|magnitude",
+        "flat_path": "vital_signs/blood_pressure:0/any_event:0/systolic|magnitude",
         "value": 120,
         "unit": "mm[Hg]"
       },
       {
         "field": "diastolic",
-        "archetype_id": "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+        "archetype_id": "openEHR-EHR-OBSERVATION.blood_pressure.v1",
         "archetype_path": "/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude",
-        "flat_path": "open-cis.vital-signs.v1/blood_pressure/any_event/diastolic|magnitude",
+        "flat_path": "vital_signs/blood_pressure:0/any_event:0/diastolic|magnitude",
         "value": 80,
         "unit": "mm[Hg]"
       },
       {
         "field": "pulse_rate",
-        "archetype_id": "openEHR-EHR-OBSERVATION.pulse.v2",
+        "archetype_id": "openEHR-EHR-OBSERVATION.pulse.v1",
         "archetype_path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value/magnitude",
-        "flat_path": "open-cis.vital-signs.v1/pulse/any_event/rate|magnitude",
+        "flat_path": "vital_signs/pulse_heart_beat:0/any_event:0/rate|magnitude",
         "value": 72,
         "unit": "/min"
       }
@@ -331,13 +344,12 @@ GET /api/openehr/compositions/f47ac10b-58cc-4372-a567-0e02b2c3d479::open-cis::1?
 Response: 200 OK
 {
   "format": "FLAT",
-  "template_id": "open-cis.vital-signs.v1",
+  "template_id": "IDCR - Vital Signs Encounter.v1",
   "composition": {
     "ctx/language": "en",
     "ctx/territory": "US",
-    "open-cis.vital-signs.v1/context/start_time": "2026-01-03T10:30:00Z",
-    "open-cis.vital-signs.v1/blood_pressure/any_event/systolic|magnitude": 120,
-    "open-cis.vital-signs.v1/blood_pressure/any_event/systolic|unit": "mm[Hg]",
+    "vital_signs/blood_pressure:0/any_event:0/systolic|magnitude": 120,
+    "vital_signs/blood_pressure:0/any_event:0/systolic|unit": "mm[Hg]",
     ...
   }
 }
@@ -406,7 +418,7 @@ Add a new "Vital Signs" tab or section to PatientDetailPage:
 │  Date & Time *                                              │
 │  [01/03/2026] [10:30 AM]  [Now]                            │
 │                                                             │
-│  Encounter (optional)                                       │
+│  Encounter *                                                │
 │  [Select encounter...                            ▼]         │
 │                                                             │
 │  ─────────────────────────────────────────────────────────  │
@@ -440,7 +452,7 @@ When user clicks "openEHR" button on a reading, show a slide-over panel:
 │                                                             │
 │  Composition                                                │
 │  UID: f47ac10b-58cc-4372-a567-0e02b2c3d479::open-cis::1    │
-│  Template: open-cis.vital-signs.v1                          │
+│  Template: IDCR - Vital Signs Encounter.v1                  │
 │  EHR ID: 7d44b88c-4199-4bad-97dc-d78268e01398              │
 │                                                             │
 │  ─────────────────────────────────────────────────────────  │
@@ -451,11 +463,11 @@ When user clicks "openEHR" button on a reading, show a slide-over panel:
 │     Container for clinical encounter                        │
 │     [View in CKM ↗]                                        │
 │                                                             │
-│  📦 openEHR-EHR-OBSERVATION.blood_pressure.v2              │
+│  📦 openEHR-EHR-OBSERVATION.blood_pressure.v1              │
 │     Blood pressure measurement                              │
 │     [View in CKM ↗]                                        │
 │                                                             │
-│  📦 openEHR-EHR-OBSERVATION.pulse.v2                       │
+│  📦 openEHR-EHR-OBSERVATION.pulse.v1                       │
 │     Pulse/heart rate measurement                            │
 │     [View in CKM ↗]                                        │
 │                                                             │
@@ -471,8 +483,8 @@ When user clicks "openEHR" button on a reading, show a slide-over panel:
 │  │   items[at0004]/value/magnitude                      │   │
 │  │                                                      │   │
 │  │ FLAT Path:                                           │   │
-│  │ open-cis.vital-signs.v1/blood_pressure/              │   │
-│  │   any_event/systolic|magnitude                       │   │
+│  │ vital_signs/blood_pressure:0/any_event:0/           │   │
+│  │   systolic|magnitude                                 │   │
 │  │                                                [Copy]│   │
 │  └─────────────────────────────────────────────────────┘   │
 │                                                             │
@@ -490,10 +502,10 @@ When user clicks "openEHR" button on a reading, show a slide-over panel:
 │  │ {                                                    │   │
 │  │   "ctx/language": "en",                              │   │
 │  │   "ctx/territory": "US",                             │   │
-│  │   "open-cis.vital-signs.v1/context/start_time":     │   │
-│  │     "2026-01-03T10:30:00Z",                          │   │
-│  │   "open-cis.vital-signs.v1/blood_pressure/          │   │
-│  │     any_event/systolic|magnitude": 120,              │   │
+│  │   "vital_signs/blood_pressure:0/any_event:0/        │   │
+│  │     systolic|magnitude": 120,                        │   │
+│  │   "vital_signs/blood_pressure:0/any_event:0/        │   │
+│  │     systolic|unit": "mm[Hg]",                        │   │
 │  │   ...                                                │   │
 │  │ }                                              [Copy]│   │
 │  └─────────────────────────────────────────────────────┘   │
@@ -561,9 +573,9 @@ Use **Chart.js** with vue-chartjs wrapper for the vital signs chart:
 ### Phase 1: Backend Foundation
 
 **Template & EHRBase Setup:**
-- [ ] Create OPT file for vital signs template
-- [ ] Add template upload script/migration
-- [ ] Verify template deployment to EHRBase
+- [x] Use IDCR - Vital Signs Encounter.v1 template (from Ripple-openEHR)
+- [x] Implement automatic template registration on API startup
+- [x] Add manual upload script for debugging/testing
 
 **API Implementation:**
 - [ ] Update `observations/schemas.py` with new models
@@ -617,26 +629,37 @@ Use **Chart.js** with vue-chartjs wrapper for the vital signs chart:
 
 ### OPT File Location
 
-Create template file at: `api/templates/open-cis.vital-signs.v1.opt`
+**Template file:** `api/templates/IDCR - Vital Signs Encounter.v1.opt`
 
-The OPT file will be generated using:
-1. Archetype Designer (web-based)
-2. Or ADL Designer
-3. Export as Operational Template XML
+**Source:** Downloaded from [RippleOSI/Ripple-openEHR](https://github.com/RippleOSI/Ripple-openEHR/blob/master/technical/operational/IDCR%20-%20Vital%20Signs%20Encounter.opt)
 
-### Template Upload
+> **Note:** The template is from a repository inactive since ~2017 and uses v1 archetypes. This is acceptable for a learning project. For production use, consider creating a new template with v2 archetypes using Archetype Designer.
 
-Add to startup or migration:
+### Automatic Template Registration
+
+Templates are automatically registered on API startup via `ensure_templates_registered()` in `src/ehrbase/templates.py`:
 
 ```python
-# api/src/main.py (lifespan)
+REQUIRED_TEMPLATES = [
+    "IDCR - Vital Signs Encounter.v1",
+]
 
-async def upload_templates():
-    """Upload operational templates to EHRBase on startup."""
-    templates_dir = Path(__file__).parent.parent / "templates"
-    for opt_file in templates_dir.glob("*.opt"):
-        await ehrbase_client.upload_template(opt_file.read_text())
+async def ensure_templates_registered() -> dict[str, bool]:
+    """Ensure all required templates are registered in EHRBase."""
+    # Checks existing templates and uploads missing ones
+    # Called automatically during API lifespan startup
 ```
+
+### Manual Upload Script
+
+For debugging or testing, templates can be manually uploaded:
+
+```bash
+cd api && python scripts/upload_templates.py
+cd api && python scripts/upload_templates.py --check-only  # List templates only
+```
+
+See ADR-0001 for full template management documentation.
 
 ---
 
@@ -657,7 +680,7 @@ async def upload_templates():
 2. **BP completeness**: If systolic provided, diastolic required (and vice versa)
 3. **Timestamp**: Cannot be in the future
 4. **Patient exists**: Patient must exist with valid EHR ID
-5. **Encounter optional**: If provided, must be valid and belong to patient
+5. **Encounter required**: Vital signs must be linked to an active encounter for the patient
 
 ---
 
@@ -766,35 +789,31 @@ test('view openEHR metadata for reading', async ({ page }) => {
 ```
 
 ### Template Files
-- `api/templates/open-cis.vital-signs.v1.opt` (to be created)
+- `api/templates/IDCR - Vital Signs Encounter.v1.opt` (from Ripple-openEHR)
 
 ---
 
-## Open Questions
+## Decisions Made
 
 ### Q1: Template Creation Approach
-**Options:**
-- A) Use Archetype Designer (web tool) to create OPT
-- B) Hand-craft ADL/OPT XML
-- C) Use existing public templates
+**Decision:** C) Use existing public templates
 
-**Recommendation:** Use Archetype Designer for visual design, export OPT.
+We use the **IDCR - Vital Signs Encounter.v1** template from [RippleOSI/Ripple-openEHR](https://github.com/RippleOSI/Ripple-openEHR). While the repository is inactive (~7 years old), the template is production-ready and properly structured. Trade-off: Uses v1 archetypes instead of v2.
 
 ### Q2: Store Vital Signs in App DB?
-**Options:**
-- A) Only in EHRBase (current plan)
-- B) Mirror to app DB for faster queries
-- C) Cache recent readings in app DB
+**Decision:** A) Only in EHRBase
 
-**Recommendation:** Start with A (EHRBase only) for purity. Add caching later if needed.
+Vital signs are stored exclusively in EHRBase as compositions. This maintains openEHR purity and avoids data duplication. Performance is acceptable for the learning project scope.
 
 ### Q3: Chart Library
-**Options:**
-- A) Chart.js (lightweight, popular)
-- B) Apache ECharts (more features, heavier)
-- C) D3.js (most flexible, steeper learning curve)
+**Decision:** A) Chart.js
 
-**Recommendation:** Chart.js for simplicity and Vue integration.
+Chart.js with vue-chartjs wrapper for lightweight, well-documented time-series visualization.
+
+### Q4: Encounter Requirement
+**Decision:** Vital signs MUST be linked to an encounter
+
+All vital signs recordings require an `encounter_id`. This enforces proper clinical workflow and ensures observations are always contextualized within a patient encounter.
 
 ---
 
@@ -811,8 +830,15 @@ test('view openEHR metadata for reading', async ({ page }) => {
 
 ---
 
+## Related Documents
+
+- [ADR-0001: openEHR Template Management](../adr/0001-openehr-template-management.md) - Detailed documentation on template source, archetype versions, and management approach
+
+---
+
 ## Change Log
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-03 | Open CIS Team | Initial PRD draft |
+| 1.1 | 2026-01-04 | Open CIS Team | Updated with actual implementation: IDCR template from Ripple-openEHR, v1 archetypes, section-based FLAT paths, encounter_id now required |
