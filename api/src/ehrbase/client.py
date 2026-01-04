@@ -84,11 +84,32 @@ class EHRBaseClient:
         return response.json()
 
     async def get_composition(self, ehr_id: str, composition_uid: str) -> dict[str, Any]:
-        """Get a composition by UID."""
+        """Get a composition by UID in default format."""
         client = await self._get_client()
         response = await client.get(f"/openehr/v1/ehr/{ehr_id}/composition/{composition_uid}")
         response.raise_for_status()
         return response.json()
+
+    async def get_composition_formatted(
+        self, ehr_id: str, composition_uid: str, format: str = "FLAT"
+    ) -> dict[str, Any]:
+        """Get a composition in a specific format (FLAT or STRUCTURED)."""
+        client = await self._get_client()
+        response = await client.get(
+            f"/openehr/v1/ehr/{ehr_id}/composition/{composition_uid}",
+            params={"format": format},
+        )
+        response.raise_for_status()
+        return response.json()
+
+    async def delete_composition(self, ehr_id: str, composition_uid: str) -> bool:
+        """Delete a composition by UID. Returns True if successful."""
+        client = await self._get_client()
+        response = await client.delete(
+            f"/openehr/v1/ehr/{ehr_id}/composition/{composition_uid}"
+        )
+        response.raise_for_status()
+        return response.status_code == 204
 
     async def execute_aql(
         self,
@@ -118,7 +139,25 @@ class EHRBaseClient:
         response = await client.post(
             "/openehr/v1/definition/template/adl1.4",
             content=template_content,
-            headers={"Content-Type": "application/XML"}
+            headers={
+                "Content-Type": "application/xml",
+                "Accept": "application/json, application/xml",
+            }
+        )
+        response.raise_for_status()
+        # EHRBase may return empty response or XML on success
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return {"status": "uploaded"}
+
+    async def get_template_example(
+        self, template_id: str, format: str = "FLAT"
+    ) -> dict[str, Any]:
+        """Get an example composition for a template."""
+        client = await self._get_client()
+        response = await client.get(
+            f"/openehr/v1/definition/template/adl1.4/{template_id}/example",
+            params={"format": format},
         )
         response.raise_for_status()
         return response.json()

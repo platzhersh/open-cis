@@ -1,6 +1,6 @@
 """Medication service for managing prescriptions."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from src.ehrbase.client import ehrbase_client
@@ -26,7 +26,7 @@ class MedicationService:
             frequency=data.frequency,
             route=data.route,
             instructions=data.instructions,
-            ordered_at=datetime.utcnow(),
+            ordered_at=datetime.now(UTC),
             status="active",
         )
 

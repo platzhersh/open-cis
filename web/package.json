@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@vueuse/core": "^10.7.0",
+    "chart.js": "^4.5.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-vue-next": "^0.303.0",
@@ -22,6 +24,7 @@
     "serve": "14.2.5",
     "tailwind-merge": "^2.2.0",
     "vue": "^3.4.0",
+    "vue-chartjs": "^5.3.3",
     "vue-router": "^4.2.0"
   },
   "devDependencies": {
@@ -43,5 +46,6 @@
     "vitest": "4.0.15",
     "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^2.0.0"
-  }
+  },
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }

@@ -46,7 +46,7 @@ pnpm dlx shadcn-vue@latest init
 
 # 5. Run development
 # Terminal 1 (API):
-cd api && source .venv/bin/activate && uvicorn src.main:app --reload --port 8000
+cd api && source .venv/bin/activate && prisma migrate deploy && uvicorn src.main:app --reload --port 8000
 
 # Terminal 2 (Web):
 cd web && pnpm dev
