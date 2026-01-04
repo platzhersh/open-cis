@@ -229,23 +229,30 @@ class ObservationService:
         """Build FLAT format composition for EHRBase."""
         recorded_at_iso = data.recorded_at.isoformat()
 
-        # IDCR template structure: composition/vital_signs(section)/observations
-        base = "vital_signs"
-
+        # Required composition metadata
         composition: dict[str, Any] = {
-            "ctx/language": "en",
-            "ctx/territory": "US",
-            "ctx/time": recorded_at_iso,
+            "vital_signs_observations/language|code": "en",
+            "vital_signs_observations/language|terminology": "ISO_639-1",
+            "vital_signs_observations/territory|code": "US",
+            "vital_signs_observations/territory|terminology": "ISO_3166-1",
+            "vital_signs_observations/category|code": "433",
+            "vital_signs_observations/category|value": "event",
+            "vital_signs_observations/category|terminology": "openehr",
+            "vital_signs_observations/context/start_time": recorded_at_iso,
+            "vital_signs_observations/context/setting|code": "238",
+            "vital_signs_observations/context/setting|value": "other care",
+            "vital_signs_observations/context/setting|terminology": "openehr",
+            "vital_signs_observations/composer|name": "CIS System",
         }
 
         # Add blood pressure if provided
         if data.systolic is not None and data.diastolic is not None:
-            bp_path = f"{base}/blood_pressure:0/any_event:0"
+            bp_path = "vital_signs_observations/vital_signs/blood_pressure"
             composition.update(
                 {
-                    f"{bp_path}/systolic|magnitude": data.systolic,
+                    f"{bp_path}/systolic|magnitude": float(data.systolic),
                     f"{bp_path}/systolic|unit": "mm[Hg]",
-                    f"{bp_path}/diastolic|magnitude": data.diastolic,
+                    f"{bp_path}/diastolic|magnitude": float(data.diastolic),
                     f"{bp_path}/diastolic|unit": "mm[Hg]",
                     f"{bp_path}/time": recorded_at_iso,
                 }
@@ -253,11 +260,11 @@ class ObservationService:
 
         # Add pulse/heart rate if provided
         if data.pulse_rate is not None:
-            pulse_path = f"{base}/pulse_heart_beat:0/any_event:0"
+            pulse_path = "vital_signs_observations/vital_signs/pulse_heart_beat"
             composition.update(
                 {
-                    f"{pulse_path}/rate|magnitude": data.pulse_rate,
-                    f"{pulse_path}/rate|unit": "/min",
+                    f"{pulse_path}/heart_rate|magnitude": float(data.pulse_rate),
+                    f"{pulse_path}/heart_rate|unit": "/min",
                     f"{pulse_path}/time": recorded_at_iso,
                 }
             )

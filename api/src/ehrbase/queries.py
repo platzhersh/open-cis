@@ -11,8 +11,8 @@ SELECT
 FROM EHR e
 CONTAINS COMPOSITION c
 CONTAINS (
-    OBSERVATION bp[openEHR-EHR-OBSERVATION.blood_pressure.v2] OR
-    OBSERVATION pulse[openEHR-EHR-OBSERVATION.pulse.v2]
+    OBSERVATION bp[openEHR-EHR-OBSERVATION.blood_pressure.v1] OR
+    OBSERVATION pulse[openEHR-EHR-OBSERVATION.pulse.v1]
 )
 WHERE e/ehr_id/value = $ehr_id
 ORDER BY c/context/start_time/value DESC
@@ -29,8 +29,8 @@ SELECT
 FROM EHR e
 CONTAINS COMPOSITION c
 CONTAINS (
-    OBSERVATION bp[openEHR-EHR-OBSERVATION.blood_pressure.v2] OR
-    OBSERVATION pulse[openEHR-EHR-OBSERVATION.pulse.v2]
+    OBSERVATION bp[openEHR-EHR-OBSERVATION.blood_pressure.v1] OR
+    OBSERVATION pulse[openEHR-EHR-OBSERVATION.pulse.v1]
 )
 WHERE e/ehr_id/value = $ehr_id
 AND c/context/start_time/value >= $from_date
