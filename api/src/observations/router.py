@@ -201,17 +201,26 @@ async def get_archetype_info(archetype_id: str) -> dict:
     else:
         concept = archetype_id
 
-    # Known archetype mappings
+    # Known archetype mappings (supports both v1 and v2 versions)
     ckm_links = {
+        "openEHR-EHR-OBSERVATION.blood_pressure.v1": "https://ckm.openehr.org/ckm/archetypes/1013.1.3574",
         "openEHR-EHR-OBSERVATION.blood_pressure.v2": "https://ckm.openehr.org/ckm/archetypes/1013.1.3574",
+        "openEHR-EHR-OBSERVATION.pulse.v1": "https://ckm.openehr.org/ckm/archetypes/1013.1.4295",
         "openEHR-EHR-OBSERVATION.pulse.v2": "https://ckm.openehr.org/ckm/archetypes/1013.1.4295",
         "openEHR-EHR-COMPOSITION.encounter.v1": "https://ckm.openehr.org/ckm/archetypes/1013.1.120",
     }
 
     descriptions = {
+        "openEHR-EHR-OBSERVATION.blood_pressure.v1": (
+            "The local systemic arterial blood pressure which is a surrogate "
+            "for arterial pressure in the systemic circulation."
+        ),
         "openEHR-EHR-OBSERVATION.blood_pressure.v2": (
             "The local systemic arterial blood pressure which is a surrogate "
             "for arterial pressure in the systemic circulation."
+        ),
+        "openEHR-EHR-OBSERVATION.pulse.v1": (
+            "The rate and associated attributes for a pulse or heart beat."
         ),
         "openEHR-EHR-OBSERVATION.pulse.v2": (
             "The rate and associated attributes for a pulse or heart beat."

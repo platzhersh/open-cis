@@ -9,8 +9,9 @@ from src.ehrbase.client import ehrbase_client
 logger = logging.getLogger(__name__)
 
 # Template files that must be registered in EHRBase
+# Filename must be "{template_id}.opt"
 REQUIRED_TEMPLATES = [
-    "open-cis.vital-signs.v1",
+    "IDCR - Vital Signs Encounter.v1",
 ]
 
 

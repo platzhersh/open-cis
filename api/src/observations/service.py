@@ -18,17 +18,17 @@ from src.patients.repository import find_patient_by_id
 class ObservationService:
     """Service for vital signs observations with EHRBase integration."""
 
-    TEMPLATE_ID = "open-cis.vital-signs.v1"
+    TEMPLATE_ID = "IDCR - Vital Signs Encounter.v1"
 
     # Archetype information for transparency
     ARCHETYPES = {
         "blood_pressure": {
-            "id": "openEHR-EHR-OBSERVATION.blood_pressure.v2",
+            "id": "openEHR-EHR-OBSERVATION.blood_pressure.v1",
             "systolic_path": "/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value",
             "diastolic_path": "/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value",
         },
         "pulse": {
-            "id": "openEHR-EHR-OBSERVATION.pulse.v2",
+            "id": "openEHR-EHR-OBSERVATION.pulse.v1",
             "rate_path": "/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value",
         },
         "composition": {
@@ -229,16 +229,18 @@ class ObservationService:
         """Build FLAT format composition for EHRBase."""
         recorded_at_iso = data.recorded_at.isoformat()
 
+        # IDCR template structure: composition/vital_signs(section)/observations
+        base = "vital_signs"
+
         composition: dict[str, Any] = {
             "ctx/language": "en",
             "ctx/territory": "US",
             "ctx/time": recorded_at_iso,
-            f"{self.TEMPLATE_ID}/context/start_time": recorded_at_iso,
         }
 
         # Add blood pressure if provided
-        bp_path = f"{self.TEMPLATE_ID}/blood_pressure/any_event"
         if data.systolic is not None and data.diastolic is not None:
+            bp_path = f"{base}/blood_pressure:0/any_event:0"
             composition.update(
                 {
                     f"{bp_path}/systolic|magnitude": data.systolic,
@@ -249,13 +251,14 @@ class ObservationService:
                 }
             )
 
-        # Add pulse if provided
+        # Add pulse/heart rate if provided
         if data.pulse_rate is not None:
+            pulse_path = f"{base}/pulse_heart_beat:0/any_event:0"
             composition.update(
                 {
-                    f"{self.TEMPLATE_ID}/pulse/any_event/rate|magnitude": data.pulse_rate,
-                    f"{self.TEMPLATE_ID}/pulse/any_event/rate|unit": "/min",
-                    f"{self.TEMPLATE_ID}/pulse/any_event/time": recorded_at_iso,
+                    f"{pulse_path}/rate|magnitude": data.pulse_rate,
+                    f"{pulse_path}/rate|unit": "/min",
+                    f"{pulse_path}/time": recorded_at_iso,
                 }
             )
 
@@ -273,21 +276,22 @@ class ObservationService:
 
         if data.systolic is not None and data.diastolic is not None:
             archetype_ids.append(self.ARCHETYPES["blood_pressure"]["id"])
+            bp_archetype = self.ARCHETYPES["blood_pressure"]
             path_mappings.extend(
                 [
                     PathMappingResponse(
                         field="systolic",
-                        archetype_id=self.ARCHETYPES["blood_pressure"]["id"],
-                        archetype_path=f"{self.ARCHETYPES['blood_pressure']['systolic_path']}/magnitude",
-                        flat_path=f"{self.TEMPLATE_ID}/blood_pressure/any_event/systolic|magnitude",
+                        archetype_id=bp_archetype["id"],
+                        archetype_path=f"{bp_archetype['systolic_path']}/magnitude",
+                        flat_path="vital_signs/blood_pressure:0/any_event:0/systolic|magnitude",
                         value=data.systolic,
                         unit="mm[Hg]",
                     ),
                     PathMappingResponse(
                         field="diastolic",
-                        archetype_id=self.ARCHETYPES["blood_pressure"]["id"],
-                        archetype_path=f"{self.ARCHETYPES['blood_pressure']['diastolic_path']}/magnitude",
-                        flat_path=f"{self.TEMPLATE_ID}/blood_pressure/any_event/diastolic|magnitude",
+                        archetype_id=bp_archetype["id"],
+                        archetype_path=f"{bp_archetype['diastolic_path']}/magnitude",
+                        flat_path="vital_signs/blood_pressure:0/any_event:0/diastolic|magnitude",
                         value=data.diastolic,
                         unit="mm[Hg]",
                     ),
@@ -296,12 +300,13 @@ class ObservationService:
 
         if data.pulse_rate is not None:
             archetype_ids.append(self.ARCHETYPES["pulse"]["id"])
+            pulse_archetype = self.ARCHETYPES["pulse"]
             path_mappings.append(
                 PathMappingResponse(
                     field="pulse_rate",
-                    archetype_id=self.ARCHETYPES["pulse"]["id"],
-                    archetype_path=f"{self.ARCHETYPES['pulse']['rate_path']}/magnitude",
-                    flat_path=f"{self.TEMPLATE_ID}/pulse/any_event/rate|magnitude",
+                    archetype_id=pulse_archetype["id"],
+                    archetype_path=f"{pulse_archetype['rate_path']}/magnitude",
+                    flat_path="vital_signs/pulse_heart_beat:0/any_event:0/rate|magnitude",
                     value=data.pulse_rate,
                     unit="/min",
                 )
