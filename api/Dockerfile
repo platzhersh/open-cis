@@ -7,6 +7,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user for security (before installing dependencies so cache is owned correctly)
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+
+# Set Prisma binary cache to a location accessible by appuser
+ENV PRISMA_BINARY_CACHE_DIR=/home/appuser/.cache/prisma-python
+
 # Install dependencies (paths relative to repo root since Railway uses repo root as build context)
 COPY api/pyproject.toml ./
 RUN pip install --no-cache-dir .
@@ -16,14 +23,12 @@ COPY api/src ./src
 COPY api/prisma ./prisma
 COPY api/templates ./templates
 
-# Generate Prisma client
+# Generate Prisma client (binaries will be cached in PRISMA_BINARY_CACHE_DIR)
 RUN prisma generate
 
-# Create non-root user for security
-RUN groupadd --gid 1000 appgroup && \
-    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser && \
-    chown -R appuser:appgroup /app && \
-    # Grant non-root user ownership of Prisma query engine binary in site-packages
+# Grant non-root user ownership of app directory and Prisma binaries
+RUN chown -R appuser:appgroup /app && \
+    chown -R appuser:appgroup /home/appuser/.cache && \
     chown -R appuser:appgroup /usr/local/lib/python*/site-packages/prisma/
 
 USER appuser
