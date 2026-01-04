@@ -1,6 +1,7 @@
 """Observation service for managing vital signs with openEHR transparency."""
 
-from datetime import datetime
+import logging
+from datetime import UTC, datetime
 from typing import Any
 
 from src.ehrbase.client import ehrbase_client
@@ -61,13 +62,11 @@ class ObservationService:
         except Exception as e:
             # If EHRBase is unavailable or template not uploaded, return with placeholder
             # This allows development without EHRBase running
-            composition_uid = f"placeholder-{datetime.utcnow().isoformat()}"
+            composition_uid = f"placeholder-{datetime.now(UTC).isoformat()}"
             # Log the error but don't fail
-            import logging
-
             logging.warning(f"EHRBase composition creation failed: {e}")
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         return VitalSignsResponse(
             id=composition_uid,
@@ -154,7 +153,7 @@ class ObservationService:
                     recorded_at_str.replace("Z", "+00:00")
                 )
             except (ValueError, AttributeError):
-                recorded_at = datetime.utcnow()
+                recorded_at = datetime.now(UTC)
 
             systolic = row_dict.get("systolic")
             diastolic = row_dict.get("diastolic")
@@ -331,7 +330,7 @@ class ObservationService:
         """Parse a raw composition to VitalSignsResponse."""
         # Extract values from composition (depends on format)
         # This is a simplified parser - real implementation would handle STRUCTURED format
-        recorded_at = datetime.utcnow()
+        recorded_at = datetime.now(UTC)
         systolic = None
         diastolic = None
         pulse_rate = None

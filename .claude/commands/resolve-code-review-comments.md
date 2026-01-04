@@ -1,0 +1,1 @@
+Use gh to check for code review comments (especially by coderabbitai) and resolve them. They usually have a "AI prompt" section that gives a good idea of what needs to be done to fix the issue.
