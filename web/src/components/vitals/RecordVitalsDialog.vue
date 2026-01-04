@@ -3,7 +3,8 @@ import { ref, computed, watch } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'radix-vue'
 import { X, Loader2 } from 'lucide-vue-next'
 import { useVitalsStore } from '@/stores/vitals'
-import type { VitalSignsReading } from '@/types'
+import { useEncounterStore } from '@/stores/encounter'
+import type { VitalSignsReading, Encounter } from '@/types'
 
 const props = defineProps<{
   open: boolean
@@ -16,27 +17,48 @@ const emit = defineEmits<{
   created: [reading: VitalSignsReading]
 }>()
 
-const store = useVitalsStore()
+const vitalsStore = useVitalsStore()
+const encounterStore = useEncounterStore()
 
 // Form state
+const selectedEncounterId = ref<string>('')
 const recordedAt = ref('')
 const systolic = ref<number | undefined>(undefined)
 const diastolic = ref<number | undefined>(undefined)
 const pulseRate = ref<number | undefined>(undefined)
 
 const submitting = ref(false)
+const loadingEncounters = ref(false)
 const formError = ref<string | null>(null)
 
-// Initialize date to now when dialog opens
+// Filter to active encounters (in-progress or planned)
+const availableEncounters = computed<Encounter[]>(() => {
+  return encounterStore.encounters.filter(
+    (e) => e.status === 'in-progress' || e.status === 'planned'
+  )
+})
+
+// Initialize when dialog opens
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
     if (isOpen) {
       setNow()
+      selectedEncounterId.value = ''
       systolic.value = undefined
       diastolic.value = undefined
       pulseRate.value = undefined
       formError.value = null
+
+      // Fetch encounters for this patient
+      loadingEncounters.value = true
+      await encounterStore.fetchEncounters(props.patientId)
+      loadingEncounters.value = false
+
+      // Auto-select if there's exactly one active encounter
+      if (availableEncounters.value.length === 1) {
+        selectedEncounterId.value = availableEncounters.value[0].id
+      }
     }
   }
 )
@@ -47,7 +69,16 @@ function setNow() {
   recordedAt.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
 }
 
+function formatEncounterLabel(encounter: Encounter): string {
+  const date = new Date(encounter.start_time).toLocaleDateString()
+  const type = encounter.type.charAt(0).toUpperCase() + encounter.type.slice(1)
+  const reason = encounter.reason ? ` - ${encounter.reason}` : ''
+  return `${date} • ${type}${reason}`
+}
+
 // Validation
+const hasEncounter = computed(() => selectedEncounterId.value !== '')
+
 const hasAtLeastOneVital = computed(() => {
   return (systolic.value !== undefined && diastolic.value !== undefined) || pulseRate.value !== undefined
 })
@@ -59,7 +90,13 @@ const bpIsComplete = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return recordedAt.value && hasAtLeastOneVital.value && bpIsComplete.value && !submitting.value
+  return (
+    hasEncounter.value &&
+    recordedAt.value &&
+    hasAtLeastOneVital.value &&
+    bpIsComplete.value &&
+    !submitting.value
+  )
 })
 
 async function handleSubmit() {
@@ -69,8 +106,9 @@ async function handleSubmit() {
   submitting.value = true
 
   try {
-    const reading = await store.recordVitals({
+    const reading = await vitalsStore.recordVitals({
       patient_id: props.patientId,
+      encounter_id: selectedEncounterId.value,
       recorded_at: new Date(recordedAt.value).toISOString(),
       systolic: systolic.value ?? null,
       diastolic: diastolic.value ?? null,
@@ -81,7 +119,7 @@ async function handleSubmit() {
       emit('created', reading)
       emit('update:open', false)
     } else {
-      formError.value = store.error || 'Failed to record vital signs'
+      formError.value = vitalsStore.error || 'Failed to record vital signs'
     }
   } catch (e) {
     formError.value = e instanceof Error ? e.message : 'Failed to record vital signs'
@@ -113,6 +151,36 @@ function handleOpenChange(open: boolean) {
         </DialogDescription>
 
         <form class="space-y-4" @submit.prevent="handleSubmit">
+          <!-- Encounter Selection -->
+          <div class="space-y-2">
+            <label for="encounter" class="text-sm font-medium">
+              Encounter <span class="text-destructive">*</span>
+            </label>
+            <div v-if="loadingEncounters" class="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 class="h-4 w-4 animate-spin" />
+              Loading encounters...
+            </div>
+            <div v-else-if="availableEncounters.length === 0" class="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              No active encounters found. Please create an encounter first.
+            </div>
+            <select
+              v-else
+              id="encounter"
+              v-model="selectedEncounterId"
+              required
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="" disabled>Select an encounter...</option>
+              <option
+                v-for="encounter in availableEncounters"
+                :key="encounter.id"
+                :value="encounter.id"
+              >
+                {{ formatEncounterLabel(encounter) }}
+              </option>
+            </select>
+          </div>
+
           <!-- Date/Time -->
           <div class="space-y-2">
             <label for="recorded-at" class="text-sm font-medium">

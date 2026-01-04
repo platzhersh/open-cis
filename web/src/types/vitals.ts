@@ -22,7 +22,7 @@ export interface OpenEHRMetadata {
 export interface VitalSignsReading {
   id: string // composition_uid
   patient_id: string
-  encounter_id: string | null
+  encounter_id: string // Required - vital signs are linked to an encounter
   recorded_at: string // ISO 8601
   systolic: number | null
   diastolic: number | null
@@ -33,7 +33,7 @@ export interface VitalSignsReading {
 
 export interface VitalSignsCreate {
   patient_id: string
-  encounter_id?: string | null
+  encounter_id: string // Required - vital signs must be linked to an encounter
   recorded_at: string // ISO 8601
   systolic?: number | null
   diastolic?: number | null

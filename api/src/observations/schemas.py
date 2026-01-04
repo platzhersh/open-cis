@@ -30,7 +30,7 @@ class VitalSignsCreate(BaseModel):
     """Request to record vital signs."""
 
     patient_id: str
-    encounter_id: str | None = None
+    encounter_id: str  # Required - vital signs must be linked to an encounter
     recorded_at: datetime
 
     # Blood pressure (optional - can record just pulse)
@@ -60,7 +60,7 @@ class VitalSignsResponse(BaseModel):
 
     id: str  # composition_uid
     patient_id: str
-    encounter_id: str | None
+    encounter_id: str
     recorded_at: datetime
     systolic: int | None
     diastolic: int | None
