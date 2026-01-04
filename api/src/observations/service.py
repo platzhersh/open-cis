@@ -175,6 +175,7 @@ class ObservationService:
                         ehr_id=ehr_id,
                         data=VitalSignsCreate(
                             patient_id=patient_id,
+                            encounter_id=None,
                             recorded_at=recorded_at,
                             systolic=int(systolic) if systolic else None,
                             diastolic=int(diastolic) if diastolic else None,
@@ -370,6 +371,7 @@ class ObservationService:
                 ehr_id=ehr_id,
                 data=VitalSignsCreate(
                     patient_id=patient_id,
+                    encounter_id=None,
                     recorded_at=recorded_at,
                     systolic=systolic,
                     diastolic=diastolic,

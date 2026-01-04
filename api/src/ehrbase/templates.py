@@ -4,6 +4,9 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import aiofiles
+import httpx
+
 from src.ehrbase.client import ehrbase_client
 
 logger = logging.getLogger(__name__)
@@ -52,12 +55,14 @@ async def upload_template_file(template_id: str, template_content: str) -> bool:
         await upload_template(template_content)
         logger.info(f"Template {template_id} uploaded successfully")
         return True
-    except Exception as e:
-        error_msg = str(e)
-        # 409 means template already exists - that's OK
-        if "409" in error_msg:
+    except httpx.HTTPStatusError as e:
+        # 409 Conflict means template already exists - that's OK
+        if e.response.status_code == 409:
             logger.info(f"Template {template_id} already exists")
             return True
+        logger.error(f"Failed to upload template {template_id}: HTTP {e.response.status_code}")
+        return False
+    except Exception as e:
         logger.error(f"Failed to upload template {template_id}: {e}")
         return False
 
@@ -107,8 +112,13 @@ async def ensure_templates_registered() -> dict[str, bool]:
 
         # Read and upload
         logger.info(f"Uploading template {template_id}...")
-        template_content = template_file.read_text()
-        results[template_id] = await upload_template_file(template_id, template_content)
+        try:
+            async with aiofiles.open(template_file, encoding="utf-8") as f:
+                template_content = await f.read()
+            results[template_id] = await upload_template_file(template_id, template_content)
+        except Exception as e:
+            logger.error(f"Failed to read template file {template_file}: {e}")
+            results[template_id] = False
 
     # Summary
     successful = sum(1 for v in results.values() if v)
@@ -116,6 +126,7 @@ async def ensure_templates_registered() -> dict[str, bool]:
     if failed:
         logger.warning(f"Template check complete: {successful} OK, {failed} failed")
     else:
-        logger.info(f"Template check complete: {successful}/{len(REQUIRED_TEMPLATES)} templates ready")
+        total_templates = len(REQUIRED_TEMPLATES)
+        logger.info(f"Template check complete: {successful}/{total_templates} templates ready")
 
     return results

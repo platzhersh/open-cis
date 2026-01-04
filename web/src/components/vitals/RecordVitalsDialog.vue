@@ -89,10 +89,34 @@ const bpIsComplete = computed(() => {
   return (hasSys && hasDia) || (!hasSys && !hasDia)
 })
 
+const dateTimeError = ref<string | null>(null)
+
+const isDateTimeValid = computed(() => {
+  if (!recordedAt.value) return true
+  const selected = new Date(recordedAt.value)
+  const now = new Date()
+  return selected <= now
+})
+
+const maxDateTime = computed(() => {
+  const now = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+})
+
+function validateDateTime() {
+  if (!isDateTimeValid.value) {
+    dateTimeError.value = 'Recorded time cannot be in the future'
+  } else {
+    dateTimeError.value = null
+  }
+}
+
 const canSubmit = computed(() => {
   return (
     hasEncounter.value &&
     recordedAt.value &&
+    isDateTimeValid.value &&
     hasAtLeastOneVital.value &&
     bpIsComplete.value &&
     !submitting.value
@@ -192,7 +216,12 @@ function handleOpenChange(open: boolean) {
                 v-model="recordedAt"
                 type="datetime-local"
                 required
-                class="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                :max="maxDateTime"
+                :class="[
+                  'flex h-10 flex-1 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  dateTimeError ? 'border-destructive' : 'border-input'
+                ]"
+                @change="validateDateTime"
               />
               <button
                 type="button"
@@ -202,6 +231,9 @@ function handleOpenChange(open: boolean) {
                 Now
               </button>
             </div>
+            <p v-if="dateTimeError" class="text-sm text-destructive">
+              {{ dateTimeError }}
+            </p>
           </div>
 
           <!-- Blood Pressure Section -->

@@ -68,5 +68,5 @@ SELECT COUNT(c/uid/value) as count
 FROM EHR e
 CONTAINS COMPOSITION c
 WHERE e/ehr_id/value = $ehr_id
-AND c/archetype_details/template_id/value = 'open-cis.vital-signs.v1'
+AND c/archetype_details/template_id/value = 'IDCR - Vital Signs Encounter.v1'
 """

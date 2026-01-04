@@ -129,6 +129,18 @@ class EHRBaseClient:
             return response.json()
         return {"status": "uploaded"}
 
+    async def get_template_example(
+        self, template_id: str, format: str = "FLAT"
+    ) -> dict[str, Any]:
+        """Get an example composition for a template."""
+        client = await self._get_client()
+        response = await client.get(
+            f"/openehr/v1/definition/template/adl1.4/{template_id}/example",
+            params={"format": format},
+        )
+        response.raise_for_status()
+        return response.json()
+
     async def close(self):
         if self._client:
             await self._client.aclose()

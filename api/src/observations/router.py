@@ -114,19 +114,12 @@ async def get_template_info(template_id: str) -> dict:
     Returns the template structure with example paths.
     """
     try:
-        # Get template example to show structure
-        client = await ehrbase_client._get_client()
-        response = await client.get(
-            f"/openehr/v1/definition/template/adl1.4/{template_id}/example",
-            params={"format": "FLAT"},
-        )
-        if response.status_code == 200:
-            return {
-                "template_id": template_id,
-                "format": "FLAT",
-                "example": response.json(),
-            }
-        raise HTTPException(status_code=404, detail="Template not found")
+        example = await ehrbase_client.get_template_example(template_id, format="FLAT")
+        return {
+            "template_id": template_id,
+            "format": "FLAT",
+            "example": example,
+        }
     except HTTPException:
         raise
     except Exception as e:

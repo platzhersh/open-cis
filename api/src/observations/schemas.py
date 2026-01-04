@@ -1,8 +1,8 @@
 """Schemas for vital signs observations with openEHR transparency."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class PathMappingResponse(BaseModel):
@@ -39,6 +39,17 @@ class VitalSignsCreate(BaseModel):
 
     # Pulse (optional - can record just BP)
     pulse_rate: int | None = Field(None, ge=20, le=300, description="Pulse rate in bpm")
+
+    @field_validator("recorded_at")
+    @classmethod
+    def validate_not_future(cls, v: datetime) -> datetime:
+        """Validate that recorded_at is not in the future."""
+        now = datetime.now(UTC)
+        # Make v timezone-aware if it's naive
+        v_aware = v if v.tzinfo is not None else v.replace(tzinfo=UTC)
+        if v_aware > now:
+            raise ValueError("recorded_at cannot be in the future")
+        return v
 
     @model_validator(mode="after")
     def validate_vitals(self) -> "VitalSignsCreate":

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { SelectRoot, SelectTrigger, SelectValue, SelectPortal, SelectContent, SelectViewport, SelectItem, SelectItemText } from 'radix-vue'
 import { useVitalsStore } from '@/stores/vitals'
 import type { VitalSignsReading } from '@/types'
@@ -33,10 +33,6 @@ watch(
 
 // Reload when date range changes
 watch(dateRange, () => {
-  loadVitals()
-})
-
-onMounted(() => {
   loadVitals()
 })
 
