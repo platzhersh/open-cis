@@ -4,6 +4,8 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
+import httpx
+
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import VITAL_SIGNS_DATE_RANGE_QUERY, VITAL_SIGNS_QUERY
 from src.observations.schemas import (
@@ -59,12 +61,20 @@ class ObservationService:
             composition_uid = result.get("uid", {}).get("value", "") or result.get(
                 "compositionUid", ""
             )
+        except httpx.HTTPStatusError as e:
+            # Log detailed HTTP error information
+            composition_uid = f"placeholder-{datetime.now(UTC).isoformat()}"
+            error_body = e.response.text if hasattr(e.response, 'text') else str(e.response.content)
+            logging.error(
+                f"EHRBase composition creation failed: HTTP {e.response.status_code} - {error_body}"
+            )
+            logging.debug(f"Composition data that failed: {flat_composition}")
         except Exception as e:
-            # If EHRBase is unavailable or template not uploaded, return with placeholder
+            # If EHRBase is unavailable or other error, return with placeholder
             # This allows development without EHRBase running
             composition_uid = f"placeholder-{datetime.now(UTC).isoformat()}"
-            # Log the error but don't fail
-            logging.warning(f"EHRBase composition creation failed: {e}")
+            logging.warning(f"EHRBase composition creation failed: {type(e).__name__}: {e}")
+            logging.debug(f"Composition data that failed: {flat_composition}")
 
         now = datetime.now(UTC)
 
