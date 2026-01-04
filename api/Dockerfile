@@ -22,7 +22,9 @@ RUN prisma generate
 # Create non-root user for security
 RUN groupadd --gid 1000 appgroup && \
     useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser && \
-    chown -R appuser:appgroup /app
+    chown -R appuser:appgroup /app && \
+    # Grant non-root user ownership of Prisma query engine binary in site-packages
+    chown -R appuser:appgroup /usr/local/lib/python*/site-packages/prisma/
 
 USER appuser
 
