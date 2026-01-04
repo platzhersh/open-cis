@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
+from src.ehrbase.templates import ensure_templates_registered
 from src.encounters.router import router as encounters_router
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
@@ -24,6 +25,17 @@ async def lifespan(app: FastAPI):
         logger.info("Database connected successfully")
     except Exception as e:
         logger.error(f"Failed to connect to database: {e}")
+
+    # Ensure openEHR templates are registered in EHRBase
+    try:
+        template_results = await ensure_templates_registered()
+        if template_results:
+            for template_id, success in template_results.items():
+                status = "registered" if success else "FAILED"
+                logger.info(f"Template {template_id}: {status}")
+    except Exception as e:
+        logger.warning(f"Could not ensure templates are registered: {e}")
+
     yield
     # Shutdown
     if prisma.is_connected():
