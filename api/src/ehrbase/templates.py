@@ -70,6 +70,12 @@ async def ensure_templates_registered() -> dict[str, bool]:
     """
     results: dict[str, bool] = {}
 
+    logger.info("Checking openEHR templates...")
+
+    if not REQUIRED_TEMPLATES:
+        logger.info("No required templates configured")
+        return results
+
     # Find templates directory (relative to this file)
     templates_dir = Path(__file__).parent.parent.parent / "templates"
 
@@ -103,5 +109,13 @@ async def ensure_templates_registered() -> dict[str, bool]:
         logger.info(f"Uploading template {template_id}...")
         template_content = template_file.read_text()
         results[template_id] = await upload_template_file(template_id, template_content)
+
+    # Summary
+    successful = sum(1 for v in results.values() if v)
+    failed = sum(1 for v in results.values() if not v)
+    if failed:
+        logger.warning(f"Template check complete: {successful} OK, {failed} failed")
+    else:
+        logger.info(f"Template check complete: {successful}/{len(REQUIRED_TEMPLATES)} templates ready")
 
     return results
