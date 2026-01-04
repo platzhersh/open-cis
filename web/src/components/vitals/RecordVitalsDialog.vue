@@ -76,17 +76,28 @@ function formatEncounterLabel(encounter: Encounter): string {
   return `${date} • ${type}${reason}`
 }
 
+// Helper to normalize numeric values (handles empty strings from cleared inputs)
+function normalizeNumber(value: number | undefined | string | null): number | null {
+  if (value === '' || value === undefined || value === null) return null
+  if (typeof value === 'number') return value
+  const num = Number(value)
+  return isNaN(num) ? null : num
+}
+
 // Validation
 const hasEncounter = computed(() => selectedEncounterId.value !== '')
 
 const hasAtLeastOneVital = computed(() => {
-  return (systolic.value !== undefined && diastolic.value !== undefined) || pulseRate.value !== undefined
+  const normSys = normalizeNumber(systolic.value)
+  const normDia = normalizeNumber(diastolic.value)
+  const normPulse = normalizeNumber(pulseRate.value)
+  return (normSys !== null && normDia !== null) || normPulse !== null
 })
 
 const bpIsComplete = computed(() => {
-  const hasSys = systolic.value !== undefined && systolic.value !== null
-  const hasDia = diastolic.value !== undefined && diastolic.value !== null
-  return (hasSys && hasDia) || (!hasSys && !hasDia)
+  const normSys = normalizeNumber(systolic.value)
+  const normDia = normalizeNumber(diastolic.value)
+  return (normSys !== null && normDia !== null) || (normSys === null && normDia === null)
 })
 
 const dateTimeError = ref<string | null>(null)
@@ -134,9 +145,9 @@ async function handleSubmit() {
       patient_id: props.patientId,
       encounter_id: selectedEncounterId.value,
       recorded_at: new Date(recordedAt.value).toISOString(),
-      systolic: systolic.value ?? null,
-      diastolic: diastolic.value ?? null,
-      pulse_rate: pulseRate.value ?? null,
+      systolic: normalizeNumber(systolic.value),
+      diastolic: normalizeNumber(diastolic.value),
+      pulse_rate: normalizeNumber(pulseRate.value),
     })
 
     if (reading) {

@@ -28,17 +28,6 @@ async def upload_template(template_content: str) -> dict[str, Any]:
     return await ehrbase_client.upload_template(template_content)
 
 
-async def get_template_example(template_id: str, format: str = "FLAT") -> dict[str, Any]:
-    """Get an example composition for a template."""
-    client = await ehrbase_client._get_client()
-    response = await client.get(
-        f"/definition/template/adl1.4/{template_id}/example",
-        params={"format": format}
-    )
-    response.raise_for_status()
-    return response.json()
-
-
 async def get_registered_template_ids() -> list[str]:
     """Get list of template IDs registered in EHRBase."""
     try:

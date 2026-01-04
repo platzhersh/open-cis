@@ -23,56 +23,73 @@ const archetypeInfos = ref<Map<string, ArchetypeInfo>>(new Map())
 const loading = ref(false)
 const activeFormat = ref('FLAT')
 const copiedPath = ref<string | null>(null)
+const error = ref<string | null>(null)
+
+// Request tracking to prevent race conditions on rapid format switching
+let requestId = 0
 
 // Load data when panel opens
+async function loadData() {
+  if (!props.reading || !props.reading.id) return
+
+  loading.value = true
+  error.value = null
+  const currentRequestId = ++requestId
+
+  try {
+    const composition = await store.fetchRawComposition(props.reading.id, props.patientId, activeFormat.value as 'FLAT' | 'STRUCTURED')
+
+    // Only update if this is still the latest request
+    if (currentRequestId === requestId) {
+      rawComposition.value = composition
+    }
+
+    const archetypesToFetch = props.reading.openehr_metadata.archetype_ids.filter(
+      archetypeId => !archetypeInfos.value.has(archetypeId)
+    )
+
+    if (archetypesToFetch.length > 0) {
+      const archetypeResults = await Promise.all(
+        archetypesToFetch.map(archetypeId => store.fetchArchetypeInfo(archetypeId))
+      )
+
+      // Only update if this is still the latest request
+      if (currentRequestId === requestId) {
+        archetypesToFetch.forEach((archetypeId, index) => {
+          const info = archetypeResults[index]
+          if (info) {
+            archetypeInfos.value.set(archetypeId, info)
+          }
+        })
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load openEHR data:', e)
+    // Only set error if this is still the latest request
+    if (currentRequestId === requestId) {
+      error.value = e instanceof Error ? e.message : 'Failed to load openEHR data'
+    }
+  } finally {
+    // Only clear loading if this is still the latest request
+    if (currentRequestId === requestId) {
+      loading.value = false
+    }
+  }
+}
+
 watch(
   () => [props.open, props.reading] as const,
-  async ([isOpen, reading]) => {
-    if (isOpen && reading && reading.id) {
-      loading.value = true
-      try {
-        const composition = await store.fetchRawComposition(reading.id, props.patientId, 'FLAT')
-        rawComposition.value = composition
-
-        const archetypesToFetch = reading.openehr_metadata.archetype_ids.filter(
-          archetypeId => !archetypeInfos.value.has(archetypeId)
-        )
-
-        if (archetypesToFetch.length > 0) {
-          const archetypeResults = await Promise.all(
-            archetypesToFetch.map(archetypeId => store.fetchArchetypeInfo(archetypeId))
-          )
-
-          archetypesToFetch.forEach((archetypeId, index) => {
-            const info = archetypeResults[index]
-            if (info) {
-              archetypeInfos.value.set(archetypeId, info)
-            }
-          })
-        }
-      } catch (e) {
-        console.error('Failed to load openEHR data:', e)
-      } finally {
-        loading.value = false
-      }
+  ([isOpen]) => {
+    if (isOpen) {
+      loadData()
     }
   },
   { immediate: true }
 )
 
 // Load composition when format changes
-watch(activeFormat, async (format) => {
-  if (!props.reading || !props.reading.id) return
-  loading.value = true
-  try {
-    rawComposition.value = await store.fetchRawComposition(
-      props.reading.id,
-      props.patientId,
-      format as 'FLAT' | 'STRUCTURED'
-    )
-  } finally {
-    loading.value = false
-  }
+watch(activeFormat, () => {
+  loadData()
 })
 
 async function copyToClipboard(text: string, identifier: string) {
@@ -114,6 +131,22 @@ function handleOpenChange(open: boolean) {
           <DialogDescription class="text-sm text-muted-foreground mb-6">
             View how this vital signs data is stored in openEHR format.
           </DialogDescription>
+
+          <!-- Error Banner -->
+          <div v-if="error" class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 mb-6">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-destructive">Failed to load openEHR data</p>
+                <p class="text-sm text-destructive/80 mt-1">{{ error }}</p>
+              </div>
+              <button
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-destructive text-destructive-foreground h-9 px-3 hover:bg-destructive/90"
+                @click="loadData"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
 
           <div v-if="reading" class="space-y-6">
             <!-- Composition Info -->
