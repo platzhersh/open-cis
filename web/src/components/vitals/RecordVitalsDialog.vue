@@ -30,6 +30,7 @@ const pulseRate = ref<number | undefined>(undefined)
 const submitting = ref(false)
 const loadingEncounters = ref(false)
 const formError = ref<string | null>(null)
+const encountersError = ref<string | null>(null)
 
 // Filter to active encounters (in-progress or planned)
 const availableEncounters = computed<Encounter[]>(() => {
@@ -37,6 +38,26 @@ const availableEncounters = computed<Encounter[]>(() => {
     (e) => e.status === 'in-progress' || e.status === 'planned'
   )
 })
+
+// Load encounters with error handling
+async function loadEncounters() {
+  loadingEncounters.value = true
+  encountersError.value = null
+
+  try {
+    await encounterStore.fetchEncounters(props.patientId)
+
+    // Auto-select if there's exactly one active encounter
+    if (availableEncounters.value.length === 1) {
+      selectedEncounterId.value = availableEncounters.value[0].id
+    }
+  } catch (e) {
+    console.error('Failed to load encounters:', e)
+    encountersError.value = e instanceof Error ? e.message : 'Failed to load encounters'
+  } finally {
+    loadingEncounters.value = false
+  }
+}
 
 // Initialize when dialog opens
 watch(
@@ -51,14 +72,7 @@ watch(
       formError.value = null
 
       // Fetch encounters for this patient
-      loadingEncounters.value = true
-      await encounterStore.fetchEncounters(props.patientId)
-      loadingEncounters.value = false
-
-      // Auto-select if there's exactly one active encounter
-      if (availableEncounters.value.length === 1) {
-        selectedEncounterId.value = availableEncounters.value[0].id
-      }
+      await loadEncounters()
     }
   }
 )
@@ -191,7 +205,22 @@ function handleOpenChange(open: boolean) {
             <label for="encounter" class="text-sm font-medium">
               Encounter <span class="text-destructive">*</span>
             </label>
-            <div v-if="loadingEncounters" class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div v-if="encountersError" class="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-destructive">Failed to load encounters</p>
+                  <p class="text-sm text-destructive/80 mt-1">{{ encountersError }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-destructive text-destructive-foreground h-8 px-3 hover:bg-destructive/90"
+                  @click="loadEncounters"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+            <div v-else-if="loadingEncounters" class="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 class="h-4 w-4 animate-spin" />
               Loading encounters...
             </div>
