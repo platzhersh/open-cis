@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir .
 # Copy source
 COPY api/src ./src
 COPY api/prisma ./prisma
+COPY api/templates ./templates
 
 # Generate Prisma client
 RUN prisma generate
