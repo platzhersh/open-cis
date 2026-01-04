@@ -28,7 +28,7 @@ const copiedPath = ref<string | null>(null)
 watch(
   () => [props.open, props.reading] as const,
   async ([isOpen, reading]) => {
-    if (isOpen && reading) {
+    if (isOpen && reading && reading.id) {
       loading.value = true
       try {
         const composition = await store.fetchRawComposition(reading.id, props.patientId, 'FLAT')
@@ -53,7 +53,7 @@ watch(
 )
 
 async function switchFormat(format: string) {
-  if (!props.reading) return
+  if (!props.reading || !props.reading.id) return
   activeFormat.value = format
   loading.value = true
   try {
