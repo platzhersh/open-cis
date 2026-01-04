@@ -118,10 +118,16 @@ class EHRBaseClient:
         response = await client.post(
             "/openehr/v1/definition/template/adl1.4",
             content=template_content,
-            headers={"Content-Type": "application/XML"}
+            headers={
+                "Content-Type": "application/xml",
+                "Accept": "application/json, application/xml",
+            }
         )
         response.raise_for_status()
-        return response.json()
+        # EHRBase may return empty response or XML on success
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return {"status": "uploaded"}
 
     async def close(self):
         if self._client:
