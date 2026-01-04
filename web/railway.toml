@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "web/Dockerfile"
-watchPatterns = ["web/src/**", "web/public/**", "web/index.html", "web/package.json", "web/pnpm-lock.yaml", "web/vite.config.ts", "web/tsconfig.json", "web/Dockerfile"]
+watchPatterns = ["web/**"]
 
 [deploy]
 healthcheckPath = "/"
