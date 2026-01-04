@@ -20,6 +20,11 @@ RUN pnpm run build
 # Install serve globally using npm (pnpm global install has issues in Docker)
 RUN npm install -g serve
 
+# Change ownership to the built-in node user for security
+RUN chown -R node:node /app
+
+USER node
+
 EXPOSE 3000
 
 # Use Railway's $PORT if available, otherwise default to 3000
