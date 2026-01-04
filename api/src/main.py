@@ -13,6 +13,12 @@ from src.encounters.router import router as encounters_router
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:\t%(name)s - %(message)s"
+)
+
 logger = logging.getLogger(__name__)
 
 
