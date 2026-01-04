@@ -6,6 +6,7 @@ import { X, Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 import { usePatientStore } from '@/stores/patient'
 import { useEncounterStore } from '@/stores/encounter'
 import type { PatientUpdate } from '@/types'
+import VitalSignsPanel from '@/components/vitals/VitalSignsPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,6 +34,12 @@ onMounted(() => {
 // Get recent encounters (max 5)
 const recentEncounters = computed(() => {
   return encounterStore.encounters.slice(0, 5)
+})
+
+// Patient full name for child components
+const patientFullName = computed(() => {
+  if (!store.currentPatient) return ''
+  return `${store.currentPatient.given_name} ${store.currentPatient.family_name}`
 })
 
 // Format encounter type for display
@@ -373,8 +380,16 @@ const openDeleteDialog = () => {
         </div>
       </div>
 
+      <!-- Vital Signs Section -->
+      <div class="rounded-lg border p-6">
+        <VitalSignsPanel
+          :patient-id="patientId"
+          :patient-name="patientFullName"
+        />
+      </div>
+
       <!-- Clinical Data -->
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-4 md:grid-cols-2">
         <!-- Recent Encounters -->
         <div class="rounded-lg border p-6">
           <div class="flex items-center justify-between mb-4">
@@ -420,14 +435,6 @@ const openDeleteDialog = () => {
           </div>
         </div>
 
-        <div class="rounded-lg border p-6 opacity-50">
-          <h3 class="font-semibold">
-            Vital Signs
-          </h3>
-          <p class="text-sm text-muted-foreground mt-1">
-            Coming soon
-          </p>
-        </div>
         <div class="rounded-lg border p-6 opacity-50">
           <h3 class="font-semibold">
             Medications

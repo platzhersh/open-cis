@@ -78,3 +78,6 @@ export interface EncounterUpdate {
   provider_name?: string | null
   location?: string | null
 }
+
+// Re-export vitals types
+export * from './vitals'
