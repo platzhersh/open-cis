@@ -23,11 +23,15 @@ COPY api/src ./src
 COPY api/prisma ./prisma
 COPY api/templates ./templates
 
+# Copy seed scripts (from repo root)
+COPY scripts /scripts
+
 # Generate Prisma client (binaries will be cached in PRISMA_BINARY_CACHE_DIR)
 RUN prisma generate
 
-# Grant non-root user ownership of app directory and Prisma binaries
+# Grant non-root user ownership of app directory, scripts, and Prisma binaries
 RUN chown -R appuser:appgroup /app && \
+    chown -R appuser:appgroup /scripts && \
     chown -R appuser:appgroup /home/appuser/.cache && \
     chown -R appuser:appgroup /usr/local/lib/python*/site-packages/prisma/
 
@@ -38,4 +42,11 @@ EXPOSE 8000
 # Use Railway's $PORT if available, otherwise default to 8000
 # Use shell form to allow environment variable substitution
 # Run migrations before starting the server
-CMD sh -c "echo 'Running database migrations...' && prisma migrate deploy && echo 'Starting uvicorn on port ${PORT:-8000}...' && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# Conditionally seed staging data if RAILWAY_ENVIRONMENT=staging
+CMD sh -c "echo 'Running database migrations...' && \
+  prisma migrate deploy && \
+  if [ \"$RAILWAY_ENVIRONMENT\" = \"staging\" ]; then \
+    echo 'Seeding staging data...' && python /scripts/seed_staging.py; \
+  fi && \
+  echo 'Starting uvicorn on port ${PORT:-8000}...' && \
+  uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
