@@ -71,6 +71,53 @@ cd api && prisma studio
 cd api && prisma migrate dev --create-only --name migration_name
 ```
 
+### Synthetic Data Seeding
+
+#### Local Development Seeding
+```bash
+# Seed basic patient demographics (original script)
+python scripts/seed.py
+
+# Seed staging data with synthetic vitals (requires API running)
+python scripts/seed_staging.py
+
+# Or with environment variable (mimics Railway staging)
+RAILWAY_ENVIRONMENT=staging python scripts/seed_staging.py
+```
+
+#### Railway Staging Deployment
+Synthetic data is **automatically seeded** on Railway staging deployments when `RAILWAY_ENVIRONMENT=staging` is set.
+
+**Configuration:**
+1. In Railway staging project, set environment variable:
+   ```
+   RAILWAY_ENVIRONMENT=staging
+   ```
+
+2. On deployment, the Dockerfile automatically:
+   - Runs `prisma migrate deploy`
+   - **Seeds synthetic data** (if patient count < 3)
+   - Starts the API
+
+**Seed Script Behavior:**
+- **Environment-aware**: Only runs when `RAILWAY_ENVIRONMENT=staging`
+- **Idempotent**: Safe to run multiple times (checks patient count threshold)
+- **Fast**: Completes in <10 seconds
+- **Generates**:
+  - 15 synthetic patients with realistic demographics (Faker)
+  - 2-5 vital signs readings per patient
+  - Clinically plausible values (BP: 90-140/60-90 mmHg, Pulse: 60-100 bpm)
+  - Timestamps spread over past 1-4 weeks
+  - MRN prefix: `STAGING-` to distinguish from production data
+
+**Manual Trigger:**
+```bash
+# SSH into Railway container (if needed)
+railway run python /scripts/seed_staging.py
+```
+
+See [ADR-0005](./docs/adr/0005-synthetic-data-generation.md) for implementation details and decision rationale.
+
 ### Docker & Infrastructure
 ```bash
 # Check EHRBase status (wait 30-60s after docker compose up)
