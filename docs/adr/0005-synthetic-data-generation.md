@@ -174,6 +174,98 @@ async def create_synthetic_patient_with_vitals():
     # ... (new composition creation via ehrbase_client)
 ```
 
+### Railway Deployment Integration
+
+Railway provides several approaches for running seed scripts during deployment:
+
+#### Option 1: Dockerfile CMD with Chained Commands (Current Approach)
+We already use this pattern for migrations in `api/Dockerfile`:
+
+```dockerfile
+CMD sh -c "prisma migrate deploy && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+```
+
+For seeding, we can extend this to:
+
+```dockerfile
+CMD sh -c "prisma migrate deploy && python scripts/seed_staging.py && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+```
+
+**Pros:**
+- ✅ Runs automatically on every deployment
+- ✅ Consistent with existing migration pattern
+- ✅ No Railway configuration changes needed
+- ✅ Works for all Railway environments
+
+**Cons:**
+- ⚠️ Runs on every container start (including restarts)
+- ⚠️ Requires idempotent seed script
+- ⚠️ Can't easily disable for production
+
+#### Option 2: railway.toml startCommand
+Configure per-environment start commands in `api/railway.toml`:
+
+```toml
+[deploy]
+startCommand = "prisma migrate deploy && python scripts/seed_staging.py && uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+```
+
+**Pros:**
+- ✅ Overrides Dockerfile CMD
+- ✅ Can be environment-specific (different Railway projects for staging/prod)
+- ✅ No Dockerfile changes needed
+
+**Cons:**
+- ⚠️ Configuration split between Dockerfile and railway.toml
+- ⚠️ Must remember to set for staging environment only
+
+#### Option 3: Conditional Seeding Based on Environment Variable
+Add environment variable check in Dockerfile:
+
+```dockerfile
+CMD sh -c "prisma migrate deploy && \
+  if [ \"$RAILWAY_ENVIRONMENT\" = \"staging\" ]; then python scripts/seed_staging.py; fi && \
+  uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+```
+
+**Pros:**
+- ✅ Single Dockerfile works for all environments
+- ✅ Automatic based on Railway environment
+- ✅ No accidental production seeding
+
+**Cons:**
+- ⚠️ More complex shell script in CMD
+- ⚠️ Requires setting `RAILWAY_ENVIRONMENT` variable
+
+#### Recommended Approach: Option 3 (Conditional + Idempotent)
+
+We'll use **conditional seeding based on environment variable** with an **idempotent seed script** that:
+
+1. **Checks if data exists**: Only seed if patient count < threshold
+2. **Uses unique identifiers**: MRNs that won't conflict with real data
+3. **Handles existing records gracefully**: Skip or update, don't fail
+4. **Runs quickly**: Complete in <10 seconds to avoid deployment timeout
+
+```python
+# scripts/seed_staging.py
+async def should_seed() -> bool:
+    """Only seed if staging environment and data doesn't exist."""
+    if os.getenv("RAILWAY_ENVIRONMENT") != "staging":
+        return False
+
+    patient_count = await get_patient_count()
+    return patient_count < 5  # Threshold for re-seeding
+
+async def main():
+    if not await should_seed():
+        print("Skipping seed (not staging or data exists)")
+        return
+
+    print("Seeding staging data...")
+    # ... seed logic
+```
+
 ### Scope
 
 **Initial implementation** (for staging deployment):
@@ -181,6 +273,8 @@ async def create_synthetic_patient_with_vitals():
 - Vital signs observations (2-5 per patient)
 - Realistic value ranges based on clinical norms
 - Timestamps spread over recent weeks
+- Idempotent execution (safe to run multiple times)
+- Environment-aware (staging only)
 
 **Future enhancements** (as needed):
 - Diagnoses and problem lists
@@ -280,12 +374,17 @@ To address the negative consequences:
        └── staging-v1.json  # Pre-generated data (optional)
    ```
 
-4. **Railway Integration**: Add seed command to deployment
-   ```toml
-   # railway.toml
-   [deploy]
-   startCommand = "python scripts/seed.py && uvicorn src.main:app"
+4. **Railway Integration**: Use conditional environment-based seeding
+   ```dockerfile
+   # api/Dockerfile
+   CMD sh -c "prisma migrate deploy && \
+     if [ \"$RAILWAY_ENVIRONMENT\" = \"staging\" ]; then \
+       python scripts/seed_staging.py; \
+     fi && \
+     uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
    ```
+
+   Set `RAILWAY_ENVIRONMENT=staging` in Railway staging project environment variables.
 
 ## Alternatives Considered
 
@@ -339,9 +438,16 @@ The custom script is not wasted effort—it's a pragmatic V1 that unblocks progr
 
 ## References
 
+### Synthetic Data Tools
 - MapEHR Documentation: https://mapehr.com/docs/synthetic-data/
 - openFHIR: https://open-fhir.com/
 - Synthea: https://github.com/synthetichealth/synthea
 - ehrbase/fhir-bridge: https://github.com/ehrbase/fhir-bridge
 - Faker (Python): https://faker.readthedocs.io/
 - WHO Vital Signs Guidelines: https://www.who.int/data/gho/indicator-metadata-registry/imr-details/3155
+
+### Railway Deployment
+- [Set a Start Command - Railway Docs](https://docs.railway.com/guides/start-command)
+- [How to run migrations and seeds - Railway Help](https://station.railway.com/questions/how-can-i-configure-the-migration-and-se-1b56c601)
+- [Pre and post-deployment scripts - Railway Help](https://station.railway.com/questions/how-to-run-pre-and-post-deployment-scrip-914b6858)
+- [Deployment Actions - Railway Docs](https://docs.railway.com/guides/deployment-actions)
