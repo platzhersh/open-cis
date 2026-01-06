@@ -78,7 +78,7 @@ cd api && prisma migrate dev --create-only --name migration_name
 # Seed basic patient demographics (original script)
 python scripts/seed.py
 
-# Seed staging data with synthetic vitals (requires API running)
+# Seed staging data with synthetic vitals (uses Prisma directly, no API required)
 python scripts/seed_staging.py
 
 # Or with environment variable (mimics Railway staging)
