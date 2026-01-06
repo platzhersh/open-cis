@@ -6,6 +6,14 @@ A minimal Clinical Information System built on openEHR/EHRBase for learning and 
 
 - **Staging Environment**: https://open-cis-web-staging.up.railway.app/
 
+## Deploy Your Own
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.com?referralCode=eFNpqC)
+
+Deploy this project on [Railway](https://railway.com?referralCode=eFNpqC) and **get $20 in free credits** to get started! Railway makes it easy to deploy the full stack with PostgreSQL databases and automatic deployments from Git.
+
+[Sign up with this link](https://railway.com?referralCode=eFNpqC) to claim your credits.
+
 ## Tech Stack
 
 | Layer | Technology |
