@@ -373,7 +373,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://..."
 
     # EHRBase (oehrpy client configuration)
-    ehrbase_url: str = "http://localhost:8080/ehrbase/rest"
+    ehrbase_url: str = "http://localhost:8080/ehrbase"
     ehrbase_user: str = "admin"
     ehrbase_password: str = "admin"
 
@@ -410,7 +410,7 @@ from openehr_sdk.templates import VitalSignsBuilder
 async def test_ehrbase_client_connection():
     """Verify oehrpy client can connect to EHRBase."""
     async with EHRBaseClient(
-        base_url="http://localhost:8080/ehrbase/rest",
+        base_url="http://localhost:8080/ehrbase",
         username="admin",
         password="admin",
     ) as client:
