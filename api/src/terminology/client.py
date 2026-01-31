@@ -70,7 +70,8 @@ class TerminologyClient:
 
         FHIR Operation: CodeSystem/$lookup
         """
-        cache_key = f"lookup:{system}:{code}"
+        props_key = ",".join(sorted(properties)) if properties else ""
+        cache_key = f"lookup:{system}:{code}:{props_key}"
         if cache_key in self._cache:
             return self._cache[cache_key]
 
