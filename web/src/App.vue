@@ -1,6 +1,21 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
-import { Github } from 'lucide-vue-next'
+import { Github, Moon, Sun } from 'lucide-vue-next'
+
+const isDark = ref(false)
+
+function toggleDark() {
+  isDark.value = !isDark.value
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
+onMounted(() => {
+  const saved = localStorage.getItem('theme')
+  isDark.value = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  document.documentElement.classList.toggle('dark', isDark.value)
+})
 </script>
 
 <template>
@@ -27,6 +42,15 @@ import { Github } from 'lucide-vue-next'
             Encounters
           </RouterLink>
         </nav>
+        <div class="flex items-center gap-4">
+          <button
+            @click="toggleDark"
+            class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:text-primary hover:bg-accent"
+            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          >
+            <Sun v-if="isDark" :size="18" />
+            <Moon v-else :size="18" />
+          </button>
         <a
           href="https://github.com/platzhersh/open-cis"
           target="_blank"
@@ -37,6 +61,7 @@ import { Github } from 'lucide-vue-next'
           <Github :size="18" />
           <span>Open Source</span>
         </a>
+        </div>
       </div>
     </header>
     <main class="container py-6">
