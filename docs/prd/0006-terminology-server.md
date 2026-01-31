@@ -116,7 +116,7 @@ Deploy a FHIR Terminology Server alongside EHRBase and integrate it with the Ope
 ```yaml
 # docker-compose.yml addition
 terminology-server:
-  image: snomedinternational/snowstorm-lite:latest
+  image: snomedinternational/snowstorm-lite:2.3.1
   ports:
     - "8081:8080"
   volumes:
@@ -125,7 +125,7 @@ terminology-server:
     - INDEX_PATH=lucene-index/data
     - ADMIN_PASSWORD=${TERMINOLOGY_ADMIN_PASSWORD}
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+    test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:8080/fhir/metadata"]
     interval: 30s
     timeout: 10s
     retries: 5
