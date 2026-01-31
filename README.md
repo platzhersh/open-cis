@@ -115,6 +115,17 @@ cd api && prisma studio
 cd api && prisma generate && prisma migrate dev
 ```
 
+## Blog Series
+
+This project is accompanied by a Medium article series documenting the journey of building a clinical information system on openEHR:
+
+1. **[Introduction](https://medium.com/@platzh1rsch/building-open-cis-a-minimal-clinical-information-system-on-openehr-7d3c5d75bae8)** — What is openEHR and why build on it?
+2. **[The Modeling Stack](https://medium.com/@platzh1rsch/building-open-cis-part-2-the-clinical-modeling-stack-221c019e65ca?sk=1d3216e585487a0ae623645edec7bbc6)** — Archetypes, templates, and compositions
+3. **[FLAT Format Deep Dive](https://medium.com/@platzh1rsch/building-open-cis-part-2b-template-formats-and-the-flat-format-deep-dive-0ed3ff0acfed?sk=fd29cdd22e79dee8818b84fc94ea7429)** — The serialization format that powers EHRBase
+4. **[Architecture](https://medium.com/@platzh1rsch/building-open-cis-part-3-going-sdk-less-our-architecture-decisions-134786e090b5?sk=93d3a0d2069bf5923d1f90ba1a1966d3)** — Separating clinical data from application data
+5. **[SDK Landscape](https://medium.com/@platzh1rsch/building-open-cis-part-4-the-openehr-sdk-landscape-1b93411ec279?sk=b31af9ea583b7bc5b4bb52f67a9857ba)** — What exists, what's missing
+6. **oehrpy** — Building the Python SDK (coming soon)
+
 ## Architecture
 
 See [CONTEXT.md](./CONTEXT.md) for detailed architecture and AI context.
