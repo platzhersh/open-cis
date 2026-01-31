@@ -38,6 +38,8 @@ export default [
         URLSearchParams: 'readonly',
         RequestInit: 'readonly',
         Response: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
       },
     },
     plugins: {
@@ -70,6 +72,8 @@ export default [
         RequestInit: 'readonly',
         Response: 'readonly',
         MouseEvent: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
       },
     },
     plugins: {
