@@ -1,5 +1,8 @@
 # oehrpy: Uncovered openEHR Use Cases
 
+- **Created**: 2026-01-31
+- **oehrpy version analyzed**: 0.1.0
+
 Reference document for planning future oehrpy SDK enhancements based on gaps identified against the [openEHR REST API specification](https://specifications.openehr.org/releases/ITS-REST/latest/).
 
 ## Current Coverage
