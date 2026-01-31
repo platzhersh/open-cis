@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "ehrbase-db/Dockerfile"
+watchPatterns = ["ehrbase-db/**"]
 
 [deploy]
 healthcheckPath = ""
