@@ -10,8 +10,8 @@ It is idempotent and environment-aware (only runs in staging).
 import asyncio
 import os
 import sys
-from datetime import UTC, datetime, timedelta
-from random import randint, uniform
+import uuid
+from datetime import datetime
 
 from faker import Faker
 
@@ -26,13 +26,6 @@ MIN_PATIENT_THRESHOLD = 3  # Re-seed if fewer than this many patients exist
 
 # Faker for realistic demographics
 fake = Faker()
-
-# Clinically realistic value ranges (based on WHO guidelines)
-VITAL_SIGNS_RANGES = {
-    "systolic_bp": (90, 140),  # mmHg (normal: 90-120, pre-hypertension: 120-140)
-    "diastolic_bp": (60, 90),  # mmHg (normal: 60-80, pre-hypertension: 80-90)
-    "pulse_rate": (60, 100),  # bpm (normal resting adult)
-}
 
 
 async def should_seed(db: Prisma) -> bool:
@@ -50,7 +43,7 @@ async def should_seed(db: Prisma) -> bool:
 
     # Check patient count using Prisma directly
     try:
-        patient_count = await db.patient.count()
+        patient_count = await db.patientregistry.count()
         if patient_count >= MIN_PATIENT_THRESHOLD:
             print(
                 f"Skipping seed: sufficient patients exist ({patient_count} >= {MIN_PATIENT_THRESHOLD})"
@@ -64,78 +57,30 @@ async def should_seed(db: Prisma) -> bool:
 
 
 async def create_patient(db: Prisma, patient_data: dict) -> dict | None:
-    """Create a patient using Prisma."""
+    """Create a patient in the PatientRegistry using Prisma."""
     try:
         # Convert birth_date string to datetime if needed
         birth_date = patient_data["birth_date"]
         if isinstance(birth_date, str):
-            birth_date = datetime.fromisoformat(birth_date).date()
+            birth_date = datetime.fromisoformat(birth_date)
 
-        patient = await db.patient.create(
+        # Generate a placeholder EHR ID for staging data
+        # (real patients get this from EHRBase via the API)
+        ehr_id = str(uuid.uuid4())
+
+        patient = await db.patientregistry.create(
             data={
                 "mrn": patient_data["mrn"],
-                "given_name": patient_data["given_name"],
-                "family_name": patient_data["family_name"],
-                "birth_date": birth_date,
+                "ehrId": ehr_id,
+                "givenName": patient_data["given_name"],
+                "familyName": patient_data["family_name"],
+                "birthDate": birth_date,
             }
         )
         return patient.model_dump()
     except Exception as e:
         print(f"  ❌ Error creating {patient_data['mrn']}: {e}")
         return None
-
-
-async def create_vital_signs(db: Prisma, vital_signs_data: dict) -> dict | None:
-    """Create vital signs observation using Prisma."""
-    try:
-        # Convert recorded_at string to datetime if needed
-        recorded_at = vital_signs_data["recorded_at"]
-        if isinstance(recorded_at, str):
-            recorded_at = datetime.fromisoformat(recorded_at)
-
-        vital_signs = await db.vitalsigns.create(
-            data={
-                "patient_id": vital_signs_data["patient_id"],
-                "encounter_id": vital_signs_data.get("encounter_id"),
-                "recorded_at": recorded_at,
-                "systolic": vital_signs_data["systolic"],
-                "diastolic": vital_signs_data["diastolic"],
-                "pulse_rate": vital_signs_data["pulse_rate"],
-            }
-        )
-        return vital_signs.model_dump()
-    except Exception as e:
-        print(f"  ❌ Error creating vital signs: {e}")
-        return None
-
-
-def generate_realistic_vital_signs(base_date: datetime, offset_hours: int) -> dict:
-    """
-    Generate clinically realistic vital signs.
-
-    Uses normal distribution around healthy ranges with some variability.
-    """
-    recorded_at = base_date - timedelta(hours=offset_hours)
-
-    # Generate correlated values (e.g., high systolic -> higher diastolic)
-    systolic = randint(*VITAL_SIGNS_RANGES["systolic_bp"])
-
-    # Diastolic tends to be proportional to systolic
-    if systolic > 130:
-        diastolic = randint(80, 90)  # Higher diastolic with high systolic
-    elif systolic < 100:
-        diastolic = randint(60, 70)  # Lower diastolic with low systolic
-    else:
-        diastolic = randint(65, 80)  # Normal range
-
-    pulse_rate = randint(*VITAL_SIGNS_RANGES["pulse_rate"])
-
-    return {
-        "recorded_at": recorded_at.isoformat(),
-        "systolic": systolic,
-        "diastolic": diastolic,
-        "pulse_rate": pulse_rate,
-    }
 
 
 def generate_synthetic_patients(count: int = 15) -> list[dict]:
@@ -162,43 +107,26 @@ def generate_synthetic_patients(count: int = 15) -> list[dict]:
 
 async def seed_patient_with_vitals(
     db: Prisma, patient_data: dict, num_readings: int = 3
-) -> tuple[dict | None, list[dict]]:
+) -> tuple[dict | None, int]:
     """
-    Seed a single patient with multiple vital signs readings.
+    Seed a single patient in the PatientRegistry.
 
-    Returns: (patient, list of vital signs)
+    Note: Vital signs are stored in EHRBase (not the app DB), so this script
+    only creates patient demographics. Vital signs can be added via the API
+    once EHRBase is running.
+
+    Returns: (patient, 0) - vital signs count is always 0 for DB-only seeding
     """
     # Create patient
     patient = await create_patient(db, patient_data)
     if not patient:
-        return None, []
+        return None, 0
 
-    patient_id = patient["id"]
     print(
-        f"  ✅ Created: {patient['given_name']} {patient['family_name']} ({patient['mrn']})"
+        f"  ✅ Created: {patient['givenName']} {patient['familyName']} ({patient['mrn']})"
     )
 
-    # Create vital signs readings spread over recent weeks
-    vital_signs_list = []
-    base_date = datetime.now(UTC)
-
-    for i in range(num_readings):
-        # Spread readings over past 2-4 weeks
-        hours_offset = randint(24 * 7, 24 * 28)  # 1-4 weeks ago
-
-        vital_signs_data = generate_realistic_vital_signs(base_date, hours_offset)
-        vital_signs_data["patient_id"] = patient_id
-        vital_signs_data["encounter_id"] = None
-
-        vital_signs = await create_vital_signs(db, vital_signs_data)
-        if vital_signs:
-            vital_signs_list.append(vital_signs)
-            print(
-                f"    📊 Vital signs: {vital_signs_data['systolic']}/{vital_signs_data['diastolic']} mmHg, "
-                f"{vital_signs_data['pulse_rate']} bpm"
-            )
-
-    return patient, vital_signs_list
+    return patient, 0
 
 
 async def main():
@@ -225,23 +153,18 @@ async def main():
 
         # Seed patients with vital signs
         created_patients = 0
-        total_vital_signs = 0
 
         for patient_data in synthetic_patients:
-            patient, vital_signs = await seed_patient_with_vitals(
-                db, patient_data, num_readings=randint(2, 5)
-            )
+            patient, _ = await seed_patient_with_vitals(db, patient_data)
 
             if patient:
                 created_patients += 1
-                total_vital_signs += len(vital_signs)
 
         # Summary
         print()
         print("=" * 50)
         print(f"✅ Seeding complete!")
         print(f"   Patients created: {created_patients}/{len(synthetic_patients)}")
-        print(f"   Vital signs created: {total_vital_signs}")
         print()
         print("🎉 Staging data is ready for testing!")
     finally:
