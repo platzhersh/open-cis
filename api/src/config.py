@@ -12,10 +12,12 @@ class Settings(BaseSettings):
     # Database (Prisma)
     database_url: str = "postgresql://cis:cis@localhost:5432/cis"
 
-    # EHRBase
+    # EHRBase (oehrpy client configuration)
     ehrbase_url: str = "http://localhost:8080/ehrbase/rest"
     ehrbase_user: str | None = None
     ehrbase_password: str | None = None
+    ehrbase_timeout: float = 30.0
+    ehrbase_verify_ssl: bool = True
 
     class Config:
         env_file = ".env"
