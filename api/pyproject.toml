@@ -14,6 +14,7 @@ dependencies = [
     "python-multipart>=0.0.6",
     "aiofiles>=23.2.0",
     "faker>=22.0.0",
+    "oehrpy>=0.1.0",
 ]
 
 [project.optional-dependencies]

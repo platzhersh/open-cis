@@ -6,6 +6,7 @@ from typing import Any
 
 import aiofiles
 import httpx
+from openehr_sdk.client import EHRBaseError
 
 from src.ehrbase.client import ehrbase_client
 
@@ -50,6 +51,13 @@ async def upload_template_file(template_id: str, template_content: str) -> bool:
             logger.info(f"Template {template_id} already exists")
             return True
         logger.error(f"Failed to upload template {template_id}: HTTP {e.response.status_code}")
+        return False
+    except EHRBaseError as e:
+        # oehrpy may wrap 409 as EHRBaseError; check message for conflict
+        if "409" in str(e) or "conflict" in str(e).lower():
+            logger.info(f"Template {template_id} already exists")
+            return True
+        logger.error(f"Failed to upload template {template_id}: {e}")
         return False
     except Exception as e:
         logger.error(f"Failed to upload template {template_id}: {e}")
