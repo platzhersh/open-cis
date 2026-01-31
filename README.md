@@ -19,6 +19,7 @@ Deploy your own instance with one click using the Railway template above. Railwa
 | Frontend | Vue 3 + TypeScript + Vite + shadcn-vue + Tailwind + Pinia |
 | Backend | FastAPI + Python 3.11+ + Pydantic |
 | Clinical Data | EHRBase (openEHR repository) |
+| Terminology | Snowstorm Lite (FHIR terminology server) |
 | App Database | PostgreSQL via Prisma (prisma-client-py) |
 | Infrastructure | Docker Compose |
 | Deployment | Railway |
@@ -65,7 +66,7 @@ Verify all services are running:
 ```bash
 # Check Docker containers
 docker compose ps
-# Expected: app-db, ehrbase-db, ehrbase all "Up" and healthy
+# Expected: app-db, ehrbase-db, ehrbase, terminology-server all "Up" and healthy
 
 # Check EHRBase (wait 30-60s after docker compose up)
 curl http://localhost:8080/ehrbase/rest/status
@@ -88,6 +89,7 @@ open http://localhost:5173
 - **API Docs (ReDoc)**: http://localhost:8000/redoc
 - **OpenAPI Schema**: http://localhost:8000/openapi.json
 - **EHRBase**: http://localhost:8080/ehrbase/rest
+- **Terminology Server (FHIR)**: http://localhost:8081/fhir
 - **App Database**: localhost:5454 (PostgreSQL)
 - **EHRBase Database**: localhost:5433 (PostgreSQL)
 

@@ -123,10 +123,14 @@ See [ADR-0005](./docs/adr/0005-synthetic-data-generation.md) for implementation 
 # Check EHRBase status (wait 30-60s after docker compose up)
 curl http://localhost:8080/ehrbase/rest/status
 
+# Check Terminology Server status
+curl http://localhost:8081/fhir/metadata
+
 # View logs
 docker compose logs -f ehrbase
 docker compose logs -f ehrbase-db
 docker compose logs -f app-db
+docker compose logs -f terminology-server
 
 # Rebuild specific service
 docker compose up -d --build ehrbase
@@ -158,6 +162,11 @@ Each domain module (e.g., `api/src/patients/`) follows this structure:
 - `templates.py`: Template management utilities
 - `queries.py`: AQL query builders and executors
 
+### Terminology Integration (`api/src/terminology/`)
+- `client.py`: Async FHIR terminology client with TTL cache (singleton: `terminology_client`)
+- `router.py`: REST endpoints for lookup, validate, expand, search, subsumes
+- `schemas.py`: Pydantic models for terminology responses
+
 ### Frontend Structure (`web/src/`)
 - `pages/`: Vue components for routes
 - `stores/`: Pinia state management
@@ -174,6 +183,7 @@ EHRBase takes 30-60 seconds to become available after `docker compose up`. Alway
 - Frontend dev server: `http://localhost:5173`
 - Backend API: `http://localhost:8000`
 - EHRBase REST API: `http://localhost:8080/ehrbase/rest`
+- Terminology Server (FHIR): `http://localhost:8081/fhir`
 - App PostgreSQL: `localhost:5454`
 - EHRBase PostgreSQL: `localhost:5433`
 
@@ -183,6 +193,8 @@ Copy `.env.example` to `.env` (locally) and configure:
 - `EHRBASE_URL`: EHRBase REST API endpoint
 - `CORS_ORIGINS`: JSON array of allowed origins
 - `VITE_API_URL`: Frontend API base URL
+- `TERMINOLOGY_SERVER_URL`: FHIR terminology server endpoint
+- `TERMINOLOGY_ADMIN_PASSWORD`: Snowstorm Lite admin password
 
 ### Coding Standards
 - **Python**: Type hints required everywhere (enforced by mypy config), all functions must be `async`
