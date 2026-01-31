@@ -34,6 +34,23 @@ services:
       timeout: 5s
       retries: 5
 
+  terminology-server:
+    image: snomedinternational/snowstorm-lite:latest
+    container_name: open-cis-terminology
+    ports:
+      - "8081:8080"
+    volumes:
+      - terminology-data:/app/lucene-index
+    environment:
+      INDEX_PATH: lucene-index/data
+      ADMIN_PASSWORD: ${TERMINOLOGY_ADMIN_PASSWORD:-admin}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
   app-db:
     image: postgres:16
     ports:
@@ -53,3 +70,4 @@ services:
 volumes:
   ehrbase-data:
   app-data:
+  terminology-data:

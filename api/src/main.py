@@ -12,6 +12,8 @@ from src.ehrbase.templates import ensure_templates_registered
 from src.encounters.router import router as encounters_router
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
+from src.terminology.client import terminology_client
+from src.terminology.router import router as terminology_router
 
 # Configure logging
 logging.basicConfig(
@@ -47,6 +49,7 @@ async def lifespan(app: FastAPI):
     if prisma.is_connected():
         await prisma.disconnect()
     await ehrbase_client.close()
+    await terminology_client.close()
 
 
 app = FastAPI(
@@ -67,6 +70,7 @@ app.add_middleware(
 app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
+app.include_router(terminology_router, prefix="/api/terminology", tags=["terminology"])
 
 
 @app.get("/health")
