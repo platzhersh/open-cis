@@ -5,7 +5,6 @@ from typing import Any
 
 from openehr_sdk.templates import VitalSignsBuilder
 
-
 VITAL_SIGNS_TEMPLATE_ID = VitalSignsBuilder.template_id
 
 

@@ -1,12 +1,11 @@
 """Tests for oehrpy SDK integration."""
 
 import pytest
-
 from openehr_sdk.client import EHRBaseClient as OehrpyClient
 from openehr_sdk.templates import VitalSignsBuilder
 
 from src.ehrbase.client import EHRBaseClient
-from src.openehr.compositions import build_vital_signs_flat, VITAL_SIGNS_TEMPLATE_ID
+from src.openehr.compositions import VITAL_SIGNS_TEMPLATE_ID, build_vital_signs_flat
 
 
 class TestVitalSignsBuilder:
@@ -35,7 +34,9 @@ class TestVitalSignsBuilder:
         builder.add_pulse(rate=72)
         flat = builder.build()
 
-        pulse_values = {k: v for k, v in flat.items() if "pulse" in k.lower() or "heart" in k.lower()}
+        pulse_values = {
+            k: v for k, v in flat.items() if "pulse" in k.lower() or "heart" in k.lower()
+        }
         assert len(pulse_values) > 0
 
     def test_builder_combined_vitals(self):
