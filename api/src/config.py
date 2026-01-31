@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://cis:cis@localhost:5432/cis"
 
     # EHRBase (oehrpy client configuration)
-    ehrbase_url: str = "http://localhost:8080/ehrbase/rest"
+    ehrbase_url: str = "http://localhost:8080/ehrbase"
     ehrbase_user: str | None = None
     ehrbase_password: str | None = None
     ehrbase_timeout: float = 30.0
