@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "api/Dockerfile"
-watchPatterns = ["api/src/**", "api/prisma/**", "api/pyproject.toml", "api/Dockerfile"]
+watchPatterns = ["api/src/**", "api/prisma/**", "api/pyproject.toml", "api/Dockerfile", "scripts/**"]
 
 [deploy]
 # Remove startCommand - let Dockerfile CMD handle it
