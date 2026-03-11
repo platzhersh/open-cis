@@ -2,6 +2,15 @@
 
 A minimal Clinical Information System built on openEHR/EHRBase for learning and experimentation.
 
+## Blog Series
+
+1. [Building Open CIS: A Minimal Clinical Information System on openEHR](https://medium.com/@platzh1rsch/building-open-cis-a-minimal-clinical-information-system-on-openehr-7d3c5d75bae8)
+2. [Part 2: The Clinical Modeling Stack](https://medium.com/@platzh1rsch/building-open-cis-part-2-the-clinical-modeling-stack-221c019e65ca)
+3. [Part 2b: Template Formats and the Flat Format Deep Dive](https://medium.com/@platzh1rsch/building-open-cis-part-2b-template-formats-and-the-flat-format-deep-dive-0ed3ff0acfed)
+4. [Part 3: Going SDK-less — Our Architecture Decisions](https://medium.com/@platzh1rsch/building-open-cis-part-3-going-sdk-less-our-architecture-decisions-134786e090b5)
+5. [Part 4: The openEHR SDK Landscape](https://medium.com/@platzh1rsch/building-open-cis-part-4-the-openehr-sdk-landscape-1b93411ec279)
+6. [Part 5: oehrpy — A Python SDK for openEHR](https://medium.com/@platzh1rsch/building-open-cis-part-5-oehrpy-a-python-sdk-for-openehr-c9c90f46d075)
+
 ## Live Demo
 
 - **Staging Environment**: https://open-cis-web-staging.up.railway.app/
