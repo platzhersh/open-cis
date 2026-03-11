@@ -62,6 +62,30 @@ CONTAINS INSTRUCTION i[openEHR-EHR-INSTRUCTION.medication_order.v3]
 WHERE e/ehr_id/value = $ehr_id
 """
 
+# Get CAVE (adverse reaction) entries for a patient
+CAVE_ENTRIES_QUERY = """
+SELECT
+    c/uid/value as composition_uid,
+    c/context/start_time/value as recorded_at,
+    eval/data[at0001]/items[at0002]/value/value as substance,
+    eval/data[at0001]/items[at0063]/value/value as status,
+    eval/data[at0001]/items[at0101]/value/value as criticality,
+    eval/data[at0001]/items[at0120]/value/value as category,
+    eval/data[at0001]/items[at0058]/value/value as reaction_type,
+    eval/data[at0001]/items[at0006]/value/value as comment,
+    eval/data[at0001]/items[at0117]/value/value as onset_of_last_reaction,
+    eval/data[at0001]/items[at0009]/items[at0010]/value/value as manifestation,
+    eval/data[at0001]/items[at0009]/items[at0021]/value/value as severity,
+    eval/data[at0001]/items[at0009]/items[at0025]/value/value as certainty,
+    eval/data[at0001]/items[at0009]/items[at0027]/value/value as onset_of_reaction,
+    eval/data[at0001]/items[at0009]/items[at0032]/value/value as reaction_description
+FROM EHR e
+CONTAINS COMPOSITION c
+CONTAINS EVALUATION eval[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1]
+WHERE e/ehr_id/value = $ehr_id
+ORDER BY c/context/start_time/value DESC
+"""
+
 # Count vital signs for a patient
 VITAL_SIGNS_COUNT_QUERY = """
 SELECT COUNT(c/uid/value) as count

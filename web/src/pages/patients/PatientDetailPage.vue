@@ -5,15 +5,30 @@ import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, Di
 import { X, Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 import { usePatientStore } from '@/stores/patient'
 import { useEncounterStore } from '@/stores/encounter'
+import { useCaveStore } from '@/stores/cave'
 import type { PatientUpdate } from '@/types'
 import VitalSignsPanel from '@/components/vitals/VitalSignsPanel.vue'
+import CaveBanner from '@/components/cave/CaveBanner.vue'
+import CaveManagementPanel from '@/components/cave/CaveManagementPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
 const store = usePatientStore()
 const encounterStore = useEncounterStore()
+const caveStore = useCaveStore()
 
 const patientId = route.params.id as string
+
+// CAVE management panel state
+const showCavePanel = ref(false)
+
+function handleCaveManage() {
+  showCavePanel.value = true
+}
+
+async function handleCaveUpdated() {
+  await caveStore.fetchSummary(patientId)
+}
 
 // Edit mode state
 const isEditing = ref(false)
@@ -255,6 +270,12 @@ const openDeleteDialog = () => {
         </div>
       </div>
 
+      <!-- CAVE Banner -->
+      <CaveBanner
+        :patient-id="patientId"
+        @manage="handleCaveManage"
+      />
+
       <div class="grid gap-6 md:grid-cols-2">
         <!-- Demographics Section -->
         <div class="rounded-lg border p-6">
@@ -474,6 +495,14 @@ const openDeleteDialog = () => {
         Patient not found
       </p>
     </div>
+
+    <!-- CAVE Management Panel -->
+    <CaveManagementPanel
+      v-model:open="showCavePanel"
+      :patient-id="patientId"
+      :patient-name="patientFullName"
+      @updated="handleCaveUpdated"
+    />
 
     <!-- Delete Confirmation Dialog -->
     <DialogRoot :open="showDeleteDialog" @update:open="showDeleteDialog = $event">

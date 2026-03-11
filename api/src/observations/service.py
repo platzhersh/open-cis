@@ -1,10 +1,7 @@
 """Observation service for managing vital signs with openEHR transparency."""
 
-import logging
 from datetime import UTC, datetime
 from typing import Any
-
-from openehr_sdk.client import EHRBaseError
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import VITAL_SIGNS_DATE_RANGE_QUERY, VITAL_SIGNS_QUERY
@@ -57,26 +54,15 @@ class ObservationService:
         )
 
         # Create composition in EHRBase
-        try:
-            result = await ehrbase_client.create_composition(
-                ehr_id=ehr_id,
-                template_id=self.TEMPLATE_ID,
-                composition=flat_composition,
-                format="FLAT",
-            )
-            composition_uid = result.get("uid", {}).get("value", "") or result.get(
-                "compositionUid", ""
-            )
-        except EHRBaseError as e:
-            composition_uid = f"placeholder-{datetime.now(UTC).isoformat()}"
-            logging.error(f"EHRBase composition creation failed: {e}")
-            logging.debug(f"Composition data that failed: {flat_composition}")
-        except Exception as e:
-            # If EHRBase is unavailable or other error, return with placeholder
-            # This allows development without EHRBase running
-            composition_uid = f"placeholder-{datetime.now(UTC).isoformat()}"
-            logging.warning(f"EHRBase composition creation failed: {type(e).__name__}: {e}")
-            logging.debug(f"Composition data that failed: {flat_composition}")
+        result = await ehrbase_client.create_composition(
+            ehr_id=ehr_id,
+            template_id=self.TEMPLATE_ID,
+            composition=flat_composition,
+            format="FLAT",
+        )
+        composition_uid = result.get("uid", {}).get("value", "") or result.get(
+            "compositionUid", ""
+        )
 
         now = datetime.now(UTC)
 
