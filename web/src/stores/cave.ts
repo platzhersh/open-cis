@@ -19,6 +19,8 @@ export const useCaveStore = defineStore('cave', () => {
   async function fetchEntries(patientId: string, status?: string, category?: string) {
     loading.value = true
     error.value = null
+    entries.value = []
+    total.value = 0
     try {
       const params: Record<string, string> = { patient_id: patientId }
       if (status) params.status = status
@@ -39,6 +41,7 @@ export const useCaveStore = defineStore('cave', () => {
   async function fetchSummary(patientId: string) {
     loading.value = true
     error.value = null
+    summary.value = null
     try {
       summary.value = await api.get<CaveSummary>(`/api/cave/summary/${encodeURIComponent(patientId)}`)
     } catch (e) {

@@ -66,19 +66,29 @@ function openEditDialog(entry: CaveEntry) {
 }
 
 async function handleStatusChange(entry: CaveEntry, newStatus: CaveStatus) {
-  await store.updateEntry(entry.composition_uid, props.patientId, {
-    status: newStatus,
-  })
-  await loadEntries()
-  emit('updated')
+  try {
+    const result = await store.updateEntry(entry.composition_uid, props.patientId, {
+      status: newStatus,
+    })
+    if (!result) return
+    await loadEntries()
+    emit('updated')
+  } catch (e) {
+    console.error('Failed to update CAVE entry status:', e)
+  }
 }
 
 async function handleDelete(entry: CaveEntry) {
   if (!window.confirm(`Delete CAVE entry for "${entry.substance}"?`)) return
 
-  await store.deleteEntry(entry.composition_uid, props.patientId)
-  await loadEntries()
-  emit('updated')
+  try {
+    const success = await store.deleteEntry(entry.composition_uid, props.patientId)
+    if (!success) return
+    await loadEntries()
+    emit('updated')
+  } catch (e) {
+    console.error('Failed to delete CAVE entry:', e)
+  }
 }
 
 async function handleRecordNka() {

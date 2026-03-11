@@ -301,7 +301,7 @@ class CaveSummaryResponse(BaseModel):
 
 ### RESTful API Design
 
-```
+```text
 POST   /api/cave                          # Create CAVE entry
 GET    /api/cave?patient_id={id}          # List CAVE entries for patient
 GET    /api/cave/{composition_uid}        # Get single CAVE entry
@@ -428,7 +428,7 @@ Response: 201 Created
 A prominent, always-visible banner at the top of the patient detail page:
 
 **Patient has active allergies (high criticality):**
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │ ⚠ CAVE                                     [Manage]     │
 │ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐      │
@@ -443,7 +443,7 @@ A prominent, always-visible banner at the top of the patient detail page:
 - Each chip shows substance name, criticality, and category
 
 **No Known Allergies recorded:**
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │ ✓ CAVE: No Known Allergies                 [Manage]     │
 │   Recorded: March 11, 2026                               │
@@ -452,7 +452,7 @@ A prominent, always-visible banner at the top of the patient detail page:
 - Green/neutral background indicating NKA has been explicitly confirmed
 
 **Allergies not yet assessed:**
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │ ? CAVE: Not Yet Assessed                   [Record]     │
 │   No allergy information has been recorded               │
@@ -466,7 +466,7 @@ A prominent, always-visible banner at the top of the patient detail page:
 
 Accessible via the "Manage" button on the banner:
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │ CAVE - Allergies & Adverse Reactions     [+ Add Entry]  │
 │ Patient: John Doe (MRN-12345)                           │
@@ -510,7 +510,7 @@ Accessible via the "Manage" button on the banner:
 
 ### Add/Edit CAVE Entry Dialog
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │ Add Allergy / Adverse Reaction                     [×]  │
 ├──────────────────────────────────────────────────────────┤
@@ -587,7 +587,7 @@ Create a new OPT template for adverse reactions. The template should use:
 
 ### FLAT Composition Paths (Expected)
 
-```
+```text
 adverse_reaction_list/adverse_reaction_risk:0/substance|value
 adverse_reaction_list/adverse_reaction_risk:0/substance|code
 adverse_reaction_list/adverse_reaction_risk:0/status|code
@@ -786,7 +786,7 @@ test('Reaction events can be added and removed', () => {})
 - A) Each CAVE entry is a separate composition in EHRBase
 - B) All CAVE entries for a patient are in a single "adverse reaction list" composition
 
-**Recommendation:** Use B (single composition per patient) as this aligns with the `adverse_reaction_list` composition archetype and makes it easier to query all allergies at once. Updates replace the full composition.
+**Decision:** Use A (one composition per entry). Each CAVE entry is stored as a separate composition keyed by `composition_uid`. This simplifies CRUD operations (create, read, update, delete individual entries) and avoids the complexity of whole-composition replacement. Updates are implemented as delete-then-recreate of the individual composition. AQL queries retrieve all entries for a patient across compositions.
 
 ### Question 4: Where to Display CAVE Banner
 **Options:**

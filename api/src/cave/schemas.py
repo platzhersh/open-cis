@@ -3,7 +3,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CaveCategory(StrEnum):
@@ -45,6 +45,8 @@ class ReactionCertainty(StrEnum):
 
 
 class ReactionEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     manifestation: str = Field(..., min_length=1, max_length=200)
     severity: ReactionSeverity
     certainty: ReactionCertainty
@@ -53,6 +55,8 @@ class ReactionEvent(BaseModel):
 
 
 class CaveEntryCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     patient_id: str
     substance: str = Field(..., min_length=1, max_length=200)
     category: CaveCategory
@@ -65,6 +69,8 @@ class CaveEntryCreate(BaseModel):
 
 
 class CaveEntryUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     criticality: CaveCriticality | None = None
     status: CaveStatus | None = None
     comment: str | None = Field(None, max_length=1000)
@@ -104,6 +110,8 @@ class CaveSummaryResponse(BaseModel):
 
 
 class NkaRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     patient_id: str
 
 

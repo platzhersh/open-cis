@@ -35,7 +35,28 @@ function getCriticalityColor(criticality: string) {
 </script>
 
 <template>
-  <div v-if="!store.loading || store.summary">
+  <div v-if="!store.loading || store.summary || store.error">
+    <!-- Error state -->
+    <div
+      v-if="store.error && !store.summary"
+      class="rounded-lg border-2 border-gray-200 bg-gray-50 p-4"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <ShieldQuestion class="h-5 w-5 text-gray-500" />
+          <span class="font-semibold text-sm text-gray-700">
+            CAVE: Status Unavailable
+          </span>
+        </div>
+        <button
+          class="text-sm font-medium text-primary hover:underline"
+          @click="emit('manage')"
+        >
+          Manage
+        </button>
+      </div>
+    </div>
+
     <!-- Active allergies -->
     <div
       v-if="store.summary && store.summary.total_active > 0"

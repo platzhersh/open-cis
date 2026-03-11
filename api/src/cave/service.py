@@ -4,8 +4,6 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from openehr_sdk.client import EHRBaseError
-
 from src.cave.schemas import (
     CaveCategory,
     CaveCriticality,
@@ -76,24 +74,15 @@ class CaveService:
             ],
         )
 
-        try:
-            result = await ehrbase_client.create_composition(
-                ehr_id=ehr_id,
-                template_id=self.TEMPLATE_ID,
-                composition=flat_composition,
-                format="FLAT",
-            )
-            composition_uid = result.get("uid", {}).get("value", "") or result.get(
-                "compositionUid", ""
-            )
-        except EHRBaseError as e:
-            composition_uid = f"placeholder-cave-{datetime.now(UTC).isoformat()}"
-            logger.error(f"EHRBase CAVE composition creation failed: {e}")
-        except Exception as e:
-            composition_uid = f"placeholder-cave-{datetime.now(UTC).isoformat()}"
-            logger.warning(
-                f"EHRBase CAVE composition creation failed: {type(e).__name__}: {e}"
-            )
+        result = await ehrbase_client.create_composition(
+            ehr_id=ehr_id,
+            template_id=self.TEMPLATE_ID,
+            composition=flat_composition,
+            format="FLAT",
+        )
+        composition_uid = result.get("uid", {}).get("value", "") or result.get(
+            "compositionUid", ""
+        )
 
         now = datetime.now(UTC)
 
@@ -202,7 +191,8 @@ class CaveService:
         try:
             await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
         except Exception as e:
-            logger.warning(f"Failed to delete old CAVE composition: {e}")
+            logger.error(f"Failed to delete old CAVE composition: {e}")
+            return None
 
         # Create new composition with updated data
         create_data = CaveEntryCreate(
@@ -268,24 +258,15 @@ class CaveService:
 
         flat_composition = build_nka_flat()
 
-        try:
-            result = await ehrbase_client.create_composition(
-                ehr_id=ehr_id,
-                template_id=self.TEMPLATE_ID,
-                composition=flat_composition,
-                format="FLAT",
-            )
-            composition_uid = result.get("uid", {}).get("value", "") or result.get(
-                "compositionUid", ""
-            )
-        except EHRBaseError as e:
-            composition_uid = f"placeholder-nka-{datetime.now(UTC).isoformat()}"
-            logger.error(f"EHRBase NKA composition creation failed: {e}")
-        except Exception as e:
-            composition_uid = f"placeholder-nka-{datetime.now(UTC).isoformat()}"
-            logger.warning(
-                f"EHRBase NKA composition creation failed: {type(e).__name__}: {e}"
-            )
+        result = await ehrbase_client.create_composition(
+            ehr_id=ehr_id,
+            template_id=self.TEMPLATE_ID,
+            composition=flat_composition,
+            format="FLAT",
+        )
+        composition_uid = result.get("uid", {}).get("value", "") or result.get(
+            "compositionUid", ""
+        )
 
         return NkaResponse(
             patient_id=data.patient_id,
@@ -352,10 +333,23 @@ class CaveService:
 
         comment = row_dict.get("comment")
 
+        # Parse onset date
+        onset_raw = row_dict.get("onset_of_last_reaction")
+        onset_date = None
+        if onset_raw:
+            try:
+                onset_date = datetime.fromisoformat(
+                    str(onset_raw).replace("Z", "+00:00")
+                )
+            except (ValueError, AttributeError):
+                pass
+
         # Parse reaction events from AQL results
         manifestation = row_dict.get("manifestation")
         severity_raw = row_dict.get("severity")
         certainty_raw = row_dict.get("certainty")
+        reaction_onset_raw = row_dict.get("onset_of_reaction")
+        reaction_description = row_dict.get("reaction_description")
 
         reactions: list[ReactionEvent] = []
         if manifestation:
@@ -377,12 +371,24 @@ class CaveService:
             except ValueError:
                 certainty = ReactionCertainty.SUSPECTED
 
+            reaction_onset = None
+            if reaction_onset_raw:
+                try:
+                    reaction_onset = datetime.fromisoformat(
+                        str(reaction_onset_raw).replace("Z", "+00:00")
+                    )
+                except (ValueError, AttributeError):
+                    pass
+
             reactions.append(
                 ReactionEvent(
                     manifestation=str(manifestation),
                     severity=severity,
                     certainty=certainty,
-                    description=None,
+                    onset_date=reaction_onset,
+                    description=(
+                        str(reaction_description) if reaction_description else None
+                    ),
                 )
             )
 
@@ -395,7 +401,7 @@ class CaveService:
             reaction_type=reaction_type,
             criticality=criticality,
             status=status,
-            onset_date=None,
+            onset_date=onset_date,
             recorded_date=recorded_date,
             last_updated=recorded_date,
             comment=str(comment) if comment else None,
