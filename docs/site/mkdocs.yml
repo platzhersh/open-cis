@@ -1,0 +1,85 @@
+site_name: Open CIS
+site_description: A minimal Clinical Information System built on openEHR/EHRBase
+site_url: https://platzhersh.github.io/open-cis/
+repo_url: https://github.com/platzhersh/open-cis
+repo_name: platzhersh/open-cis
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.highlight
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/brand.css
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Data Model: architecture/data-model.md
+      - openEHR Concepts: architecture/openehr.md
+  - Guides:
+      - Development: guides/development.md
+      - Deployment: guides/deployment.md
+      - Contributing: guides/contributing.md
+  - Decisions:
+      - decisions/index.md
+      - ADR-0001 Use openEHR: decisions/0001-use-openehr.md
+      - ADR-0002 FastAPI Backend: decisions/0002-fastapi-backend.md
+      - ADR-0003 Template Management: decisions/0003-template-management.md
+      - ADR-0004 Direct httpx Integration: decisions/0004-direct-httpx-integration.md
+      - ADR-0005 Synthetic Data: decisions/0005-synthetic-data.md
+  - Blog Series: blog-series/index.md
+  - oehrpy:
+      - Overview: oehrpy/index.md
+      - Integration: oehrpy/integration.md
+      - Coverage & Roadmap: oehrpy/coverage.md
+  - Brand: brand/index.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true

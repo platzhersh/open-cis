@@ -1,0 +1,1 @@
+../../../adr/0003-openehr-template-management.md

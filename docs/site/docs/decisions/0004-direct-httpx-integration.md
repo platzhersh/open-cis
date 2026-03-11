@@ -1,0 +1,1 @@
+../../../adr/0004-direct-httpx-openehr-integration.md

@@ -1,0 +1,1 @@
+../../../adr/0005-synthetic-data-generation.md

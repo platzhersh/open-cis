@@ -9,3 +9,4 @@ This directory contains PRDs for Open CIS features and capabilities.
 - [PRD-0003: Encounter CRUD Operations](./0003-encounter-crud.md) - Complete encounter management for tracking patient visits and clinical interactions
 - [PRD-0004: Vital Signs Chart with openEHR Transparency](./0004-vital-signs-chart.md) - Vital signs recording/charting with blood pressure and pulse, plus openEHR metadata inspection
 - [PRD-0006: CAVE Form (Allergies & Adverse Reactions)](./0006-cave-form.md) - Patient allergy/intolerance recording with openEHR integration and clinical safety banners
+- [PRD-0007: GitHub Pages Documentation Site](./0007-github-pages-docs.md) - Public documentation site with architecture docs, blog series, oehrpy reference, and brand kit
