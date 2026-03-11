@@ -8,6 +8,7 @@ Personal learning project exploring modern clinical data architecture.
 - **Frontend**: Vue 3 + TypeScript + Vite + shadcn-vue + Tailwind + Pinia
 - **Backend**: FastAPI + Python 3.11+ + Pydantic
 - **Clinical Data**: EHRBase (openEHR repository)
+- **Terminology**: Snowstorm Lite (FHIR terminology server for SNOMED CT)
 - **App Database**: PostgreSQL via Prisma (prisma-client-py)
 - **Deployment**: Railway
 
@@ -44,3 +45,9 @@ Personal learning project exploring modern clinical data architecture.
 - `GET /api/patients/{id}` - Get patient by ID
 - `GET /api/patients/mrn/{mrn}` - Get patient by MRN
 - `PATCH /api/patients/{id}` - Update patient
+- `GET /api/terminology/lookup` - Look up a terminology code
+- `GET /api/terminology/validate` - Validate a code
+- `GET /api/terminology/expand` - Expand a value set
+- `GET /api/terminology/search` - Search for codes by term
+- `GET /api/terminology/subsumes` - Test subsumption relationship
+- `GET /api/terminology/health` - Terminology server health check

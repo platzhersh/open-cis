@@ -24,6 +24,14 @@ until curl -s http://localhost:8080/ehrbase/rest/status > /dev/null 2>&1; do
 done
 echo "✅ EHRBase is ready!"
 
+# Wait for Terminology Server to be ready
+echo "⏳ Waiting for Terminology Server (Snowstorm Lite) to be ready..."
+until curl -s http://localhost:8081/fhir/metadata > /dev/null 2>&1; do
+    sleep 5
+    echo "   Still waiting..."
+done
+echo "✅ Terminology Server is ready!"
+
 # Setup Python API
 echo "🐍 Setting up Python API..."
 cd api
@@ -50,3 +58,4 @@ echo ""
 echo "API will be at: http://localhost:8000"
 echo "Web will be at: http://localhost:5173"
 echo "EHRBase at: http://localhost:8080/ehrbase/rest/status"
+echo "Terminology Server at: http://localhost:8081/fhir/metadata"
