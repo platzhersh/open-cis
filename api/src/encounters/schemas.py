@@ -1,10 +1,10 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator, model_validator
 
 
-class EncounterType(str, Enum):
+class EncounterType(StrEnum):
     """Types of encounters based on FHIR/openEHR standards."""
 
     AMBULATORY = "ambulatory"
@@ -15,7 +15,7 @@ class EncounterType(str, Enum):
     FIELD = "field"
 
 
-class EncounterStatus(str, Enum):
+class EncounterStatus(StrEnum):
     """Status of the encounter."""
 
     PLANNED = "planned"

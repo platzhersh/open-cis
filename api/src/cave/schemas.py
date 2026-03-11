@@ -1,44 +1,44 @@
 """Schemas for CAVE (allergies & adverse reactions) with openEHR transparency."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class CaveCategory(str, Enum):
+class CaveCategory(StrEnum):
     MEDICATION = "medication"
     FOOD = "food"
     ENVIRONMENT = "environment"
     OTHER = "other"
 
 
-class CaveReactionType(str, Enum):
+class CaveReactionType(StrEnum):
     ALLERGY = "allergy"
     INTOLERANCE = "intolerance"
     UNKNOWN = "unknown"
 
 
-class CaveCriticality(str, Enum):
+class CaveCriticality(StrEnum):
     LOW = "low"
     HIGH = "high"
     INDETERMINATE = "indeterminate"
 
 
-class CaveStatus(str, Enum):
+class CaveStatus(StrEnum):
     ACTIVE = "active"
     INACTIVE = "inactive"
     RESOLVED = "resolved"
     REFUTED = "refuted"
 
 
-class ReactionSeverity(str, Enum):
+class ReactionSeverity(StrEnum):
     MILD = "mild"
     MODERATE = "moderate"
     SEVERE = "severe"
 
 
-class ReactionCertainty(str, Enum):
+class ReactionCertainty(StrEnum):
     SUSPECTED = "suspected"
     LIKELY = "likely"
     CONFIRMED = "confirmed"
