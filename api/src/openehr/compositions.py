@@ -11,6 +11,34 @@ VITAL_SIGNS_TEMPLATE_ID = VitalSignsBuilder.template_id
 # This uses a manual FLAT composition since oehrpy may not have a dedicated builder
 ADVERSE_REACTION_TEMPLATE_ID = "Open CIS - Adverse Reaction List.v1"
 
+# Mappings from application enum values to openEHR local terminology at-codes
+# Each maps to (at_code, display_text) tuples
+_STATUS_CODES: dict[str, tuple[str, str]] = {
+    "active": ("at0127", "Suspected"),
+    "inactive": ("at0127", "Suspected"),
+    "resolved": ("at0065", "Confirmed"),
+    "refuted": ("at0065", "Confirmed"),
+}
+
+_CRITICALITY_CODES: dict[str, tuple[str, str]] = {
+    "low": ("at0102", "Low"),
+    "high": ("at0103", "High"),
+    "indeterminate": ("at0124", "Indeterminate"),
+}
+
+_CATEGORY_CODES: dict[str, tuple[str, str]] = {
+    "food": ("at0121", "Food"),
+    "medication": ("at0122", "Medication"),
+    "environment": ("at0123", "Other"),
+    "other": ("at0123", "Other"),
+}
+
+_SEVERITY_CODES: dict[str, tuple[str, str]] = {
+    "mild": ("at0093", "Mild"),
+    "moderate": ("at0092", "Moderate"),
+    "severe": ("at0090", "Severe"),
+}
+
 
 def build_vital_signs_flat(
     systolic: int | None = None,
@@ -64,6 +92,18 @@ def build_adverse_reaction_flat(
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
+    # The template nests the evaluation inside a SECTION archetype
+    eval_prefix = (
+        f"{prefix}/allergies_and_adverse_reactions/adverse_reaction_risk:0"
+    )
+
+    status_code, status_value = _STATUS_CODES.get(
+        status, ("at0127", "Suspected")
+    )
+    crit_code, crit_value = _CRITICALITY_CODES.get(
+        criticality, ("at0124", "Indeterminate")
+    )
+    cat_code, cat_value = _CATEGORY_CODES.get(category, ("at0123", "Other"))
 
     flat: dict[str, Any] = {
         # Composition context
@@ -80,50 +120,45 @@ def build_adverse_reaction_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Adverse reaction evaluation
-        f"{prefix}/adverse_reaction_risk:0/substance|value": substance,
-        f"{prefix}/adverse_reaction_risk:0/status|code": status,
-        f"{prefix}/adverse_reaction_risk:0/status|value": status,
-        f"{prefix}/adverse_reaction_risk:0/criticality|code": criticality,
-        f"{prefix}/adverse_reaction_risk:0/criticality|value": criticality,
-        f"{prefix}/adverse_reaction_risk:0/category|code": category,
-        f"{prefix}/adverse_reaction_risk:0/category|value": category,
-        f"{prefix}/adverse_reaction_risk:0/reaction_type|code": reaction_type,
-        f"{prefix}/adverse_reaction_risk:0/reaction_type|value": reaction_type,
-        f"{prefix}/adverse_reaction_risk:0/language|code": "en",
-        f"{prefix}/adverse_reaction_risk:0/language|terminology": "ISO_639-1",
-        f"{prefix}/adverse_reaction_risk:0/encoding|code": "UTF-8",
-        f"{prefix}/adverse_reaction_risk:0/encoding|terminology": "IANA_character-sets",
+        f"{eval_prefix}/substance|value": substance,
+        f"{eval_prefix}/status|code": status_code,
+        f"{eval_prefix}/status|value": status_value,
+        f"{eval_prefix}/status|terminology": "local",
+        f"{eval_prefix}/criticality|code": crit_code,
+        f"{eval_prefix}/criticality|value": crit_value,
+        f"{eval_prefix}/criticality|terminology": "local",
+        f"{eval_prefix}/category|code": cat_code,
+        f"{eval_prefix}/category|value": cat_value,
+        f"{eval_prefix}/category|terminology": "local",
+        f"{eval_prefix}/language|code": "en",
+        f"{eval_prefix}/language|terminology": "ISO_639-1",
+        f"{eval_prefix}/encoding|code": "UTF-8",
+        f"{eval_prefix}/encoding|terminology": "IANA_character-sets",
     }
 
     if onset_date:
-        flat[f"{prefix}/adverse_reaction_risk:0/onset_of_last_reaction|value"] = (
+        flat[f"{eval_prefix}/onset_of_last_reaction|value"] = (
             onset_date.isoformat()
         )
 
     if comment:
-        flat[f"{prefix}/adverse_reaction_risk:0/comment|value"] = comment
+        flat[f"{eval_prefix}/comment|value"] = comment
 
     # Add reaction events
     if reactions:
         for i, reaction in enumerate(reactions):
-            reaction_prefix = (
-                f"{prefix}/adverse_reaction_risk:0/reaction:{i}"
-            )
+            reaction_prefix = f"{eval_prefix}/reaction_event:{i}"
             flat[f"{reaction_prefix}/manifestation:0|value"] = reaction[
                 "manifestation"
             ]
-            flat[f"{reaction_prefix}/severity|code"] = reaction.get(
-                "severity", "moderate"
+
+            sev = reaction.get("severity", "moderate")
+            sev_code, sev_value = _SEVERITY_CODES.get(
+                sev, ("at0092", "Moderate")
             )
-            flat[f"{reaction_prefix}/severity|value"] = reaction.get(
-                "severity", "moderate"
-            )
-            flat[f"{reaction_prefix}/certainty|code"] = reaction.get(
-                "certainty", "suspected"
-            )
-            flat[f"{reaction_prefix}/certainty|value"] = reaction.get(
-                "certainty", "suspected"
-            )
+            flat[f"{reaction_prefix}/severity_of_reaction|code"] = sev_code
+            flat[f"{reaction_prefix}/severity_of_reaction|value"] = sev_value
+            flat[f"{reaction_prefix}/severity_of_reaction|terminology"] = "local"
 
             if reaction.get("onset_date"):
                 onset = reaction["onset_date"]
@@ -148,6 +183,10 @@ def build_nka_flat(
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
+    # The exclusion_global is also nested inside the SECTION
+    excl_prefix = (
+        f"{prefix}/allergies_and_adverse_reactions/exclusion_-_global:0"
+    )
 
     return {
         f"{prefix}/context/start_time": now,
@@ -163,11 +202,11 @@ def build_nka_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Exclusion global - NKA
-        f"{prefix}/exclusion_global:0/global_exclusion_of_adverse_reactions|value": (
+        f"{excl_prefix}/global_exclusion_of_adverse_reactions|value": (
             "No known allergies"
         ),
-        f"{prefix}/exclusion_global:0/language|code": "en",
-        f"{prefix}/exclusion_global:0/language|terminology": "ISO_639-1",
-        f"{prefix}/exclusion_global:0/encoding|code": "UTF-8",
-        f"{prefix}/exclusion_global:0/encoding|terminology": "IANA_character-sets",
+        f"{excl_prefix}/language|code": "en",
+        f"{excl_prefix}/language|terminology": "ISO_639-1",
+        f"{excl_prefix}/encoding|code": "UTF-8",
+        f"{excl_prefix}/encoding|terminology": "IANA_character-sets",
     }
