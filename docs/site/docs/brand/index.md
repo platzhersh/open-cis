@@ -43,7 +43,7 @@ The wordmark uses weight contrast: **open** in light weight and **cis** in black
 
 For the full interactive reference with animated logo concept, light/dark mode lockups, favicon scale testing, and typography specimens:
 
-**[View the Brand Kit](../../brand/brand-kit.html)**{ .md-button .md-button--primary }
+**[View the Brand Kit](../../../brand/brand-kit.html)**{ .md-button .md-button--primary }
 
 ## Assets
 
