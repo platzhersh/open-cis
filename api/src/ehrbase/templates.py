@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Filename must be "{template_id}.opt"
 REQUIRED_TEMPLATES = [
     "IDCR - Vital Signs Encounter.v1",
+    "Open CIS - Adverse Reaction List.v1",
 ]
 
 
