@@ -196,5 +196,15 @@ The frontend supports both light and dark themes via Tailwind CSS `dark:` varian
 - When using hardcoded Tailwind color classes (e.g., `bg-red-50`, `text-gray-700`), always include corresponding `dark:` variants (e.g., `dark:bg-red-950`, `dark:text-gray-300`)
 - Test components visually in both light and dark mode before considering them complete
 
+### EHRBase FLAT Format Rules
+When building FLAT compositions for EHRBase (v2), suffixes depend on the RM data type:
+- **DV_TEXT**: bare path, no suffix — `path/to/substance`: `"Peanuts"`
+- **DV_DATE_TIME**: bare path, no suffix — `path/to/onset`: `"2024-01-01T00:00:00Z"`
+- **DV_CODED_TEXT**: use `|code`, `|value`, `|terminology` — `path/to/status|code`: `"at0127"`
+- **DV_QUANTITY**: use `|magnitude`, `|unit`
+- **DV_BOOLEAN**: bare path
+- Do **NOT** use `|value` for DV_TEXT or DV_DATE_TIME — EHRBase will reject with "Could not consume Parts"
+- Reference working example: `VitalSignsBuilder` from oehrpy SDK
+
 ### Railway Deployment
 Each service has a `railway.toml` for deployment configuration. See individual service directories for details.
