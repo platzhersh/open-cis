@@ -148,6 +148,14 @@ def build_adverse_reaction_flat(
     if reactions:
         for i, reaction in enumerate(reactions):
             reaction_prefix = f"{eval_prefix}/reaction_event:{i}"
+
+            # Manifestation is required - raise clear error if missing
+            if "manifestation" not in reaction:
+                raise ValueError(
+                    f"Missing required 'manifestation' key in reaction at index {i} "
+                    f"(reaction_prefix: {reaction_prefix}). Reaction data: {reaction}"
+                )
+
             flat[f"{reaction_prefix}/manifestation:0|value"] = reaction[
                 "manifestation"
             ]
