@@ -25,11 +25,11 @@ watch(
 function getCriticalityColor(criticality: string) {
   switch (criticality) {
     case 'high':
-      return 'bg-red-100 text-red-800 border-red-200'
+      return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800'
     case 'low':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-200 dark:border-yellow-800'
     default:
-      return 'bg-orange-100 text-orange-800 border-orange-200'
+      return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-200 dark:border-orange-800'
   }
 }
 </script>
@@ -39,12 +39,12 @@ function getCriticalityColor(criticality: string) {
     <!-- Error state -->
     <div
       v-if="store.error && !store.summary"
-      class="rounded-lg border-2 border-gray-200 bg-gray-50 p-4"
+      class="rounded-lg border-2 border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 p-4"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <ShieldQuestion class="h-5 w-5 text-gray-500" />
-          <span class="font-semibold text-sm text-gray-700">
+          <ShieldQuestion class="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">
             CAVE: Status Unavailable
           </span>
         </div>
@@ -63,8 +63,8 @@ function getCriticalityColor(criticality: string) {
       :class="[
         'rounded-lg border-2 p-4',
         store.summary.has_high_criticality
-          ? 'border-red-300 bg-red-50'
-          : 'border-yellow-300 bg-yellow-50'
+          ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950'
+          : 'border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950'
       ]"
     >
       <div class="flex items-center justify-between mb-3">
@@ -72,7 +72,7 @@ function getCriticalityColor(criticality: string) {
           <ShieldAlert
             :class="[
               'h-5 w-5',
-              store.summary.has_high_criticality ? 'text-red-600' : 'text-yellow-600'
+              store.summary.has_high_criticality ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
             ]"
           />
           <span class="font-semibold text-sm uppercase tracking-wide">
@@ -111,12 +111,12 @@ function getCriticalityColor(criticality: string) {
     <!-- NKA declared -->
     <div
       v-else-if="store.summary && store.summary.has_nka_declaration"
-      class="rounded-lg border-2 border-green-300 bg-green-50 p-4"
+      class="rounded-lg border-2 border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950 p-4"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <ShieldCheck class="h-5 w-5 text-green-600" />
-          <span class="font-semibold text-sm text-green-800">
+          <ShieldCheck class="h-5 w-5 text-green-600 dark:text-green-400" />
+          <span class="font-semibold text-sm text-green-800 dark:text-green-200">
             CAVE: No Known Allergies
           </span>
         </div>
@@ -132,16 +132,16 @@ function getCriticalityColor(criticality: string) {
     <!-- Not yet assessed -->
     <div
       v-else-if="store.summary"
-      class="rounded-lg border-2 border-gray-200 bg-gray-50 p-4"
+      class="rounded-lg border-2 border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 p-4"
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <ShieldQuestion class="h-5 w-5 text-gray-500" />
+          <ShieldQuestion class="h-5 w-5 text-gray-500 dark:text-gray-400" />
           <div>
-            <span class="font-semibold text-sm text-gray-700">
+            <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">
               CAVE: Not Yet Assessed
             </span>
-            <span class="text-xs text-gray-500 ml-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
               No allergy information has been recorded
             </span>
           </div>
