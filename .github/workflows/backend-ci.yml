@@ -58,6 +58,10 @@ jobs:
     - name: Push database schema
       run: prisma db push --skip-generate
 
+    - name: Validate openEHR templates
+      run: oehrpy-validate-opt templates/*.opt
+      continue-on-error: true
+
     - name: Run ruff linter
       run: ruff check .
 
