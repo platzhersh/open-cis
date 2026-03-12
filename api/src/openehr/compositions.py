@@ -120,7 +120,7 @@ def build_adverse_reaction_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Adverse reaction evaluation
-        f"{eval_prefix}/substance|value": substance,
+        f"{eval_prefix}/substance": substance,
         f"{eval_prefix}/status|code": status_code,
         f"{eval_prefix}/status|value": status_value,
         f"{eval_prefix}/status|terminology": "local",
@@ -137,12 +137,10 @@ def build_adverse_reaction_flat(
     }
 
     if onset_date:
-        flat[f"{eval_prefix}/onset_of_last_reaction|value"] = (
-            onset_date.isoformat()
-        )
+        flat[f"{eval_prefix}/onset_of_last_reaction"] = onset_date.isoformat()
 
     if comment:
-        flat[f"{eval_prefix}/comment|value"] = comment
+        flat[f"{eval_prefix}/comment"] = comment
 
     # Add reaction events
     if reactions:
@@ -156,7 +154,7 @@ def build_adverse_reaction_flat(
                     f"(reaction_prefix: {reaction_prefix}). Reaction data: {reaction}"
                 )
 
-            flat[f"{reaction_prefix}/manifestation:0|value"] = reaction[
+            flat[f"{reaction_prefix}/manifestation:0"] = reaction[
                 "manifestation"
             ]
 
@@ -170,12 +168,12 @@ def build_adverse_reaction_flat(
 
             if reaction.get("onset_date"):
                 onset = reaction["onset_date"]
-                flat[f"{reaction_prefix}/onset_of_reaction|value"] = (
+                flat[f"{reaction_prefix}/onset_of_reaction"] = (
                     onset.isoformat() if isinstance(onset, datetime) else str(onset)
                 )
 
             if reaction.get("description"):
-                flat[f"{reaction_prefix}/reaction_description|value"] = reaction[
+                flat[f"{reaction_prefix}/reaction_description"] = reaction[
                     "description"
                 ]
 
@@ -210,7 +208,7 @@ def build_nka_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Exclusion global - NKA
-        f"{excl_prefix}/global_exclusion_of_adverse_reactions|value": (
+        f"{excl_prefix}/global_exclusion_of_adverse_reactions": (
             "No known allergies"
         ),
         f"{excl_prefix}/language|code": "en",
