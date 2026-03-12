@@ -74,9 +74,9 @@ SELECT
     eval/data[at0001]/items[at0058]/value/value as reaction_type,
     eval/data[at0001]/items[at0006]/value/value as comment,
     eval/data[at0001]/items[at0117]/value/value as onset_of_last_reaction,
-    eval/data[at0001]/items[at0009]/items[at0010]/value/value as manifestation,
-    eval/data[at0001]/items[at0009]/items[at0021]/value/value as severity,
-    eval/data[at0001]/items[at0009]/items[at0025]/value/value as certainty,
+    eval/data[at0001]/items[at0009]/items[at0011]/value/value as manifestation,
+    eval/data[at0001]/items[at0009]/items[at0089]/value/value as severity,
+    eval/data[at0001]/items[at0009]/items[at0021]/value/value as certainty,
     eval/data[at0001]/items[at0009]/items[at0027]/value/value as onset_of_reaction,
     eval/data[at0001]/items[at0009]/items[at0032]/value/value as reaction_description
 FROM EHR e
