@@ -429,7 +429,7 @@ class CaveService:
         recorded_date = datetime.now(UTC)
 
         for key, value in composition.items():
-            if "substance" in key and value:
+            if ("substance" in key or "causative_agent" in key) and value:
                 substance = str(value)
             elif "category" in key and "|code" in key and value:
                 try:

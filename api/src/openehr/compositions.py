@@ -120,7 +120,8 @@ def build_adverse_reaction_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Adverse reaction evaluation
-        f"{eval_prefix}/substance": substance,
+        # Template renames at0002 "Substance/Agent" to "Causative agent"
+        f"{eval_prefix}/causative_agent": substance,
         f"{eval_prefix}/status|code": status_code,
         f"{eval_prefix}/status|value": status_value,
         f"{eval_prefix}/status|terminology": "local",
