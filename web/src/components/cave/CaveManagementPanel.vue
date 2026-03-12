@@ -111,26 +111,26 @@ async function handleEntrySaved() {
 function getCriticalityBadge(criticality: string) {
   switch (criticality) {
     case 'high':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
     case 'low':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
   }
 }
 
 function getStatusBadge(status: string) {
   switch (status) {
     case 'active':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
     case 'inactive':
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
     case 'resolved':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'
     case 'refuted':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
   }
 }
 
@@ -239,7 +239,7 @@ function handleOpenChange(open: boolean) {
                 </button>
                 <template v-if="entry.status === 'active'">
                   <button
-                    class="text-xs text-green-700 hover:underline px-2 py-1"
+                    class="text-xs text-green-700 dark:text-green-400 hover:underline px-2 py-1"
                     @click="handleStatusChange(entry, 'resolved')"
                   >
                     Resolve
@@ -247,7 +247,7 @@ function handleOpenChange(open: boolean) {
                 </template>
                 <template v-else-if="entry.status === 'resolved' || entry.status === 'inactive'">
                   <button
-                    class="text-xs text-yellow-700 hover:underline px-2 py-1"
+                    class="text-xs text-yellow-700 dark:text-yellow-400 hover:underline px-2 py-1"
                     @click="handleStatusChange(entry, 'active')"
                   >
                     Reactivate
@@ -300,7 +300,7 @@ function handleOpenChange(open: boolean) {
         <!-- Footer -->
         <div class="flex items-center justify-between mt-6 pt-4 border-t">
           <button
-            class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800"
+            class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
             @click="handleRecordNka"
           >
             <ShieldCheck class="h-4 w-4" />

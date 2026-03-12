@@ -190,5 +190,11 @@ Copy `.env.example` to `.env` (locally) and configure:
 - **HTTP**: Use `httpx.AsyncClient` for async requests (never `requests`)
 - **Database**: Prisma client is async-only (`interface = "asyncio"`)
 
+### Light / Dark Mode Support
+The frontend supports both light and dark themes via Tailwind CSS `dark:` variants. All UI implementations must work correctly in both modes:
+- Use semantic color tokens (`text-foreground`, `bg-background`, `text-muted-foreground`, etc.) from shadcn-vue where possible
+- When using hardcoded Tailwind color classes (e.g., `bg-red-50`, `text-gray-700`), always include corresponding `dark:` variants (e.g., `dark:bg-red-950`, `dark:text-gray-300`)
+- Test components visually in both light and dark mode before considering them complete
+
 ### Railway Deployment
 Each service has a `railway.toml` for deployment configuration. See individual service directories for details.
