@@ -5,11 +5,13 @@ on:
     branches: [ main, develop ]
     paths:
       - 'api/**'
+      - 'scripts/validate_templates.py'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'api/**'
+      - 'scripts/validate_templates.py'
       - '.github/workflows/backend-ci.yml'
 
 jobs:
@@ -57,6 +59,10 @@ jobs:
 
     - name: Push database schema
       run: prisma db push --skip-generate
+
+    - name: Validate openEHR templates
+      run: python ../scripts/validate_templates.py
+      working-directory: ./api
 
     - name: Run ruff linter
       run: ruff check .
