@@ -114,6 +114,15 @@ async def composition_not_found_handler(
     })
 
 
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={
+        "error": "internal_server_error",
+        "message": "An unexpected error occurred.",
+    })
+
+
 @app.get("/health")
 async def health_check():
     db_connected = prisma.is_connected()
