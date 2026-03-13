@@ -142,15 +142,14 @@ async def patient_not_found_handler(request, exc):
 
 ### 4. Backend: Standardized Error Response Schema
 
-All error responses follow this shape:
+All error responses follow this shape (`details` is optional and defaults to `undefined` when omitted):
 
 ```json
 {
   "error": "validation_error | not_found | service_unavailable | internal_error",
   "message": "Human-readable message suitable for display in the UI",
-  "details": {}
+  "details": {"stacktrace": {}}
 }
-```
 
 The `error` field is a machine-readable error code the frontend can use for branching logic (e.g., showing a retry button for `service_unavailable` but not for `validation_error`).
 
