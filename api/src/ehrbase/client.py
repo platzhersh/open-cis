@@ -53,7 +53,7 @@ class EHRBaseClient:
                 )
             await self._client.connect()
             return self._client
-        except (httpx.ConnectError, httpx.ConnectTimeout, OSError) as e:
+        except (httpx.RequestError, OSError) as e:
             raise EHRBaseUnavailableError(
                 message="Cannot connect to EHRBase. Is it running?"
             ) from e
@@ -66,6 +66,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise  # unreachable, but satisfies type checkers
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return {"ehr_id": {"value": ehr.ehr_id}, "system_id": ehr.system_id}
 
     async def get_ehr(self, ehr_id: str) -> dict[str, Any]:
@@ -76,6 +80,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return {"ehr_id": {"value": ehr.ehr_id}, "system_id": ehr.system_id}
 
     async def get_ehr_by_subject(
@@ -116,7 +124,7 @@ class EHRBaseClient:
             raise EHRBaseUnavailableError(
                 message=f"EHRBase error: {msg}"
             ) from e
-        except (httpx.ConnectError, httpx.ConnectTimeout, OSError) as e:
+        except (httpx.RequestError, OSError) as e:
             raise EHRBaseUnavailableError(
                 message="Cannot connect to EHRBase. Is it running?"
             ) from e
@@ -133,6 +141,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return result.composition or {}
 
     async def get_composition_formatted(
@@ -145,6 +157,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return result.composition or {}
 
     async def delete_composition(self, ehr_id: str, composition_uid: str) -> bool:
@@ -155,6 +171,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return True
 
     async def execute_aql(
@@ -169,7 +189,7 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
-        except (httpx.ConnectError, httpx.ConnectTimeout, OSError) as e:
+        except (httpx.RequestError, OSError) as e:
             raise EHRBaseUnavailableError(
                 message="Cannot connect to EHRBase. Is it running?"
             ) from e
@@ -186,7 +206,7 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
-        except (httpx.ConnectError, httpx.ConnectTimeout, OSError) as e:
+        except (httpx.RequestError, OSError) as e:
             raise EHRBaseUnavailableError(
                 message="Cannot connect to EHRBase. Is it running?"
             ) from e
@@ -207,6 +227,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return {"template_id": result.template_id, "status": "uploaded"}
 
     async def get_template_example(
@@ -219,6 +243,10 @@ class EHRBaseClient:
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
         return {"template_id": result.template_id, "concept": result.concept}
 
     async def health_check(self) -> bool:

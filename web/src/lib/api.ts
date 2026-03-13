@@ -47,10 +47,20 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   })
 
   if (!response.ok) {
-    const body: ApiErrorBody = await response.json().catch(() => ({
-      error: 'internal_error' as const,
+    const fallback: ApiErrorBody = {
+      error: 'internal_error',
       message: `Request failed (HTTP ${response.status})`,
-    }))
+    }
+    const raw = await response.json().catch(() => null)
+    const body: ApiErrorBody =
+      raw != null &&
+      typeof raw === 'object' &&
+      typeof raw.error === 'string' &&
+      typeof raw.message === 'string'
+        ? { error: raw.error, message: raw.message, details: raw.details }
+        : raw != null && typeof raw === 'object' && typeof raw.detail === 'string'
+          ? { error: fallback.error, message: raw.detail }
+          : fallback
     throw new ApiRequestError(response.status, body)
   }
 
