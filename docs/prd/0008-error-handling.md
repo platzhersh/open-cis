@@ -159,8 +159,8 @@ The `error` field is a machine-readable error code the frontend can use for bran
 Stop swallowing exceptions with broad `except Exception`. Instead:
 
 - **Write paths** (`record_vital_signs`, `create_cave_entry`): Let `EHRBaseValidationError` and `EHRBaseUnavailableError` propagate to the global handler. Only catch `ValueError` for business logic issues (patient not found).
-- **Read paths** (`get_vital_signs_for_patient`): Keep graceful degradation (return empty list) for `EHRBaseUnavailableError`, but log at warning level. Don't catch validation errors on read paths (they indicate a bug).
-- **Delete paths**: Keep returning `False` on failure but log the actual exception.
+- **Read paths** (`get_vital_signs_for_patient`): Prefer propagating `EHRBaseUnavailableError` to return 503. If graceful degradation is retained for UX reasons, require an explicit `partial_data: true`/`degraded: true` response signal so outages are not misread as "no records".
+- **Delete paths**: Prefer raising domain exceptions and mapping via global handlers instead of returning `False`, so clients receive specific failure causes.
 
 ### 6. Frontend: Enhanced API Client
 
