@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -11,6 +11,12 @@ from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.templates import ensure_templates_registered
 from src.encounters.router import router as encounters_router
+from src.errors import (
+    CompositionNotFoundError,
+    EHRBaseUnavailableError,
+    EHRBaseValidationError,
+    PatientNotFoundError,
+)
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
 
@@ -69,6 +75,43 @@ app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
 app.include_router(cave_router, prefix="/api/cave", tags=["cave"])
+
+
+@app.exception_handler(EHRBaseValidationError)
+async def ehrbase_validation_handler(request: Request, exc: EHRBaseValidationError) -> JSONResponse:
+    return JSONResponse(status_code=422, content={
+        "error": "validation_error",
+        "message": exc.message,
+        "details": exc.details,
+    })
+
+
+@app.exception_handler(EHRBaseUnavailableError)
+async def ehrbase_unavailable_handler(
+    request: Request, exc: EHRBaseUnavailableError
+) -> JSONResponse:
+    return JSONResponse(status_code=503, content={
+        "error": "service_unavailable",
+        "message": exc.message,
+    })
+
+
+@app.exception_handler(PatientNotFoundError)
+async def patient_not_found_handler(request: Request, exc: PatientNotFoundError) -> JSONResponse:
+    return JSONResponse(status_code=404, content={
+        "error": "not_found",
+        "message": exc.message,
+    })
+
+
+@app.exception_handler(CompositionNotFoundError)
+async def composition_not_found_handler(
+    request: Request, exc: CompositionNotFoundError
+) -> JSONResponse:
+    return JSONResponse(status_code=404, content={
+        "error": "not_found",
+        "message": exc.message,
+    })
 
 
 @app.get("/health")

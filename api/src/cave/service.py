@@ -22,6 +22,7 @@ from src.cave.schemas import (
 )
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import CAVE_ENTRIES_QUERY
+from src.errors import PatientNotFoundError
 from src.openehr.compositions import (
     ADVERSE_REACTION_TEMPLATE_ID,
     build_adverse_reaction_flat,
@@ -47,10 +48,16 @@ class CaveService:
     }
 
     async def create_cave_entry(self, data: CaveEntryCreate) -> CaveEntryResponse:
-        """Create a new CAVE entry as a composition in EHRBase."""
+        """Create a new CAVE entry as a composition in EHRBase.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+            EHRBaseValidationError: If EHRBase rejects the composition.
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(data.patient_id)
         if not patient:
-            raise ValueError("Patient not found")
+            raise PatientNotFoundError(message=f"Patient {data.patient_id} not found")
 
         ehr_id = patient.ehrId
 
@@ -118,14 +125,11 @@ class CaveService:
 
         ehr_id = patient.ehrId
 
-        try:
-            result = await ehrbase_client.execute_aql(
-                CAVE_ENTRIES_QUERY, parameters={"ehr_id": ehr_id}
-            )
-            rows = result.get("rows", [])
-            columns = result.get("columns", [])
-        except Exception:
-            return CaveListResponse(items=[], total=0)
+        result = await ehrbase_client.execute_aql(
+            CAVE_ENTRIES_QUERY, parameters={"ehr_id": ehr_id}
+        )
+        rows = result.get("rows", [])
+        columns = result.get("columns", [])
 
         items: list[CaveEntryResponse] = []
         for row in rows:
@@ -149,20 +153,21 @@ class CaveService:
     async def get_cave_entry(
         self, composition_uid: str, patient_id: str
     ) -> CaveEntryResponse | None:
-        """Get a single CAVE entry by composition UID."""
+        """Get a single CAVE entry by composition UID.
+
+        Raises:
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(patient_id)
         if not patient:
             return None
 
-        try:
-            composition = await ehrbase_client.get_composition(
-                ehr_id=patient.ehrId, composition_uid=composition_uid
-            )
-            return self._parse_composition_to_response(
-                composition, composition_uid, patient_id, patient.ehrId
-            )
-        except Exception:
-            return None
+        composition = await ehrbase_client.get_composition(
+            ehr_id=patient.ehrId, composition_uid=composition_uid
+        )
+        return self._parse_composition_to_response(
+            composition, composition_uid, patient_id, patient.ehrId
+        )
 
     async def update_cave_entry(
         self,
@@ -188,11 +193,7 @@ class CaveService:
         if not patient:
             return None
 
-        try:
-            await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
-        except Exception as e:
-            logger.error(f"Failed to delete old CAVE composition: {e}")
-            return None
+        await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
 
         # Create new composition with updated data
         create_data = CaveEntryCreate(
@@ -212,17 +213,19 @@ class CaveService:
     async def delete_cave_entry(
         self, composition_uid: str, patient_id: str
     ) -> bool:
-        """Delete a CAVE entry composition."""
+        """Delete a CAVE entry composition.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(patient_id)
         if not patient:
-            return False
+            raise PatientNotFoundError(message=f"Patient {patient_id} not found")
 
-        try:
-            return await ehrbase_client.delete_composition(
-                patient.ehrId, composition_uid
-            )
-        except Exception:
-            return False
+        return await ehrbase_client.delete_composition(
+            patient.ehrId, composition_uid
+        )
 
     async def get_cave_summary(self, patient_id: str) -> CaveSummaryResponse:
         """Get CAVE summary for the patient banner."""
@@ -249,10 +252,16 @@ class CaveService:
         )
 
     async def record_nka(self, data: NkaRequest) -> NkaResponse:
-        """Record 'No Known Allergies' for a patient."""
+        """Record 'No Known Allergies' for a patient.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+            EHRBaseValidationError: If EHRBase rejects the composition.
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(data.patient_id)
         if not patient:
-            raise ValueError("Patient not found")
+            raise PatientNotFoundError(message=f"Patient {data.patient_id} not found")
 
         ehr_id = patient.ehrId
 

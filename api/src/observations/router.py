@@ -31,10 +31,7 @@ async def record_vital_signs(data: VitalSignsCreate) -> VitalSignsResponse:
     Creates a composition in EHRBase with the vital signs data.
     Returns the recorded data with openEHR metadata for transparency.
     """
-    try:
-        return await observation_service.record_vital_signs(data)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e
+    return await observation_service.record_vital_signs(data)
 
 
 @router.get("/vital-signs", response_model=VitalSignsListResponse)
@@ -89,22 +86,17 @@ async def delete_vital_signs(
 @router.get("/openehr/templates", response_model=TemplateListResponse)
 async def list_templates() -> TemplateListResponse:
     """List all available operational templates in EHRBase."""
-    try:
-        templates = await ehrbase_client.list_templates()
-        return TemplateListResponse(
-            templates=[
-                TemplateInfo(
-                    template_id=t.get("template_id", ""),
-                    concept=t.get("concept"),
-                    archetype_id=t.get("archetype_id"),
-                )
-                for t in templates
-            ]
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=503, detail=f"Failed to fetch templates: {e}"
-        ) from e
+    templates = await ehrbase_client.list_templates()
+    return TemplateListResponse(
+        templates=[
+            TemplateInfo(
+                template_id=t.get("template_id", ""),
+                concept=t.get("concept"),
+                archetype_id=t.get("archetype_id"),
+            )
+            for t in templates
+        ]
+    )
 
 
 @router.get("/openehr/templates/{template_id}")
@@ -113,19 +105,12 @@ async def get_template_info(template_id: str) -> dict:
 
     Returns the template structure with example paths.
     """
-    try:
-        example = await ehrbase_client.get_template_example(template_id, format="FLAT")
-        return {
-            "template_id": template_id,
-            "format": "FLAT",
-            "example": example,
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=503, detail=f"Failed to fetch template: {e}"
-        ) from e
+    example = await ehrbase_client.get_template_example(template_id, format="FLAT")
+    return {
+        "template_id": template_id,
+        "format": "FLAT",
+        "example": example,
+    }
 
 
 @router.get("/openehr/compositions/{composition_uid}", response_model=RawCompositionResponse)

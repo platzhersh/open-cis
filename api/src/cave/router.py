@@ -22,10 +22,7 @@ async def create_cave_entry(data: CaveEntryCreate) -> CaveEntryResponse:
 
     Creates a composition in EHRBase with the adverse reaction data.
     """
-    try:
-        return await cave_service.create_cave_entry(data)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e
+    return await cave_service.create_cave_entry(data)
 
 
 @router.get("", response_model=CaveListResponse)
@@ -92,7 +89,4 @@ async def delete_cave_entry(
 @router.post("/nka", response_model=NkaResponse, status_code=201)
 async def record_nka(data: NkaRequest) -> NkaResponse:
     """Record 'No Known Allergies' for a patient."""
-    try:
-        return await cave_service.record_nka(data)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e
+    return await cave_service.record_nka(data)

@@ -1,10 +1,14 @@
 """Observation service for managing vital signs with openEHR transparency."""
 
+import logging
 from datetime import UTC, datetime
 from typing import Any
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import VITAL_SIGNS_DATE_RANGE_QUERY, VITAL_SIGNS_QUERY
+from src.errors import (
+    PatientNotFoundError,
+)
 from src.observations.schemas import (
     OpenEHRMetadataResponse,
     PathMappingResponse,
@@ -14,6 +18,8 @@ from src.observations.schemas import (
 )
 from src.openehr.compositions import VITAL_SIGNS_TEMPLATE_ID, build_vital_signs_flat
 from src.patients.repository import find_patient_by_id
+
+logger = logging.getLogger(__name__)
 
 
 class ObservationService:
@@ -38,10 +44,16 @@ class ObservationService:
     }
 
     async def record_vital_signs(self, data: VitalSignsCreate) -> VitalSignsResponse:
-        """Record vital signs for a patient, creating a composition in EHRBase."""
+        """Record vital signs for a patient, creating a composition in EHRBase.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+            EHRBaseValidationError: If EHRBase rejects the composition.
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(data.patient_id)
         if not patient:
-            raise ValueError("Patient not found")
+            raise PatientNotFoundError(message=f"Patient {data.patient_id} not found")
 
         ehr_id = patient.ehrId
 
@@ -85,22 +97,23 @@ class ObservationService:
     async def get_vital_signs(
         self, composition_uid: str, patient_id: str
     ) -> VitalSignsResponse | None:
-        """Get a single vital signs reading by composition UID."""
+        """Get a single vital signs reading by composition UID.
+
+        Raises:
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(patient_id)
         if not patient:
             return None
 
         ehr_id = patient.ehrId
 
-        try:
-            composition = await ehrbase_client.get_composition(
-                ehr_id=ehr_id, composition_uid=composition_uid
-            )
-            return self._parse_composition_to_response(
-                composition, composition_uid, patient_id, ehr_id
-            )
-        except Exception:
-            return None
+        composition = await ehrbase_client.get_composition(
+            ehr_id=ehr_id, composition_uid=composition_uid
+        )
+        return self._parse_composition_to_response(
+            composition, composition_uid, patient_id, ehr_id
+        )
 
     async def get_vital_signs_for_patient(
         self,
@@ -129,13 +142,9 @@ class ObservationService:
             query = VITAL_SIGNS_QUERY
             params = {"ehr_id": ehr_id}
 
-        try:
-            result = await ehrbase_client.execute_aql(query, parameters=params)
-            rows = result.get("rows", [])
-            columns = result.get("columns", [])
-        except Exception:
-            # EHRBase not available
-            return VitalSignsListResponse(items=[], total=0)
+        result = await ehrbase_client.execute_aql(query, parameters=params)
+        rows = result.get("rows", [])
+        columns = result.get("columns", [])
 
         # Parse results
         items: list[VitalSignsResponse] = []
@@ -185,15 +194,17 @@ class ObservationService:
         return VitalSignsListResponse(items=items, total=len(rows))
 
     async def delete_vital_signs(self, composition_uid: str, patient_id: str) -> bool:
-        """Delete a vital signs composition."""
+        """Delete a vital signs composition.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+            EHRBaseUnavailableError: If EHRBase is not reachable.
+        """
         patient = await find_patient_by_id(patient_id)
         if not patient:
-            return False
+            raise PatientNotFoundError(message=f"Patient {patient_id} not found")
 
-        try:
-            return await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
-        except Exception:
-            return False
+        return await ehrbase_client.delete_composition(patient.ehrId, composition_uid)
 
     async def get_raw_composition(
         self, composition_uid: str, patient_id: str, format: str = "FLAT"
@@ -203,18 +214,14 @@ class ObservationService:
         if not patient:
             return None
 
-        try:
-            composition = await ehrbase_client.get_composition_formatted(
-                patient.ehrId, composition_uid, format
-            )
-            return {
-                "format": format,
-                "template_id": self.TEMPLATE_ID,
-                "composition": composition,
-            }
-        except Exception:
-            pass
-        return None
+        composition = await ehrbase_client.get_composition_formatted(
+            patient.ehrId, composition_uid, format
+        )
+        return {
+            "format": format,
+            "template_id": self.TEMPLATE_ID,
+            "composition": composition,
+        }
 
     def _build_openehr_metadata(
         self,
