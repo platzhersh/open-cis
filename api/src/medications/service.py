@@ -5,6 +5,7 @@ from typing import Any
 
 from src.ehrbase.client import ehrbase_client
 from src.ehrbase.queries import MEDICATIONS_QUERY
+from src.errors import PatientNotFoundError
 from src.medications.schemas import MedicationOrderCreate, MedicationOrderResponse
 from src.patients.repository import find_patient_by_id
 
@@ -14,7 +15,7 @@ class MedicationService:
         """Create a new medication order for a patient."""
         patient = await find_patient_by_id(data.patient_id)
         if not patient:
-            raise ValueError("Patient not found")
+            raise PatientNotFoundError(message=f"Patient {data.patient_id} not found")
 
         # For now, return a placeholder - composition creation requires templates
         return MedicationOrderResponse(
