@@ -114,12 +114,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add web/package.json api/pyproject.toml api/src/main.py CHANGELOG.md
           git commit -m "chore(release): v${{ steps.version.outputs.next }}"
-          git tag "v${{ steps.version.outputs.next }}"
+          git tag -a "v${{ steps.version.outputs.next }}" -m "Release v${{ steps.version.outputs.next }}"
           # Verify main hasn't advanced since checkout; abort if it has
           git fetch origin main
           if ! git merge-base --is-ancestor origin/main HEAD; then
-            echo "origin/main has advanced past this checkout; aborting so a newer run can handle it."
-            exit 0
+            echo "::error::origin/main has advanced past this checkout; aborting so a newer run can handle it."
+            exit 1
           fi
           git push origin main --follow-tags
 
