@@ -35,7 +35,7 @@
     "@vitejs/plugin-vue": "^5.0.0",
     "@vitest/ui": "4.0.15",
     "@vue/test-utils": "^2.4.0",
-    "autoprefixer": "^10.4.0",
+    "autoprefixer": "^10.4.27",
     "eslint": "9.39.2",
     "eslint-plugin-vue": "^9.20.0",
     "happy-dom": "20.0.11",
