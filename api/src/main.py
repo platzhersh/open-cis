@@ -1,3 +1,4 @@
+import importlib.metadata
 import logging
 from contextlib import asynccontextmanager
 
@@ -56,10 +57,15 @@ async def lifespan(app: FastAPI):
     await ehrbase_client.close()
 
 
+try:
+    _version = importlib.metadata.version("cis-api")
+except importlib.metadata.PackageNotFoundError:
+    _version = "0.1.0"
+
 app = FastAPI(
     title="CIS API",
     description="Clinical Information System on openEHR",
-    version="0.1.0",
+    version=_version,
     lifespan=lifespan,
 )
 
@@ -121,6 +127,11 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         "error": "internal_server_error",
         "message": "An unexpected error occurred.",
     })
+
+
+@app.get("/api/version")
+async def get_version():
+    return {"version": app.version}
 
 
 @app.get("/health")
