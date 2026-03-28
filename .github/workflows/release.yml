@@ -47,13 +47,13 @@ jobs:
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
           if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --oneline --format="%s")
+            COMMITS=$(git log --format="%B")
           else
-            COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --format="%s")
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --format="%B")
           fi
 
-          # Check if there are releasable commits
-          if ! echo "$COMMITS" | grep -qE "^(feat|fix|perf)(\(.*\))?!?:"; then
+          # Check if there are releasable commits (feat, fix, perf, or any breaking change)
+          if ! echo "$COMMITS" | grep -qE "^(feat|fix|perf)(\(.*\))?!?:|^[a-zA-Z]+(\(.*\))?!:|BREAKING CHANGE:"; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No releasable commits found, skipping release."
             exit 0
@@ -61,7 +61,7 @@ jobs:
 
           # Determine bump type from conventional commits
           BUMP="patch"
-          if echo "$COMMITS" | grep -qE "^(feat|fix|refactor|perf)(\(.*\))?!:|BREAKING CHANGE:"; then
+          if echo "$COMMITS" | grep -qE "^[a-zA-Z]+(\(.*\))?!:|BREAKING CHANGE:"; then
             BUMP="major"
           elif echo "$COMMITS" | grep -qE "^feat(\(.*\))?:"; then
             BUMP="minor"
