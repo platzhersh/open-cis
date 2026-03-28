@@ -190,9 +190,11 @@ def build_nka_flat(
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
-    # The exclusion_global is nested inside SECTION.adhoc within the SECTION
+    # The exclusion_global evaluation is inside SECTION.adhoc in the OPT,
+    # but EHRBase v2 does not include the adhoc section in FLAT paths.
+    # Use GET /openehr/templates/{id}/webtemplate to verify paths if needed.
     excl_prefix = (
-        f"{prefix}/allergies_and_adverse_reactions/ad_hoc_heading/exclusion_global:0"
+        f"{prefix}/allergies_and_adverse_reactions/exclusion_global:0"
     )
 
     return {

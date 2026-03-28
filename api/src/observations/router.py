@@ -113,6 +113,36 @@ async def get_template_info(template_id: str) -> dict:
     }
 
 
+@router.get("/openehr/templates/{template_id}/webtemplate")
+async def get_web_template(template_id: str) -> dict:
+    """Get the web template JSON showing all valid FLAT paths.
+
+    Useful for debugging FLAT format composition building issues.
+    """
+    web_template = await ehrbase_client.get_web_template(template_id)
+
+    # Extract FLAT paths from the web template tree if available
+    flat_paths: list[str] = []
+    tree = web_template.get("webTemplate", {}).get("tree") or web_template.get("tree")
+    if tree:
+
+        def extract_paths(node: dict, prefix: str = "") -> None:
+            node_id = node.get("id", "")
+            current = f"{prefix}/{node_id}" if prefix else node_id
+            rm_type = node.get("rmType", "")
+            flat_paths.append(f"{current} ({rm_type})")
+            for child in node.get("children", []):
+                extract_paths(child, current)
+
+        extract_paths(tree)
+
+    return {
+        "template_id": template_id,
+        "flat_paths": flat_paths,
+        "raw": web_template,
+    }
+
+
 @router.get("/openehr/compositions/{composition_uid}", response_model=RawCompositionResponse)
 async def get_raw_composition(
     composition_uid: str,

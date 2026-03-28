@@ -249,6 +249,33 @@ class EHRBaseClient:
             ) from e
         return {"template_id": result.template_id, "concept": result.concept}
 
+    async def get_web_template(self, template_id: str) -> dict[str, Any]:
+        """Fetch the web template JSON for a template.
+
+        The web template shows the exact FLAT format paths that EHRBase accepts.
+        Useful for debugging composition building issues.
+        """
+        client = await self._ensure_connected()
+        try:
+            response = await client.client.get(
+                f"/rest/ecis/v1/template/{template_id}",
+                headers={"Accept": "application/json"},
+            )
+            if response.status_code == 200:
+                return response.json()
+            # Fallback: try the openEHR API with web template accept header
+            response = await client.client.get(
+                f"/rest/openehr/v1/definition/template/adl1.4/{template_id}",
+                headers={"Accept": "application/openehr.wt+json"},
+            )
+            if response.status_code == 200:
+                return response.json()
+            return {"error": f"Could not fetch web template: {response.status_code}"}
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
+
     async def health_check(self) -> bool:
         """Check if EHRBase is available."""
         client = await self._ensure_connected()
