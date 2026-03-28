@@ -97,9 +97,11 @@ async function handleRecordNka() {
       return
     }
   }
-  await store.recordNka(props.patientId)
-  await loadEntries()
-  emit('updated')
+  const success = await store.recordNka(props.patientId)
+  if (success) {
+    await loadEntries()
+    emit('updated')
+  }
 }
 
 async function handleEntrySaved() {
@@ -295,6 +297,11 @@ function handleOpenChange(open: boolean) {
         <div v-else class="py-8 text-center text-muted-foreground">
           <p class="mb-2">No CAVE entries recorded.</p>
           <p class="text-xs">Add an allergy/adverse reaction or record "No Known Allergies".</p>
+        </div>
+
+        <!-- Error (shown when entries exist but an action failed) -->
+        <div v-if="store.error && store.entries.length > 0" class="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive mt-3">
+          {{ store.error }}
         </div>
 
         <!-- Footer -->
