@@ -164,10 +164,23 @@ class EHRBaseClient:
         return result.composition or {}
 
     async def delete_composition(self, ehr_id: str, composition_uid: str) -> bool:
-        """Delete a composition by UID. Returns True if successful."""
+        """Delete a composition by UID. Returns True if successful.
+
+        Uses the full preceding_version_uid (including version) as required
+        by the openEHR REST API, rather than stripping the version suffix.
+        """
         client = await self._ensure_connected()
         try:
-            await client.delete_composition(ehr_id, composition_uid)
+            # Call the EHRBase REST API directly with the full composition UID
+            # (including version), because the oehrpy SDK strips the version
+            # number which can cause 500 errors in EHRBase v2.
+            response = await client.client.delete(
+                f"/rest/openehr/v1/ehr/{ehr_id}/composition/{composition_uid}",
+            )
+            if response.status_code not in (204, 200):
+                raise EHRBaseError(
+                    f"Request failed: {response.status_code} - {response.text}"
+                )
         except EHRBaseError as e:
             self._translate_ehrbase_error(e)
             raise

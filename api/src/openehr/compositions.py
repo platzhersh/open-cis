@@ -160,12 +160,15 @@ def build_adverse_reaction_flat(
             ]
 
             sev = reaction.get("severity", "moderate")
-            sev_code, sev_value = _SEVERITY_CODES.get(
+            _sev_code, sev_value = _SEVERITY_CODES.get(
                 sev, ("at0092", "Moderate")
             )
-            flat[f"{reaction_prefix}/severity_of_reaction|code"] = sev_code
-            flat[f"{reaction_prefix}/severity_of_reaction|value"] = sev_value
-            flat[f"{reaction_prefix}/severity_of_reaction|terminology"] = "local"
+            # Use DV_TEXT format (bare path) instead of DV_CODED_TEXT.
+            # The at0089 node allows both DV_CODED_TEXT and DV_TEXT in this
+            # template, and EHRBase v2 rejects the DV_CODED_TEXT suffixes
+            # (|code, |value, |terminology) for this element inside
+            # the reaction_event cluster.
+            flat[f"{reaction_prefix}/severity_of_reaction"] = sev_value
 
             if reaction.get("onset_date"):
                 onset = reaction["onset_date"]
@@ -211,11 +214,10 @@ def build_nka_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Exclusion global - NKA
+        # Note: Do NOT include language/encoding at the EVALUATION level here.
+        # EHRBase v2 auto-populates these for the exclusion_global archetype
+        # and rejects them with "Could not consume Parts" if sent explicitly.
         f"{excl_prefix}/global_exclusion_of_adverse_reactions": (
             "No known allergies"
         ),
-        f"{excl_prefix}/language|code": "en",
-        f"{excl_prefix}/language|terminology": "ISO_639-1",
-        f"{excl_prefix}/encoding|code": "UTF-8",
-        f"{excl_prefix}/encoding|terminology": "IANA_character-sets",
     }
