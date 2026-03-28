@@ -190,9 +190,11 @@ def build_nka_flat(
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
-    # The exclusion_global is nested inside SECTION.adhoc within the SECTION
+    # The exclusion_global evaluation is inside SECTION.adhoc in the OPT.
+    # No :0 index — exclusion_global has max occurrences of 1 (single),
+    # and EHRBase v2 does not use index notation for single-occurrence items.
     excl_prefix = (
-        f"{prefix}/allergies_and_adverse_reactions/ad_hoc_heading/exclusion_global:0"
+        f"{prefix}/allergies_and_adverse_reactions/ad_hoc_heading/exclusion_global"
     )
 
     return {
