@@ -147,7 +147,7 @@ curl -X POST http://localhost:8080/ehrbase/rest/ehr \
 
 This project uses **Semantic Versioning** with a single version for the monorepo (API + web). Releases are automated via GitHub Actions on every push to `main`.
 
-### Commit Messages
+### Commit Messages & PR Titles
 All commits must follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 feat(web): add patient timeline view    # → minor bump
@@ -158,8 +158,15 @@ feat!: redesign API response format     # → major bump (breaking)
 Types: `feat`, `fix`, `docs`, `ci`, `refactor`, `test`, `chore`, `perf`, `style`
 Scopes (optional): `api`, `web`, `ehrbase`, `db`, `infra`
 
+**PR titles must also follow this format.** When PRs are squash-merged, the PR title becomes the merge commit message on `main`, which is what drives the changelog and version bump. Examples:
+```
+feat(web): add patient timeline view
+fix(api): handle missing EHR gracefully
+docs: add deployment guide
+```
+
 ### How Releases Work
-1. Merge a PR (or push) to `main` with `feat` or `fix` commits
+1. Merge a PR (or push) to `main` — the PR title (squash-merge commit) determines the version bump
 2. GitHub Actions automatically: bumps version → generates changelog → tags → creates GitHub Release
 3. Non-releasable commits (`docs`, `ci`, `chore`) skip the release
 
