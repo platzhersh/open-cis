@@ -47,13 +47,18 @@ jobs:
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
           if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --format="%B")
+            SUBJECTS=$(git log --format="%s")
+            BODIES=$(git log --format="%B")
           else
-            COMMITS=$(git log "${LAST_TAG}..HEAD" --format="%B")
+            SUBJECTS=$(git log "${LAST_TAG}..HEAD" --format="%s")
+            BODIES=$(git log "${LAST_TAG}..HEAD" --format="%B")
           fi
 
-          # Check if there are releasable commits (feat, fix, perf, or any breaking change)
-          if ! echo "$COMMITS" | grep -qE "^(feat|fix|perf)(\(.*\))?!?:|^[a-zA-Z]+(\(.*\))?!:|BREAKING CHANGE:"; then
+          # Check if there are releasable commits (feat, fix, perf in subjects, or breaking change in bodies)
+          HAS_RELEASABLE=$(echo "$SUBJECTS" | grep -cE "^(feat|fix|perf)(\(.*\))?!?:" || true)
+          HAS_BREAKING_SUBJECT=$(echo "$SUBJECTS" | grep -cE "^[a-zA-Z]+(\(.*\))?!:" || true)
+          HAS_BREAKING_BODY=$(echo "$BODIES" | grep -cE "^BREAKING CHANGE:" || true)
+          if [ "$HAS_RELEASABLE" -eq 0 ] && [ "$HAS_BREAKING_SUBJECT" -eq 0 ] && [ "$HAS_BREAKING_BODY" -eq 0 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No releasable commits found, skipping release."
             exit 0
@@ -61,9 +66,9 @@ jobs:
 
           # Determine bump type from conventional commits
           BUMP="patch"
-          if echo "$COMMITS" | grep -qE "^[a-zA-Z]+(\(.*\))?!:|BREAKING CHANGE:"; then
+          if [ "$HAS_BREAKING_SUBJECT" -gt 0 ] || [ "$HAS_BREAKING_BODY" -gt 0 ]; then
             BUMP="major"
-          elif echo "$COMMITS" | grep -qE "^feat(\(.*\))?:"; then
+          elif echo "$SUBJECTS" | grep -qE "^feat(\(.*\))?:"; then
             BUMP="minor"
           fi
 
