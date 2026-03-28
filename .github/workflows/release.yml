@@ -95,7 +95,7 @@ jobs:
       - name: Bump version in FastAPI app
         if: steps.version.outputs.skip != 'true'
         run: |
-          sed -i 's/version="[^"]*"/version="${{ steps.version.outputs.next }}"/' api/src/main.py
+          sed -i 's/^    _version = ".*"/    _version = "${{ steps.version.outputs.next }}"/' api/src/main.py
 
       - name: Generate changelog
         if: steps.version.outputs.skip != 'true'
