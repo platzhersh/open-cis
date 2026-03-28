@@ -71,7 +71,7 @@ onMounted(() => {
           title="View source code on GitHub"
         >
           <Github :size="18" />
-          <span>Open Source</span>
+          <span class="hidden sm:inline">Open Source</span>
         </a>
         </div>
       </div>
