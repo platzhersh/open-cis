@@ -130,7 +130,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 @app.get("/api/version")
-async def get_version():
+async def get_version() -> dict[str, str]:
     return {"version": app.version}
 
 
