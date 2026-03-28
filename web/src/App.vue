@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { Github, Moon, Sun } from 'lucide-vue-next'
 
+const version = __APP_VERSION__
 const isDark = ref(false)
 
 function toggleDark() {
@@ -54,13 +55,14 @@ onMounted(() => {
         </nav>
         <div class="flex items-center gap-4">
           <button
-            @click="toggleDark"
             class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:text-primary hover:bg-accent"
             :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            @click="toggleDark"
           >
             <Sun v-if="isDark" :size="18" />
             <Moon v-else :size="18" />
           </button>
+        <span class="text-xs text-muted-foreground/60 font-mono">v{{ version }}</span>
         <a
           href="https://github.com/platzhersh/open-cis"
           target="_blank"

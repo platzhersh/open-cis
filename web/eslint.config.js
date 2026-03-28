@@ -74,6 +74,7 @@ export default [
         MouseEvent: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
+        __APP_VERSION__: 'readonly',
       },
     },
     plugins: {
