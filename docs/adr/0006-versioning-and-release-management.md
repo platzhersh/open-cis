@@ -70,17 +70,19 @@ git-cliff is configured via a `cliff.toml` at the repo root. It groups commits b
 
 ### 4. Release Workflow
 
-Releases are triggered manually via a **GitHub Actions workflow dispatch** (`workflow_dispatch`):
+Releases are triggered **automatically on every push to `main`** via a GitHub Actions workflow:
 
-1. Maintainer runs the "Release" workflow, specifying the bump level (`major`, `minor`, `patch`) or letting conventional commits determine it automatically.
+1. A commit lands on `main` (typically via a merged PR).
 2. The workflow:
+   - Determines the next version from conventional commit messages since the last tag (`feat` → minor, `fix` → patch, `BREAKING CHANGE` → major)
    - Bumps version in `package.json` and `pyproject.toml`
    - Runs `git-cliff` to regenerate `CHANGELOG.md`
    - Commits the version bump + changelog
    - Creates a git tag `v{version}`
-   - Pushes the tag
+   - Pushes the tag and commit
    - Creates a GitHub Release with the changelog excerpt as release notes
-3. Railway deploys from the tag or main branch as configured.
+3. If no releasable commits are found (e.g., only `docs` or `ci` changes), the workflow skips the release.
+4. Railway deploys from main as configured.
 
 ### 5. Version Display in Frontend
 
@@ -109,6 +111,7 @@ The API exposes a `GET /api/version` endpoint returning the current version. Thi
 
 - **Traceability**: every deployment is tied to a specific version and tag.
 - **Automated changelog**: contributors never need to manually write release notes.
+- **Zero manual steps**: no release workflow to remember — merge to main and it's done.
 - **Low overhead**: no new services, no GitHub Apps — just a CLI tool and a CI workflow.
 - **User-visible version**: testers can report "I see this bug on v0.3.1" instead of "I see this bug on the latest version".
 
@@ -119,7 +122,7 @@ The API exposes a `GET /api/version` endpoint returning the current version. Thi
 
 ### Risks
 
-- If we forget to run the release workflow, the changelog drifts. Mitigated by keeping it simple and documenting the process.
+- Every merge to main creates a release, which may feel noisy. Mitigated by skipping non-releasable commits (`docs`, `ci`, `chore`).
 - Conventional commit enforcement is best done via a commit-msg git hook (e.g., commitlint). We can add this later if discipline slips.
 
 ## Implementation Plan
