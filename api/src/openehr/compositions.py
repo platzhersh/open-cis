@@ -212,13 +212,19 @@ def build_nka_flat(
 
     # Use dynamically resolved path IDs if available, otherwise defaults
     p = resolved_paths or {}
-    section_id = p.get("section_id", "allergies_and_adverse_reactions")
-    adhoc_id = p.get("ad_hoc_heading_id", "ad_hoc_heading")
-    excl_id = p.get("exclusion_global_id", "exclusion_global")
     stmt_id = p.get("exclusion_statement_id", "global_exclusion_of_adverse_reactions")
 
-    # The exclusion_global evaluation is inside SECTION.adhoc in the OPT.
-    excl_prefix = f"{prefix}/{section_id}/{adhoc_id}/{excl_id}"
+    # Use the full FLAT prefix resolved from the web template tree walk.
+    # This avoids hardcoding intermediate sections (like SECTION.adhoc) which
+    # may differ between EHRBase versions.
+    if "exclusion_flat_prefix" in p:
+        excl_prefix = f"{prefix}/{p['exclusion_flat_prefix']}"
+    else:
+        # Fallback: assemble from individual IDs
+        section_id = p.get("section_id", "allergies_and_adverse_reactions")
+        adhoc_id = p.get("ad_hoc_heading_id", "ad_hoc_heading")
+        excl_id = p.get("exclusion_global_id", "exclusion_global")
+        excl_prefix = f"{prefix}/{section_id}/{adhoc_id}/{excl_id}"
 
     return {
         f"{prefix}/context/start_time": now,
