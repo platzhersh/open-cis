@@ -235,4 +235,8 @@ def build_nka_flat(
         f"{prefix}/composer|name": composer_name,
         # Exclusion global - NKA
         f"{excl_prefix}/{stmt_id}": "No known allergies",
+        f"{excl_prefix}/language|code": "en",
+        f"{excl_prefix}/language|terminology": "ISO_639-1",
+        f"{excl_prefix}/encoding|code": "UTF-8",
+        f"{excl_prefix}/encoding|terminology": "IANA_character-sets",
     }
