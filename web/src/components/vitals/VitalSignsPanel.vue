@@ -7,7 +7,7 @@ import VitalSignsChart from './VitalSignsChart.vue'
 import VitalSignsTable from './VitalSignsTable.vue'
 import RecordVitalsDialog from './RecordVitalsDialog.vue'
 import OpenEHRMetadataPanel from '@/components/openehr/OpenEHRMetadataPanel.vue'
-import { Plus, RefreshCw, ChevronDown } from 'lucide-vue-next'
+import { Plus, RefreshCw, ChevronDown, Loader2 } from 'lucide-vue-next'
 
 const props = defineProps<{
   patientId: string
@@ -134,7 +134,8 @@ watch(dateRange, (val) => {
 
     <!-- Loading State -->
     <div v-if="store.loading && store.readings.length === 0" class="py-8 text-center text-muted-foreground">
-      Loading vital signs...
+      <Loader2 class="h-5 w-5 animate-spin mx-auto mb-2" />
+      <p class="text-sm">Loading vital signs...</p>
     </div>
 
     <!-- Error State -->
