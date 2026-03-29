@@ -74,19 +74,6 @@ async def update_cave_entry(
     return result
 
 
-@router.delete("/{composition_uid}", status_code=204)
-async def delete_cave_entry(
-    composition_uid: str,
-    patient_id: str = Query(..., description="Patient ID for EHR lookup"),
-) -> None:
-    """Delete a CAVE entry composition."""
-    success = await cave_service.delete_cave_entry(composition_uid, patient_id)
-    if not success:
-        raise HTTPException(
-            status_code=404, detail="CAVE entry not found or delete failed"
-        )
-
-
 @router.post("/nka", response_model=NkaResponse, status_code=201)
 async def record_nka(data: NkaRequest) -> NkaResponse:
     """Record 'No Known Allergies' for a patient."""
@@ -102,6 +89,19 @@ async def remove_nka(
     if not success:
         raise HTTPException(
             status_code=404, detail="No NKA declaration found for this patient"
+        )
+
+
+@router.delete("/{composition_uid}", status_code=204)
+async def delete_cave_entry(
+    composition_uid: str,
+    patient_id: str = Query(..., description="Patient ID for EHR lookup"),
+) -> None:
+    """Delete a CAVE entry composition."""
+    success = await cave_service.delete_cave_entry(composition_uid, patient_id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="CAVE entry not found or delete failed"
         )
 
 
