@@ -28,6 +28,7 @@ from src.openehr.compositions import (
     build_adverse_reaction_flat,
     build_nka_flat,
 )
+from src.openehr.path_resolver import resolve_adverse_reaction_paths
 from src.patients.repository import find_patient_by_id
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,9 @@ class CaveService:
 
         ehr_id = patient.ehrId
 
+        # Resolve correct FLAT path IDs from the web template
+        resolved_paths = await resolve_adverse_reaction_paths(self.TEMPLATE_ID)
+
         flat_composition = build_adverse_reaction_flat(
             substance=data.substance,
             category=data.category.value,
@@ -79,6 +83,7 @@ class CaveService:
                 }
                 for r in data.reactions
             ],
+            resolved_paths=resolved_paths,
         )
 
         result = await ehrbase_client.create_composition(
@@ -265,7 +270,10 @@ class CaveService:
 
         ehr_id = patient.ehrId
 
-        flat_composition = build_nka_flat()
+        # Resolve correct FLAT path IDs from the web template
+        resolved_paths = await resolve_adverse_reaction_paths(self.TEMPLATE_ID)
+
+        flat_composition = build_nka_flat(resolved_paths=resolved_paths)
 
         result = await ehrbase_client.create_composition(
             ehr_id=ehr_id,

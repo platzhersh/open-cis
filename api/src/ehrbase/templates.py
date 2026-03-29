@@ -94,7 +94,7 @@ async def ensure_templates_registered() -> dict[str, bool]:
         logger.warning(f"Could not connect to EHRBase to check templates: {e}")
         return results
 
-    # Upload any missing required templates
+    # Upload all required templates (always re-upload to keep in sync)
     for template_id in REQUIRED_TEMPLATES:
         template_file = templates_dir / f"{template_id}.opt"
 
@@ -103,12 +103,9 @@ async def ensure_templates_registered() -> dict[str, bool]:
             results[template_id] = False
             continue
 
-        if template_id in existing:
-            logger.info(f"Template {template_id} already registered")
-            results[template_id] = True
-            continue
-
-        # Read and upload
+        # Always upload to ensure the template matches the repo version.
+        # EHRBase returns 409 if the template already exists and is identical,
+        # which upload_template_file handles gracefully.
         logger.info(f"Uploading template {template_id}...")
         try:
             async with aiofiles.open(template_file, encoding="utf-8") as f:

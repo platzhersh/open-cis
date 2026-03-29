@@ -12,6 +12,7 @@ from src.cave.schemas import (
     NkaResponse,
 )
 from src.cave.service import cave_service
+from src.ehrbase.client import ehrbase_client
 
 router = APIRouter()
 
@@ -90,3 +91,42 @@ async def delete_cave_entry(
 async def record_nka(data: NkaRequest) -> NkaResponse:
     """Record 'No Known Allergies' for a patient."""
     return await cave_service.record_nka(data)
+
+
+@router.get("/debug/webtemplate")
+async def debug_webtemplate() -> dict:
+    """Debug endpoint: show web template paths and FLAT example for CAVE template.
+
+    Returns the web template tree (with FLAT IDs) and an example FLAT composition
+    so we can verify the correct path structure.
+    """
+    template_id = cave_service.TEMPLATE_ID
+
+    web_template = await ehrbase_client.get_web_template(template_id)
+    flat_example = await ehrbase_client.get_flat_example(template_id)
+
+    # Extract FLAT paths from the web template tree
+    flat_paths: list[str] = []
+    tree = (
+        web_template.get("webTemplate", {}).get("tree")
+        or web_template.get("tree")
+    )
+    if tree:
+        stack: list[tuple[dict, str]] = [(tree, "")]
+        while stack:
+            node, prefix = stack.pop()
+            node_id = node.get("id", "")
+            rm_type = node.get("rmType", "")
+            current = f"{prefix}/{node_id}" if prefix else node_id
+            flat_paths.append(f"{current} ({rm_type})")
+            for child in reversed(node.get("children", [])):
+                stack.append((child, current))
+
+    return {
+        "template_id": template_id,
+        "web_template_flat_paths": flat_paths,
+        "flat_example_keys": sorted(flat_example.keys())
+        if isinstance(flat_example, dict) and "error" not in flat_example
+        else flat_example,
+        "flat_example": flat_example,
+    }

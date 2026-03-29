@@ -289,6 +289,26 @@ class EHRBaseClient:
                 message="Cannot connect to EHRBase. Is it running?"
             ) from e
 
+    async def get_flat_example(self, template_id: str) -> dict[str, Any]:
+        """Fetch an example FLAT composition from EHRBase.
+
+        Returns the example FLAT JSON showing all valid paths with sample values.
+        """
+        client = await self._ensure_connected()
+        try:
+            response = await client.client.get(
+                f"/rest/ecis/v1/template/{template_id}/example",
+                params={"format": "FLAT"},
+                headers={"Accept": "application/json"},
+            )
+            if response.status_code == 200:
+                return response.json()
+            return {"error": f"Could not fetch example: {response.status_code}"}
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
+
     async def health_check(self) -> bool:
         """Check if EHRBase is available."""
         client = await self._ensure_connected()
