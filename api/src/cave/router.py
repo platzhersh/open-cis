@@ -112,16 +112,15 @@ async def debug_webtemplate() -> dict:
         or web_template.get("tree")
     )
     if tree:
-
-        def extract_paths(node: dict, prefix: str = "") -> None:
+        stack: list[tuple[dict, str]] = [(tree, "")]
+        while stack:
+            node, prefix = stack.pop()
             node_id = node.get("id", "")
             rm_type = node.get("rmType", "")
             current = f"{prefix}/{node_id}" if prefix else node_id
             flat_paths.append(f"{current} ({rm_type})")
-            for child in node.get("children", []):
-                extract_paths(child, current)
-
-        extract_paths(tree)
+            for child in reversed(node.get("children", [])):
+                stack.append((child, current))
 
     return {
         "template_id": template_id,

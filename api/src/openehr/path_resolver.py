@@ -23,7 +23,6 @@ def _find_node_by_at_code(
     parent_at_code: str | None = None,
 ) -> dict[str, Any] | None:
     """Find a node in the web template tree by its archetype node ID."""
-    node_id = tree.get("nodeId", "") or tree.get("node_id", "")
     aql_path = tree.get("aqlPath", "") or ""
 
     # Check if this node matches
