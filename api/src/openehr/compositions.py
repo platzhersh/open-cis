@@ -85,17 +85,30 @@ def build_adverse_reaction_flat(
     comment: str | None = None,
     reactions: list[dict[str, Any]] | None = None,
     composer_name: str = "CIS System",
+    resolved_paths: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build an adverse reaction FLAT composition.
+
+    Args:
+        resolved_paths: Optional dict of dynamically resolved FLAT IDs from
+            the web template. If None, uses hardcoded defaults.
 
     Returns a FLAT dict ready to submit to EHRBase.
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
+
+    # Use dynamically resolved path IDs if available, otherwise defaults
+    p = resolved_paths or {}
+    section_id = p.get("section_id", "allergies_and_adverse_reactions")
+    reaction_id = p.get("adverse_reaction_id", "adverse_reaction_risk")
+    substance_id = p.get("substance_id", "causative_agent")
+    reaction_event_id = p.get("reaction_event_id", "reaction_event")
+    manifestation_id = p.get("manifestation_id", "manifestation")
+    severity_id = p.get("severity_id", "severity_of_reaction")
+
     # The template nests the evaluation inside a SECTION archetype
-    eval_prefix = (
-        f"{prefix}/allergies_and_adverse_reactions/adverse_reaction_risk:0"
-    )
+    eval_prefix = f"{prefix}/{section_id}/{reaction_id}:0"
 
     status_code, status_value = _STATUS_CODES.get(
         status, ("at0127", "Suspected")
@@ -120,8 +133,7 @@ def build_adverse_reaction_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Adverse reaction evaluation
-        # Template renames at0002 "Substance/Agent" to "Causative agent"
-        f"{eval_prefix}/causative_agent": substance,
+        f"{eval_prefix}/{substance_id}": substance,
         f"{eval_prefix}/status|code": status_code,
         f"{eval_prefix}/status|value": status_value,
         f"{eval_prefix}/status|terminology": "local",
@@ -146,7 +158,7 @@ def build_adverse_reaction_flat(
     # Add reaction events
     if reactions:
         for i, reaction in enumerate(reactions):
-            reaction_prefix = f"{eval_prefix}/reaction_event:{i}"
+            reaction_prefix = f"{eval_prefix}/{reaction_event_id}:{i}"
 
             # Manifestation is required - raise clear error if missing
             if "manifestation" not in reaction:
@@ -155,20 +167,19 @@ def build_adverse_reaction_flat(
                     f"(reaction_prefix: {reaction_prefix}). Reaction data: {reaction}"
                 )
 
-            flat[f"{reaction_prefix}/manifestation:0"] = reaction[
+            flat[f"{reaction_prefix}/{manifestation_id}:0"] = reaction[
                 "manifestation"
             ]
 
             sev = reaction.get("severity", "moderate")
-            _sev_code, sev_value = _SEVERITY_CODES.get(
+            sev_code, sev_value = _SEVERITY_CODES.get(
                 sev, ("at0092", "Moderate")
             )
-            # Use DV_TEXT format (bare path) instead of DV_CODED_TEXT.
-            # The at0089 node allows both DV_CODED_TEXT and DV_TEXT in this
-            # template, and EHRBase v2 rejects the DV_CODED_TEXT suffixes
-            # (|code, |value, |terminology) for this element inside
-            # the reaction_event cluster.
-            flat[f"{reaction_prefix}/severity_of_reaction"] = sev_value
+            # Severity is a CHOICE type (DV_CODED_TEXT | DV_TEXT).
+            # Use DV_CODED_TEXT with proper suffixes as that's the primary type.
+            flat[f"{reaction_prefix}/{severity_id}|code"] = sev_code
+            flat[f"{reaction_prefix}/{severity_id}|value"] = sev_value
+            flat[f"{reaction_prefix}/{severity_id}|terminology"] = "local"
 
             if reaction.get("onset_date"):
                 onset = reaction["onset_date"]
@@ -186,19 +197,28 @@ def build_adverse_reaction_flat(
 
 def build_nka_flat(
     composer_name: str = "CIS System",
+    resolved_paths: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build a 'No Known Allergies' FLAT composition.
 
     Uses the exclusion_global archetype to explicitly declare NKA.
+
+    Args:
+        resolved_paths: Optional dict of dynamically resolved FLAT IDs from
+            the web template. If None, uses hardcoded defaults.
     """
     now = datetime.now(UTC).isoformat()
     prefix = "adverse_reaction_list"
+
+    # Use dynamically resolved path IDs if available, otherwise defaults
+    p = resolved_paths or {}
+    section_id = p.get("section_id", "allergies_and_adverse_reactions")
+    adhoc_id = p.get("ad_hoc_heading_id", "ad_hoc_heading")
+    excl_id = p.get("exclusion_global_id", "exclusion_global")
+    stmt_id = p.get("exclusion_statement_id", "global_exclusion_of_adverse_reactions")
+
     # The exclusion_global evaluation is inside SECTION.adhoc in the OPT.
-    # No :0 index — exclusion_global has max occurrences of 1 (single),
-    # and EHRBase v2 does not use index notation for single-occurrence items.
-    excl_prefix = (
-        f"{prefix}/allergies_and_adverse_reactions/ad_hoc_heading/exclusion_global"
-    )
+    excl_prefix = f"{prefix}/{section_id}/{adhoc_id}/{excl_id}"
 
     return {
         f"{prefix}/context/start_time": now,
@@ -214,10 +234,5 @@ def build_nka_flat(
         f"{prefix}/territory|terminology": "ISO_3166-1",
         f"{prefix}/composer|name": composer_name,
         # Exclusion global - NKA
-        # Note: Do NOT include language/encoding at the EVALUATION level here.
-        # EHRBase v2 auto-populates these for the exclusion_global archetype
-        # and rejects them with "Could not consume Parts" if sent explicitly.
-        f"{excl_prefix}/global_exclusion_of_adverse_reactions": (
-            "No known allergies"
-        ),
+        f"{excl_prefix}/{stmt_id}": "No known allergies",
     }
