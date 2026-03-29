@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.1] - 2026-03-29
+
+### Bug Fixes
+
+- **api**: Dynamic FLAT path resolution from EHRBase web templates (#77) ([#77](https://github.com/platzhersh/open-cis/pull/77)) by @platzhersh
+
+### Documentation
+
+- Add PRD-0009 System Info View and update PRD index (#76) ([#76](https://github.com/platzhersh/open-cis/pull/76)) by @platzhersh
 ## [0.3.0] - 2026-03-29
 
 ### Features
