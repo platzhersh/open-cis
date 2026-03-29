@@ -266,6 +266,28 @@ class CaveService:
             entries=active_entries,
         )
 
+    async def remove_nka(self, patient_id: str) -> bool:
+        """Remove 'No Known Allergies' declaration by deleting the NKA composition.
+
+        Raises:
+            PatientNotFoundError: If the patient does not exist.
+        """
+        patient = await find_patient_by_id(patient_id)
+        if not patient:
+            raise PatientNotFoundError(message=f"Patient {patient_id} not found")
+
+        ehr_id = patient.ehrId
+
+        nka_result = await ehrbase_client.execute_aql(
+            NKA_CHECK_QUERY, parameters={"ehr_id": ehr_id}
+        )
+        rows = nka_result.get("rows", [])
+        if not rows:
+            return False
+
+        composition_uid = rows[0][0]
+        return await ehrbase_client.delete_composition(ehr_id, composition_uid)
+
     async def record_nka(self, data: NkaRequest) -> NkaResponse:
         """Record 'No Known Allergies' for a patient.
 
@@ -279,6 +301,18 @@ class CaveService:
             raise PatientNotFoundError(message=f"Patient {data.patient_id} not found")
 
         ehr_id = patient.ehrId
+
+        # Check if NKA already exists to prevent duplicates
+        nka_result = await ehrbase_client.execute_aql(
+            NKA_CHECK_QUERY, parameters={"ehr_id": ehr_id}
+        )
+        if nka_result.get("rows"):
+            existing_uid = nka_result["rows"][0][0]
+            return NkaResponse(
+                patient_id=data.patient_id,
+                has_nka_declaration=True,
+                composition_uid=existing_uid,
+            )
 
         # Resolve correct FLAT path IDs from the web template
         resolved_paths = await resolve_adverse_reaction_paths(self.TEMPLATE_ID)
