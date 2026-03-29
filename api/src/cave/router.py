@@ -93,6 +93,18 @@ async def record_nka(data: NkaRequest) -> NkaResponse:
     return await cave_service.record_nka(data)
 
 
+@router.delete("/nka", status_code=204)
+async def remove_nka(
+    patient_id: str = Query(..., description="Patient ID"),
+) -> None:
+    """Remove 'No Known Allergies' declaration for a patient."""
+    success = await cave_service.remove_nka(patient_id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="No NKA declaration found for this patient"
+        )
+
+
 @router.get("/debug/webtemplate")
 async def debug_webtemplate() -> dict:
     """Debug endpoint: show web template paths and FLAT example for CAVE template.

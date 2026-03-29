@@ -127,6 +127,21 @@ export const useCaveStore = defineStore('cave', () => {
     }
   }
 
+  async function removeNka(patientId: string): Promise<boolean> {
+    loading.value = true
+    error.value = null
+    try {
+      await api.delete(`/api/cave/nka?patient_id=${encodeURIComponent(patientId)}`)
+      await fetchSummary(patientId)
+      return true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to remove NKA declaration'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   function clearEntries() {
     entries.value = []
     summary.value = null
@@ -146,6 +161,7 @@ export const useCaveStore = defineStore('cave', () => {
     updateEntry,
     deleteEntry,
     recordNka,
+    removeNka,
     clearEntries,
   }
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'radix-vue'
-import { X, Plus, ShieldCheck, Loader2 } from 'lucide-vue-next'
+import { X, Plus, ShieldCheck, ShieldX, Loader2 } from 'lucide-vue-next'
 import { useCaveStore } from '@/stores/cave'
 import type { CaveEntry, CaveStatus } from '@/types/cave'
 import {
@@ -43,11 +43,14 @@ watch(
 )
 
 async function loadEntries() {
-  await store.fetchEntries(
-    props.patientId,
-    statusFilter.value || undefined,
-    categoryFilter.value || undefined
-  )
+  await Promise.all([
+    store.fetchEntries(
+      props.patientId,
+      statusFilter.value || undefined,
+      categoryFilter.value || undefined
+    ),
+    store.fetchSummary(props.patientId),
+  ])
 }
 
 // Reload when filters change
@@ -88,6 +91,17 @@ async function handleDelete(entry: CaveEntry) {
     emit('updated')
   } catch (e) {
     console.error('Failed to delete CAVE entry:', e)
+  }
+}
+
+async function handleRemoveNka() {
+  if (!window.confirm('Remove "No Known Allergies" declaration? This means the allergy status will be "Not Yet Assessed" unless there are active entries.')) {
+    return
+  }
+  const success = await store.removeNka(props.patientId)
+  if (success) {
+    await loadEntries()
+    emit('updated')
   }
 }
 
@@ -192,6 +206,24 @@ function handleOpenChange(open: boolean) {
             <option value="environment">Environment</option>
             <option value="other">Other</option>
           </select>
+        </div>
+
+        <!-- NKA status banner -->
+        <div
+          v-if="store.summary?.has_nka_declaration"
+          class="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 p-3 mb-4"
+        >
+          <div class="flex items-center gap-2 text-sm text-green-800 dark:text-green-200">
+            <ShieldCheck class="h-4 w-4" />
+            <span class="font-medium">"No Known Allergies" is currently recorded for this patient.</span>
+          </div>
+          <button
+            class="inline-flex items-center gap-1 text-xs font-medium text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:underline"
+            @click="handleRemoveNka"
+          >
+            <ShieldX class="h-3.5 w-3.5" />
+            Remove
+          </button>
         </div>
 
         <!-- Loading -->
@@ -307,12 +339,14 @@ function handleOpenChange(open: boolean) {
         <!-- Footer -->
         <div class="flex items-center justify-between mt-6 pt-4 border-t">
           <button
+            v-if="!store.summary?.has_nka_declaration"
             class="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
             @click="handleRecordNka"
           >
             <ShieldCheck class="h-4 w-4" />
             Record "No Known Allergies"
           </button>
+          <span v-else></span>
           <button
             class="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-9 px-4 hover:bg-accent hover:text-accent-foreground"
             @click="handleOpenChange(false)"
