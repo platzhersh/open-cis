@@ -28,6 +28,11 @@ const router = createRouter({
       name: 'encounter-detail',
       component: () => import('@/pages/encounters/EncounterDetailPage.vue'),
     },
+    {
+      path: '/system',
+      name: 'system',
+      component: () => import('@/pages/SystemInfoPage.vue'),
+    },
   ],
 })
 
