@@ -79,5 +79,36 @@ export interface EncounterUpdate {
   location?: string | null
 }
 
+// System info types
+export interface SystemVersions {
+  api: string
+  ehrbase: string | null
+}
+
+export interface SystemHealth {
+  api: string
+  database: string
+  ehrbase: string
+}
+
+export interface TemplateInfo {
+  template_id: string
+  concept: string
+  archetype_id: string
+}
+
+export interface DataStats {
+  patients: number
+  encounters: number
+  audit_logs: number
+}
+
+export interface SystemInfo {
+  versions: SystemVersions
+  health: SystemHealth
+  templates: TemplateInfo[] | null
+  stats: DataStats | null
+}
+
 // Re-export vitals types
 export * from './vitals'

@@ -52,6 +52,12 @@ onMounted(() => {
           >
             Encounters
           </RouterLink>
+          <RouterLink
+            to="/system"
+            class="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            System
+          </RouterLink>
         </nav>
         <div class="flex items-center gap-4">
           <button

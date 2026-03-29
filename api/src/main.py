@@ -20,6 +20,7 @@ from src.errors import (
 )
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
+from src.system.router import router as system_router
 
 # Configure logging
 logging.basicConfig(
@@ -81,6 +82,7 @@ app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
 app.include_router(cave_router, prefix="/api/cave", tags=["cave"])
+app.include_router(system_router, prefix="/api/system", tags=["system"])
 
 
 @app.exception_handler(EHRBaseValidationError)
