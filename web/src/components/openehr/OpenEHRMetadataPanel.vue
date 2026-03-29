@@ -4,7 +4,7 @@ import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, Di
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'radix-vue'
 import { useVitalsStore } from '@/stores/vitals'
 import type { VitalSignsReading, RawComposition, ArchetypeInfo } from '@/types'
-import { Copy, ExternalLink, Check, X } from 'lucide-vue-next'
+import { Copy, ExternalLink, Check, X, Loader2 } from 'lucide-vue-next'
 
 const props = defineProps<{
   open: boolean
@@ -272,8 +272,9 @@ function handleOpenChange(open: boolean) {
                       v-if="rawComposition && !loading"
                       class="rounded-lg border bg-muted/30 p-3 text-xs overflow-x-auto max-h-64"
                     >{{ formattedComposition }}</pre>
-                    <div v-else-if="loading" class="rounded-lg border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-                      Loading...
+                    <div v-else-if="loading" class="rounded-lg border bg-muted/30 p-8 text-center text-muted-foreground">
+                      <Loader2 class="h-4 w-4 animate-spin mx-auto mb-1" />
+                      <p class="text-sm">Loading...</p>
                     </div>
                     <div v-else class="rounded-lg border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
                       Composition data not available.
@@ -293,8 +294,9 @@ function handleOpenChange(open: boolean) {
                       v-if="rawComposition && !loading"
                       class="rounded-lg border bg-muted/30 p-3 text-xs overflow-x-auto max-h-64"
                     >{{ formattedComposition }}</pre>
-                    <div v-else-if="loading" class="rounded-lg border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-                      Loading...
+                    <div v-else-if="loading" class="rounded-lg border bg-muted/30 p-8 text-center text-muted-foreground">
+                      <Loader2 class="h-4 w-4 animate-spin mx-auto mb-1" />
+                      <p class="text-sm">Loading...</p>
                     </div>
                   </div>
                 </TabsContent>

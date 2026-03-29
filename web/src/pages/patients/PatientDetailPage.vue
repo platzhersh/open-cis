@@ -73,12 +73,12 @@ const formatEncounterType = (type: string) => {
 // Get badge color for status
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
-    planned: 'bg-blue-100 text-blue-800',
-    'in-progress': 'bg-yellow-100 text-yellow-800',
-    finished: 'bg-green-100 text-green-800',
-    cancelled: 'bg-gray-100 text-gray-800',
+    planned: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
+    'in-progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    finished: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
   }
-  return colors[status] || 'bg-gray-100 text-gray-800'
+  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
 }
 
 // Initialize edit form when entering edit mode
@@ -215,7 +215,8 @@ const openDeleteDialog = () => {
       v-if="store.loading"
       class="text-center py-8"
     >
-      <p class="text-muted-foreground">
+      <Loader2 class="h-5 w-5 animate-spin mx-auto mb-2 text-muted-foreground" />
+      <p class="text-sm text-muted-foreground">
         Loading patient...
       </p>
     </div>
@@ -425,8 +426,9 @@ const openDeleteDialog = () => {
             </RouterLink>
           </div>
 
-          <div v-if="encounterStore.loading" class="text-sm text-muted-foreground">
-            Loading...
+          <div v-if="encounterStore.loading" class="py-4 text-center text-muted-foreground">
+            <Loader2 class="h-4 w-4 animate-spin mx-auto mb-1" />
+            <p class="text-sm">Loading...</p>
           </div>
 
           <div v-else-if="recentEncounters.length === 0" class="text-sm text-muted-foreground">

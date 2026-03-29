@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus } from 'lucide-vue-next'
+import { Plus, Loader2 } from 'lucide-vue-next'
 import { useEncounterStore } from '@/stores/encounter'
 import { usePatientStore } from '@/stores/patient'
 import EncounterCreateDialog from '@/components/encounters/EncounterCreateDialog.vue'
@@ -49,14 +49,14 @@ const formatEncounterType = (type: EncounterType): string => {
 
 const getTypeBadgeClass = (type: EncounterType): string => {
   const classMap: Record<EncounterType, string> = {
-    ambulatory: 'bg-blue-100 text-blue-800',
-    emergency: 'bg-red-100 text-red-800',
-    inpatient: 'bg-purple-100 text-purple-800',
-    virtual: 'bg-green-100 text-green-800',
-    home: 'bg-yellow-100 text-yellow-800',
-    field: 'bg-orange-100 text-orange-800',
+    ambulatory: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
+    emergency: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
+    inpatient: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200',
+    virtual: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    home: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    field: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200',
   }
-  return classMap[type] || 'bg-gray-100 text-gray-800'
+  return classMap[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
 }
 
 const formatEncounterStatus = (status: EncounterStatus): string => {
@@ -71,12 +71,12 @@ const formatEncounterStatus = (status: EncounterStatus): string => {
 
 const getStatusBadgeClass = (status: EncounterStatus): string => {
   const classMap: Record<EncounterStatus, string> = {
-    planned: 'bg-sky-100 text-sky-800',
-    'in-progress': 'bg-green-100 text-green-800',
-    finished: 'bg-gray-100 text-gray-800',
-    cancelled: 'bg-red-100 text-red-800',
+    planned: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
+    'in-progress': 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    finished: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    cancelled: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
   }
-  return classMap[status] || 'bg-gray-100 text-gray-800'
+  return classMap[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
 }
 
 const formatDateTime = (dateTimeString: string): string => {
@@ -136,7 +136,8 @@ const handleEncounterCreated = () => {
       v-if="encounterStore.loading"
       class="text-center py-8"
     >
-      <p class="text-muted-foreground">
+      <Loader2 class="h-5 w-5 animate-spin mx-auto mb-2 text-muted-foreground" />
+      <p class="text-sm text-muted-foreground">
         Loading encounters...
       </p>
     </div>
@@ -162,87 +163,126 @@ const handleEncounterCreated = () => {
       </p>
     </div>
 
-    <div
-      v-else
-      class="rounded-lg border"
-    >
-      <table class="w-full">
-        <thead>
-          <tr class="border-b bg-muted/50">
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Patient Name
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Type
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Status
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Start Time
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Provider
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Location
-            </th>
-            <th class="h-12 px-4 text-left align-middle font-medium">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="encounter in encounterStore.encounters"
-            :key="encounter.id"
-            class="border-b hover:bg-muted/50 cursor-pointer transition-colors"
-            @click="navigateToEncounter(encounter.id)"
+    <template v-else>
+    <!-- Mobile: Card layout -->
+    <div class="space-y-3 md:hidden">
+      <div
+        v-for="encounter in encounterStore.encounters"
+        :key="encounter.id"
+        class="rounded-lg border p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+        @click="navigateToEncounter(encounter.id)"
+      >
+        <div class="flex items-center justify-between mb-2">
+          <button
+            class="text-sm font-medium text-primary hover:underline text-left truncate"
+            @click="navigateToPatient(encounter.patient_id, $event)"
           >
-            <td class="p-4 align-middle">
-              <button
-                class="text-primary hover:underline text-left"
-                @click="navigateToPatient(encounter.patient_id, $event)"
-              >
-                {{ getPatientName(encounter.patient_id) }}
-              </button>
-            </td>
-            <td class="p-4 align-middle">
-              <span
-                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                :class="getTypeBadgeClass(encounter.type)"
-              >
-                {{ formatEncounterType(encounter.type) }}
-              </span>
-            </td>
-            <td class="p-4 align-middle">
-              <span
-                class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                :class="getStatusBadgeClass(encounter.status)"
-              >
-                {{ formatEncounterStatus(encounter.status) }}
-              </span>
-            </td>
-            <td class="p-4 align-middle text-sm">
-              {{ formatDateTime(encounter.start_time) }}
-            </td>
-            <td class="p-4 align-middle text-sm text-muted-foreground">
-              {{ encounter.provider_name || '-' }}
-            </td>
-            <td class="p-4 align-middle text-sm text-muted-foreground">
-              {{ encounter.location || '-' }}
-            </td>
-            <td class="p-4 align-middle">
-              <button
-                class="text-sm text-primary hover:underline"
-                @click.stop="navigateToEncounter(encounter.id)"
-              >
-                View
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            {{ getPatientName(encounter.patient_id) }}
+          </button>
+          <div class="flex items-center gap-1.5 ml-2 shrink-0">
+            <span
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+              :class="getTypeBadgeClass(encounter.type)"
+            >
+              {{ formatEncounterType(encounter.type) }}
+            </span>
+            <span
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+              :class="getStatusBadgeClass(encounter.status)"
+            >
+              {{ formatEncounterStatus(encounter.status) }}
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-sm text-muted-foreground">
+          <span>{{ formatDateTime(encounter.start_time) }}</span>
+          <span v-if="encounter.provider_name">{{ encounter.provider_name }}</span>
+        </div>
+      </div>
     </div>
+
+    <!-- Desktop: Table layout -->
+    <div class="hidden md:block rounded-lg border">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b bg-muted/50">
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Patient Name
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Type
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Status
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Start Time
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Provider
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Location
+              </th>
+              <th class="h-12 px-4 text-left align-middle font-medium">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="encounter in encounterStore.encounters"
+              :key="encounter.id"
+              class="border-b hover:bg-muted/50 cursor-pointer transition-colors"
+              @click="navigateToEncounter(encounter.id)"
+            >
+              <td class="p-4 align-middle">
+                <button
+                  class="text-primary hover:underline text-left"
+                  @click="navigateToPatient(encounter.patient_id, $event)"
+                >
+                  {{ getPatientName(encounter.patient_id) }}
+                </button>
+              </td>
+              <td class="p-4 align-middle">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                  :class="getTypeBadgeClass(encounter.type)"
+                >
+                  {{ formatEncounterType(encounter.type) }}
+                </span>
+              </td>
+              <td class="p-4 align-middle">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                  :class="getStatusBadgeClass(encounter.status)"
+                >
+                  {{ formatEncounterStatus(encounter.status) }}
+                </span>
+              </td>
+              <td class="p-4 align-middle text-sm">
+                {{ formatDateTime(encounter.start_time) }}
+              </td>
+              <td class="p-4 align-middle text-sm text-muted-foreground">
+                {{ encounter.provider_name || '-' }}
+              </td>
+              <td class="p-4 align-middle text-sm text-muted-foreground">
+                {{ encounter.location || '-' }}
+              </td>
+              <td class="p-4 align-middle">
+                <button
+                  class="text-sm text-primary hover:underline"
+                  @click.stop="navigateToEncounter(encounter.id)"
+                >
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </template>
   </div>
 </template>
