@@ -88,6 +88,31 @@ def _find_child_id(node: dict[str, Any], at_code: str) -> str | None:
     return None
 
 
+def _find_path_to_node(
+    tree: dict[str, Any],
+    id_contains: str,
+    rm_type: str | None = None,
+    current_path: list[str] | None = None,
+) -> list[str] | None:
+    """Find the full FLAT path (list of node IDs) from root to a matching node.
+
+    Returns the list of IDs forming the path, or None if not found.
+    """
+    node_id = tree.get("id", "")
+    path = (current_path or []) + ([node_id] if node_id else [])
+
+    if id_contains in node_id:
+        if rm_type is None or tree.get("rmType", "") == rm_type:
+            return path
+
+    for child in tree.get("children", []):
+        result = _find_path_to_node(child, id_contains, rm_type, path)
+        if result:
+            return result
+
+    return None
+
+
 async def resolve_adverse_reaction_paths(
     template_id: str,
 ) -> dict[str, str]:
@@ -136,6 +161,20 @@ async def resolve_adverse_reaction_paths(
                     break
     else:
         logger.warning("Could not find exclusion_global node in web template")
+
+    # Build the full FLAT path prefix to the exclusion node by walking the
+    # tree, instead of assembling individual segment IDs.  This handles
+    # cases where intermediate sections (like SECTION.adhoc) may or may not
+    # appear in the web template depending on the EHRBase version.
+    excl_path_parts = _find_path_to_node(tree, "exclusion", "EVALUATION")
+    if excl_path_parts and len(excl_path_parts) >= 2:
+        # The first element is the composition root ID (e.g. "adverse_reaction_list"),
+        # which is already used as the prefix. Store the intermediate path segments
+        # between the root and the exclusion node (exclusive of root).
+        paths["exclusion_flat_prefix"] = "/".join(excl_path_parts[1:])
+        logger.info(
+            f"Resolved exclusion FLAT prefix: {paths['exclusion_flat_prefix']}"
+        )
 
     # Find the ad_hoc_heading section (between section and exclusion)
     adhoc_node = _find_node_by_id_pattern(tree, "ad_hoc", "SECTION")
