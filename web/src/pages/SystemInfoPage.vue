@@ -9,14 +9,14 @@ const frontendVersion = __APP_VERSION__
 
 const store = useSystemStore()
 const autoRefresh = ref(false)
-let intervalId: ReturnType<typeof setInterval> | null = null
+let intervalId: number | null = null
 
 function toggleAutoRefresh() {
   autoRefresh.value = !autoRefresh.value
   if (autoRefresh.value) {
-    intervalId = setInterval(() => store.fetchSystemInfo(), 30000)
+    intervalId = window.setInterval(() => store.fetchSystemInfo(), 30000)
   } else if (intervalId) {
-    clearInterval(intervalId)
+    window.clearInterval(intervalId)
     intervalId = null
   }
 }
@@ -26,7 +26,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (intervalId) clearInterval(intervalId)
+  if (intervalId) window.clearInterval(intervalId)
 })
 </script>
 
