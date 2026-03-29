@@ -86,6 +86,17 @@ WHERE e/ehr_id/value = $ehr_id
 ORDER BY c/context/start_time/value DESC
 """
 
+# Check for NKA (No Known Allergies) exclusion declaration
+NKA_CHECK_QUERY = """
+SELECT
+    c/uid/value as composition_uid
+FROM EHR e
+CONTAINS COMPOSITION c
+CONTAINS EVALUATION eval[openEHR-EHR-EVALUATION.exclusion_global.v1]
+WHERE e/ehr_id/value = $ehr_id
+LIMIT 1
+"""
+
 # Count vital signs for a patient
 VITAL_SIGNS_COUNT_QUERY = """
 SELECT COUNT(c/uid/value) as count

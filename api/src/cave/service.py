@@ -21,7 +21,7 @@ from src.cave.schemas import (
     ReactionSeverity,
 )
 from src.ehrbase.client import ehrbase_client
-from src.ehrbase.queries import CAVE_ENTRIES_QUERY
+from src.ehrbase.queries import CAVE_ENTRIES_QUERY, NKA_CHECK_QUERY
 from src.errors import PatientNotFoundError
 from src.openehr.compositions import (
     ADVERSE_REACTION_TEMPLATE_ID,
@@ -234,6 +234,16 @@ class CaveService:
 
     async def get_cave_summary(self, patient_id: str) -> CaveSummaryResponse:
         """Get CAVE summary for the patient banner."""
+        patient = await find_patient_by_id(patient_id)
+        if not patient:
+            return CaveSummaryResponse(
+                patient_id=patient_id,
+                total_active=0,
+                has_high_criticality=False,
+                has_nka_declaration=False,
+                entries=[],
+            )
+
         entries_response = await self.get_cave_entries(patient_id)
         entries = entries_response.items
 
@@ -242,11 +252,11 @@ class CaveService:
             e.criticality == CaveCriticality.HIGH for e in active_entries
         )
 
-        # Check for NKA declaration (look for exclusion archetype)
-        has_nka = any(
-            self.ARCHETYPES["exclusion_global"]["id"] in e.archetype_ids
-            for e in entries
+        # Check for NKA declaration via dedicated AQL query for exclusion_global archetype
+        nka_result = await ehrbase_client.execute_aql(
+            NKA_CHECK_QUERY, parameters={"ehr_id": patient.ehrId}
         )
+        has_nka = bool(nka_result.get("rows"))
 
         return CaveSummaryResponse(
             patient_id=patient_id,
