@@ -79,16 +79,40 @@ export interface EncounterUpdate {
   location?: string | null
 }
 
-// System info types
-export interface SystemVersions {
+// System info types — partial-failure envelope {status, data, error}
+
+export interface SectionError {
+  code: string
+  message: string
+}
+
+export interface HealthCheckItem {
+  status: 'ok' | 'error'
+  data: { status: string } | null
+  error: SectionError | null
+}
+
+export interface HealthChecksData {
+  api: HealthCheckItem
+  database: HealthCheckItem
+  ehrbase: HealthCheckItem
+}
+
+export interface HealthChecksSection {
+  status: 'ok' | 'partial' | 'error'
+  data: HealthChecksData
+  error: SectionError | null
+}
+
+export interface VersionData {
   api: string
   ehrbase: string | null
 }
 
-export interface SystemHealth {
-  api: string
-  database: string
-  ehrbase: string
+export interface VersionSection {
+  status: 'ok' | 'partial' | 'error'
+  data: VersionData | null
+  error: SectionError | null
 }
 
 export interface TemplateInfo {
@@ -97,17 +121,29 @@ export interface TemplateInfo {
   archetype_id: string
 }
 
-export interface DataStats {
+export interface TemplatesSection {
+  status: 'ok' | 'error'
+  data: TemplateInfo[] | null
+  error: SectionError | null
+}
+
+export interface DbCountsData {
   patients: number
   encounters: number
   audit_logs: number
 }
 
+export interface DbCountsSection {
+  status: 'ok' | 'error'
+  data: DbCountsData | null
+  error: SectionError | null
+}
+
 export interface SystemInfo {
-  versions: SystemVersions
-  health: SystemHealth
-  templates: TemplateInfo[] | null
-  stats: DataStats | null
+  healthChecks: HealthChecksSection
+  version: VersionSection
+  templates: TemplatesSection
+  dbCounts: DbCountsSection
 }
 
 // Re-export vitals types

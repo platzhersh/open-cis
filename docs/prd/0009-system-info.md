@@ -63,37 +63,88 @@ These are approximate counts for informational purposes, not real-time analytics
 
 ## API Changes
 
-### New Endpoint: `GET /api/system/info`
+### New Endpoint: `GET /api/system`
 
-Returns all system info in a single response to minimize frontend round-trips:
+Returns all system info in a single response to minimize frontend round-trips. The endpoint always returns HTTP 200 — subsystem failures are represented in the response body, not via HTTP status codes.
+
+#### Partial-Failure Envelope
+
+Every top-level section follows a stable `{status, data, error}` shape so the frontend can deterministically handle nulls, partial responses, and per-item errors:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `"ok"` \| `"partial"` \| `"error"` | Section-level rollup. `ok` = all data present, `partial` = some sub-items failed, `error` = entire section failed |
+| `data` | `object` \| `array` \| `null` | Section payload. `null` only when `status` is `"error"` |
+| `error` | `null` \| `{code: string, message: string}` | `null` when `status` is `"ok"`. Present when `status` is `"error"` or `"partial"` |
+
+Sub-items within a section (e.g., individual components in `healthChecks`, individual counters in `dbCounts`) follow the same `{status, data, error}` shape, enabling per-item error display in the UI.
+
+#### Full Response Schema
 
 ```json
 {
-  "versions": {
-    "api": "0.5.0",
-    "ehrbase": "2.0.0"
+  "healthChecks": {
+    "status": "partial",
+    "data": {
+      "api": {
+        "status": "ok",
+        "data": { "status": "healthy" },
+        "error": null
+      },
+      "database": {
+        "status": "ok",
+        "data": { "status": "connected" },
+        "error": null
+      },
+      "ehrbase": {
+        "status": "error",
+        "data": null,
+        "error": { "code": "EHRBASE_UNAVAILABLE", "message": "Cannot connect to EHRBase. Is it running?" }
+      }
+    },
+    "error": { "code": "PARTIAL_HEALTH", "message": "One or more health checks failed" }
   },
-  "health": {
-    "api": "healthy",
-    "database": "connected",
-    "ehrbase": "available"
+  "version": {
+    "status": "partial",
+    "data": {
+      "api": "0.5.0",
+      "ehrbase": null
+    },
+    "error": { "code": "PARTIAL_VERSION", "message": "Could not determine EHRBase version" }
   },
-  "templates": [
-    {
-      "template_id": "vital_signs_v2",
-      "concept": "Vital Signs",
-      "archetype_id": "openEHR-EHR-COMPOSITION.encounter.v1"
-    }
-  ],
-  "stats": {
-    "patients": 42,
-    "encounters": 128,
-    "audit_logs": 1024
+  "templates": {
+    "status": "ok",
+    "data": [
+      {
+        "template_id": "IDCR - Vital Signs Encounter.v1",
+        "concept": "Vital Signs Encounter",
+        "archetype_id": "openEHR-EHR-COMPOSITION.encounter.v1"
+      }
+    ],
+    "error": null
+  },
+  "dbCounts": {
+    "status": "ok",
+    "data": {
+      "patients": 42,
+      "encounters": 128,
+      "audit_logs": 1024
+    },
+    "error": null
   }
 }
 ```
 
-The endpoint aggregates health checks, template listing, version info, and DB counts. Individual failures (e.g., EHRBase down) should not fail the entire response — return partial data with null/error markers for unavailable sections.
+#### Status Derivation Rules
+
+| Section | `"ok"` | `"partial"` | `"error"` |
+|---------|--------|-------------|-----------|
+| `healthChecks` | All components reachable | Some components unreachable | Cannot perform any health check |
+| `version` | All versions resolved | Some versions unknown (e.g., EHRBase down) | Cannot determine any version |
+| `templates` | Template list fetched | N/A (atomic operation) | EHRBase unreachable |
+| `dbCounts` | All counts fetched | Some counts failed | Database disconnected |
+
+The endpoint aggregates health checks, template listing, version info, and DB counts. Individual subsystem failures (e.g., EHRBase down) are isolated per section — they never fail the entire response.
 
 ## Frontend Changes
 
@@ -110,7 +161,7 @@ The endpoint aggregates health checks, template listing, version info, and DB co
 
 | Component | Purpose |
 |-----------|---------|
-| `SystemInfoPage.vue` | Page container, fetches `/api/system/info` |
+| `SystemInfoPage.vue` | Page container, fetches `GET /api/system` |
 | `SystemHealthDiagram.vue` | Visual component diagram with status dots |
 | `TemplateList.vue` | Table of registered templates |
 

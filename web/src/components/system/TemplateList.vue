@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { TemplateInfo } from '@/types'
+import type { TemplatesSection } from '@/types'
 
 defineProps<{
-  templates: TemplateInfo[] | null
+  section: TemplatesSection
 }>()
 </script>
 
@@ -12,13 +12,13 @@ defineProps<{
       <h2 class="text-lg font-semibold">Registered openEHR Templates</h2>
     </div>
 
-    <div v-if="templates === null" class="p-6 text-center">
+    <div v-if="section.status === 'error'" class="p-6 text-center">
       <p class="text-sm text-muted-foreground">
-        Could not fetch templates. EHRBase may be unavailable.
+        {{ section.error?.message ?? 'Could not fetch templates. EHRBase may be unavailable.' }}
       </p>
     </div>
 
-    <div v-else-if="templates.length === 0" class="p-6 text-center">
+    <div v-else-if="!section.data || section.data.length === 0" class="p-6 text-center">
       <p class="text-sm text-muted-foreground">
         No templates registered. Upload templates to EHRBase to see them here.
       </p>
@@ -28,7 +28,7 @@ defineProps<{
       <!-- Mobile: card layout -->
       <div class="space-y-3 p-4 md:hidden">
         <div
-          v-for="t in templates"
+          v-for="t in section.data"
           :key="t.template_id"
           class="rounded-md border p-3 space-y-1"
         >
@@ -50,7 +50,7 @@ defineProps<{
           </thead>
           <tbody>
             <tr
-              v-for="t in templates"
+              v-for="t in section.data"
               :key="t.template_id"
               class="border-b"
             >

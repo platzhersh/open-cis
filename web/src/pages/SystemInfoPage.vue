@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { Loader2, RefreshCw } from 'lucide-vue-next'
-
-const frontendVersion = __APP_VERSION__
 import { useSystemStore } from '@/stores/system'
 import SystemHealthDiagram from '@/components/system/SystemHealthDiagram.vue'
 import TemplateList from '@/components/system/TemplateList.vue'
 
+const frontendVersion = __APP_VERSION__
+
 const store = useSystemStore()
 const autoRefresh = ref(false)
-let intervalId: ReturnType<typeof setInterval> | null = null
+let intervalId: ReturnType<typeof window.setInterval> | null = null
 
 function toggleAutoRefresh() {
   autoRefresh.value = !autoRefresh.value
   if (autoRefresh.value) {
-    intervalId = setInterval(() => store.fetchSystemInfo(), 30000)
+    intervalId = window.setInterval(() => store.fetchSystemInfo(), 30000)
   } else if (intervalId) {
-    clearInterval(intervalId)
+    window.clearInterval(intervalId)
     intervalId = null
   }
 }
@@ -26,7 +26,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (intervalId) clearInterval(intervalId)
+  if (intervalId) window.clearInterval(intervalId)
 })
 </script>
 
@@ -69,54 +69,57 @@ onUnmounted(() => {
 
     <template v-if="store.systemInfo">
       <!-- Health Diagram -->
-      <SystemHealthDiagram :health="store.systemInfo.health" />
+      <SystemHealthDiagram :health-checks="store.systemInfo.healthChecks" />
 
       <!-- Version Info + Data Stats -->
       <div class="grid gap-6 md:grid-cols-2">
         <!-- Versions -->
         <div class="rounded-lg border p-4 space-y-3">
           <h2 class="text-lg font-semibold">Versions</h2>
-          <div class="space-y-2">
+          <div v-if="store.systemInfo.version.data" class="space-y-2">
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">API</span>
-              <span class="font-mono">{{ store.systemInfo.versions.api }}</span>
+              <span class="font-mono">{{ store.systemInfo.version.data.api }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">EHRBase</span>
-              <span class="font-mono">{{ store.systemInfo.versions.ehrbase ?? 'N/A' }}</span>
+              <span class="font-mono">{{ store.systemInfo.version.data.ehrbase ?? 'N/A' }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">Frontend</span>
               <span class="font-mono">{{ frontendVersion }}</span>
             </div>
           </div>
+          <p v-else class="text-sm text-muted-foreground">
+            {{ store.systemInfo.version.error?.message ?? 'Could not determine versions' }}
+          </p>
         </div>
 
         <!-- Data Stats -->
         <div class="rounded-lg border p-4 space-y-3">
           <h2 class="text-lg font-semibold">Data Statistics</h2>
-          <div v-if="store.systemInfo.stats" class="space-y-2">
+          <div v-if="store.systemInfo.dbCounts.data" class="space-y-2">
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">Patients</span>
-              <span class="font-mono">{{ store.systemInfo.stats.patients }}</span>
+              <span class="font-mono">{{ store.systemInfo.dbCounts.data.patients }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">Encounters</span>
-              <span class="font-mono">{{ store.systemInfo.stats.encounters }}</span>
+              <span class="font-mono">{{ store.systemInfo.dbCounts.data.encounters }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-muted-foreground">Audit Logs</span>
-              <span class="font-mono">{{ store.systemInfo.stats.audit_logs }}</span>
+              <span class="font-mono">{{ store.systemInfo.dbCounts.data.audit_logs }}</span>
             </div>
           </div>
           <p v-else class="text-sm text-muted-foreground">
-            Database unavailable
+            {{ store.systemInfo.dbCounts.error?.message ?? 'Database unavailable' }}
           </p>
         </div>
       </div>
 
       <!-- Templates Table -->
-      <TemplateList :templates="store.systemInfo.templates" />
+      <TemplateList :section="store.systemInfo.templates" />
     </template>
   </div>
 </template>
