@@ -43,14 +43,12 @@ watch(
 )
 
 async function loadEntries() {
-  await Promise.all([
-    store.fetchEntries(
-      props.patientId,
-      statusFilter.value || undefined,
-      categoryFilter.value || undefined
-    ),
-    store.fetchSummary(props.patientId),
-  ])
+  await store.fetchEntries(
+    props.patientId,
+    statusFilter.value || undefined,
+    categoryFilter.value || undefined
+  )
+  await store.fetchSummary(props.patientId)
 }
 
 // Reload when filters change
@@ -120,7 +118,6 @@ async function handleRecordNka() {
 
 async function handleEntrySaved() {
   await loadEntries()
-  await store.fetchSummary(props.patientId)
   emit('updated')
 }
 

@@ -302,6 +302,18 @@ class CaveService:
 
         ehr_id = patient.ehrId
 
+        # Check if NKA already exists to prevent duplicates
+        nka_result = await ehrbase_client.execute_aql(
+            NKA_CHECK_QUERY, parameters={"ehr_id": ehr_id}
+        )
+        if nka_result.get("rows"):
+            existing_uid = nka_result["rows"][0][0]
+            return NkaResponse(
+                patient_id=data.patient_id,
+                has_nka_declaration=True,
+                composition_uid=existing_uid,
+            )
+
         # Resolve correct FLAT path IDs from the web template
         resolved_paths = await resolve_adverse_reaction_paths(self.TEMPLATE_ID)
 
