@@ -236,13 +236,15 @@ class ObservationService:
         if data.systolic is not None and data.diastolic is not None:
             archetype_ids.append(self.ARCHETYPES["blood_pressure"]["id"])
             bp_archetype = self.ARCHETYPES["blood_pressure"]
+            # FLAT paths sourced from Web Template: IDCR - Vital Signs Encounter.v1
+            # See ADR-0009 and oehrpy ADR-0003.
             path_mappings.extend(
                 [
                     PathMappingResponse(
                         field="systolic",
                         archetype_id=bp_archetype["id"],
                         archetype_path=f"{bp_archetype['systolic_path']}/magnitude",
-                        flat_path="vital_signs/blood_pressure:0/any_event:0/systolic|magnitude",
+                        flat_path="vital_signs_observations/vital_signs/blood_pressure/systolic|magnitude",
                         value=data.systolic,
                         unit="mm[Hg]",
                     ),
@@ -250,7 +252,7 @@ class ObservationService:
                         field="diastolic",
                         archetype_id=bp_archetype["id"],
                         archetype_path=f"{bp_archetype['diastolic_path']}/magnitude",
-                        flat_path="vital_signs/blood_pressure:0/any_event:0/diastolic|magnitude",
+                        flat_path="vital_signs_observations/vital_signs/blood_pressure/diastolic|magnitude",
                         value=data.diastolic,
                         unit="mm[Hg]",
                     ),
@@ -265,7 +267,7 @@ class ObservationService:
                     field="pulse_rate",
                     archetype_id=pulse_archetype["id"],
                     archetype_path=f"{pulse_archetype['rate_path']}/magnitude",
-                    flat_path="vital_signs/pulse_heart_beat:0/any_event:0/rate|magnitude",
+                    flat_path="vital_signs_observations/vital_signs/pulse_heart_beat/rate|magnitude",
                     value=data.pulse_rate,
                     unit="/min",
                 )

@@ -12,6 +12,9 @@ from src.ehrbase.client import ehrbase_client
 
 logger = logging.getLogger(__name__)
 
+# Web template cache status, populated by warm_web_template_cache()
+_web_template_cache_status: dict[str, bool] = {}
+
 # Template files that must be registered in EHRBase
 # Filename must be "{template_id}.opt"
 REQUIRED_TEMPLATES = [
@@ -125,3 +128,42 @@ async def ensure_templates_registered() -> dict[str, bool]:
         logger.info(f"Template check complete: {successful}/{total_templates} templates ready")
 
     return results
+
+
+async def warm_web_template_cache() -> dict[str, bool]:
+    """Fetch and cache Web Templates for all required templates.
+
+    Called during API startup after templates are registered.
+    Web Templates provide the authoritative FLAT paths for composition building.
+    See ADR-0009: oehrpy Web Template Integration for FLAT Path Sourcing.
+
+    Returns a dict mapping template_id to success status.
+    """
+    global _web_template_cache_status
+    results: dict[str, bool] = {}
+
+    for template_id in REQUIRED_TEMPLATES:
+        try:
+            web_template = await ehrbase_client.get_web_template(template_id)
+            if "error" in web_template:
+                logger.warning(
+                    f"Could not fetch web template for {template_id}: {web_template['error']}"
+                )
+                results[template_id] = False
+            else:
+                logger.info(f"Web template cached for {template_id}")
+                results[template_id] = True
+        except Exception as e:
+            logger.warning(f"Failed to fetch web template for {template_id}: {e}")
+            results[template_id] = False
+
+    _web_template_cache_status = results
+    successful = sum(1 for v in results.values() if v)
+    logger.info(f"Web template cache: {successful}/{len(REQUIRED_TEMPLATES)} templates cached")
+
+    return results
+
+
+def get_web_template_cache_status() -> dict[str, bool]:
+    """Return the current web template cache status per template_id."""
+    return _web_template_cache_status

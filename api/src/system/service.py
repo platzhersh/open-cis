@@ -5,6 +5,7 @@ from typing import Any
 
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
+from src.ehrbase.templates import get_web_template_cache_status
 from src.system.schemas import (
     DbCountsData,
     DbCountsSection,
@@ -158,7 +159,14 @@ class SystemService:
                 ),
             )
 
-        templates = [TemplateInfo(**t) for t in raw_templates]
+        cache_status = get_web_template_cache_status()
+        templates = [
+            TemplateInfo(
+                **t,
+                web_template_cached=cache_status.get(t.get("template_id", ""), False),
+            )
+            for t in raw_templates
+        ]
         return TemplatesSection(status="ok", data=templates, error=None)
 
     def _build_db_counts(

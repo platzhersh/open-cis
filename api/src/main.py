@@ -10,7 +10,7 @@ from src.cave.router import router as cave_router
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
-from src.ehrbase.templates import ensure_templates_registered
+from src.ehrbase.templates import ensure_templates_registered, warm_web_template_cache
 from src.encounters.router import router as encounters_router
 from src.errors import (
     CompositionNotFoundError,
@@ -50,6 +50,12 @@ async def lifespan(app: FastAPI):
                 logger.info(f"Template {template_id}: {status}")
     except Exception as e:
         logger.warning(f"Could not ensure templates are registered: {e}")
+
+    # Warm web template cache for FLAT path verification (ADR-0009)
+    try:
+        await warm_web_template_cache()
+    except Exception as e:
+        logger.warning(f"Could not warm web template cache: {e}")
 
     yield
     # Shutdown
