@@ -119,6 +119,7 @@ export interface TemplateInfo {
   template_id: string
   concept: string
   archetype_id: string
+  web_template_cached: boolean
 }
 
 export interface TemplatesSection {

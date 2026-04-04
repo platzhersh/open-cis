@@ -33,6 +33,9 @@ class TemplateInfo(BaseModel):
     template_id: str = Field(..., description="openEHR template identifier")
     concept: str = Field(..., description="Template concept name")
     archetype_id: str = Field(..., description="Root archetype identifier")
+    web_template_cached: bool = Field(
+        False, description="Whether the Web Template is cached for FLAT path resolution"
+    )
 
 
 class VersionData(BaseModel):
