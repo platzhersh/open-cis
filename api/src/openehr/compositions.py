@@ -5,6 +5,12 @@ from typing import Any
 
 from openehr_sdk.templates import VitalSignsBuilder
 
+# VitalSignsBuilder FLAT path constants are sourced from the Web Template:
+#   IDCR - Vital Signs Encounter.v1
+# Retrieved from EHRBase 2.26.0 via:
+#   GET /rest/openehr/v1/definition/template/adl1.4/{id}
+#   Accept: application/openehr.wt+json
+# See ADR-0009 and oehrpy ADR-0003 for derivation process.
 VITAL_SIGNS_TEMPLATE_ID = VitalSignsBuilder.template_id
 
 # Template ID for adverse reaction list

@@ -125,3 +125,35 @@ async def ensure_templates_registered() -> dict[str, bool]:
         logger.info(f"Template check complete: {successful}/{total_templates} templates ready")
 
     return results
+
+
+async def warm_web_template_cache() -> dict[str, bool]:
+    """Fetch and cache Web Templates for all required templates.
+
+    Called during API startup after templates are registered.
+    Web Templates provide the authoritative FLAT paths for composition building.
+    See ADR-0009: oehrpy Web Template Integration for FLAT Path Sourcing.
+
+    Returns a dict mapping template_id to success status.
+    """
+    results: dict[str, bool] = {}
+
+    for template_id in REQUIRED_TEMPLATES:
+        try:
+            web_template = await ehrbase_client.get_web_template(template_id)
+            if "error" in web_template:
+                logger.warning(
+                    f"Could not fetch web template for {template_id}: {web_template['error']}"
+                )
+                results[template_id] = False
+            else:
+                logger.info(f"Web template cached for {template_id}")
+                results[template_id] = True
+        except Exception as e:
+            logger.warning(f"Failed to fetch web template for {template_id}: {e}")
+            results[template_id] = False
+
+    successful = sum(1 for v in results.values() if v)
+    logger.info(f"Web template cache: {successful}/{len(REQUIRED_TEMPLATES)} templates cached")
+
+    return results
