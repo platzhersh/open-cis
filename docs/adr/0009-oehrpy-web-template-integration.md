@@ -4,7 +4,7 @@
 
 ## Status
 
-Pending — awaiting oehrpy v0.2.0 release implementing the Web Template client
+Accepted — oehrpy v0.7.0 implements the Web Template client
 (see oehrpy ADR-0003)
 
 ## Context
@@ -48,7 +48,7 @@ This works for the current single template, but it is a brittle approach:
 
 oehrpy ADR-0003 ("Web Template as Primary Source of Truth for FLAT Paths")
 formally establishes that FLAT paths must be sourced from the Web Template JSON,
-not inferred from OPT XML. oehrpy v0.2.0 implements this by introducing a
+not inferred from OPT XML. oehrpy v0.7.0 implements this by introducing a
 `WebTemplateClient` on `EHRBaseClient` and in-memory Web Template caching.
 
 Open CIS needs to adopt this pattern consistently so that the current accidental
@@ -58,10 +58,10 @@ added without repeating the manual discovery process.
 
 ## Decision
 
-Open CIS will integrate oehrpy's Web Template support (available from v0.2.0)
+Open CIS will integrate oehrpy's Web Template support (available from v0.7.0)
 as follows:
 
-### 1. Upgrade oehrpy dependency to v0.2.0
+### 1. Upgrade oehrpy dependency to v0.7.0
 
 `api/pyproject.toml` (or `requirements.txt`) pins `oehrpy>=0.2.0`. This is a
 prerequisite for all points below.
@@ -138,7 +138,7 @@ PathMapping(
 
 ### 6. No FlatValidator integration in this ADR's scope
 
-oehrpy's `FlatValidator` (PRD-0002 in oehrpy, v0.2.0) is not integrated into
+oehrpy's `FlatValidator` (PRD-0002 in oehrpy, v0.7.0) is not integrated into
 Open CIS's FastAPI layer in this ADR. Validation before submission to EHRBase
 remains the responsibility of Pydantic models on the API boundary and EHRBase's
 own composition validation. `FlatValidator` integration may be revisited in a
@@ -146,7 +146,7 @@ future ADR once it has stabilised in the oehrpy ecosystem.
 
 ## Alternatives Considered
 
-### Keep hardcoded paths, no oehrpy v0.2.0 dependency
+### Keep hardcoded paths, no oehrpy v0.7.0 dependency
 
 Continue using oehrpy v0.1.0 with the existing hardcoded path constants
 indefinitely.
@@ -172,7 +172,7 @@ cached Web Template tree at runtime for every composition created.
 
 **Deferred.** This is the architecturally cleanest long-term approach and aligns
 with oehrpy's stated direction for `BuilderGenerator`. However, it requires a
-stable Web Template traversal API in oehrpy that does not yet exist in v0.2.0.
+stable Web Template traversal API in oehrpy that does not yet exist in v0.7.0.
 It can be adopted in a future ADR once oehrpy provides a tree-walking builder
 interface.
 
@@ -191,8 +191,8 @@ interface.
 
 ### Negative
 
-- A hard dependency on oehrpy v0.2.0 means Open CIS cannot release new
-  template support until oehrpy v0.2.0 is published on PyPI.
+- A hard dependency on oehrpy v0.7.0 means Open CIS cannot release new
+  template support until oehrpy v0.7.0 is published on PyPI.
 - The manual path-derivation process (fetch Web Template, read `tree.id`
   fields, hardcode) is still required for each new template. It is documented
   and repeatable, but not automated.
