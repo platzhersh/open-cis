@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.auth.router import router as auth_router
 from src.cave.router import router as cave_router
 from src.config import settings
 from src.db.client import prisma
@@ -84,6 +85,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])

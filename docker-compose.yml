@@ -50,6 +50,17 @@ services:
       timeout: 5s
       retries: 5
 
+  dex:
+    image: ghcr.io/dex-idp/dex:v2.39.1
+    ports:
+      - "5556:5556"
+    volumes:
+      - ./dex/config.yaml:/etc/dex/config.docker.yaml
+    command: ["dex", "serve", "/etc/dex/config.docker.yaml"]
+    depends_on:
+      app-db:
+        condition: service_healthy
+
 volumes:
   ehrbase-data:
   app-data:

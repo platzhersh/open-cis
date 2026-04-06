@@ -3,8 +3,11 @@
 from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from src.audit.service import log_action
+from src.auth.dependencies import get_current_user
+from src.auth.permissions import require_role
 from src.ehrbase.client import ehrbase_client
 from src.observations.schemas import (
     RawCompositionResponse,
@@ -25,13 +28,23 @@ router = APIRouter()
 
 
 @router.post("/vital-signs", response_model=VitalSignsResponse, status_code=201)
-async def record_vital_signs(data: VitalSignsCreate) -> VitalSignsResponse:
+async def record_vital_signs(
+    data: VitalSignsCreate,
+    current_user=require_role("ADMIN", "CLINICIAN", "NURSE"),
+) -> VitalSignsResponse:
     """Record vital signs for a patient.
 
     Creates a composition in EHRBase with the vital signs data.
     Returns the recorded data with openEHR metadata for transparency.
     """
-    return await observation_service.record_vital_signs(data)
+    result = await observation_service.record_vital_signs(data)
+    await log_action(
+        user_id=current_user.id,
+        action="CREATE",
+        resource="VitalSigns",
+        resource_id=result.composition_uid,
+    )
+    return result
 
 
 @router.get("/vital-signs", response_model=VitalSignsListResponse)
@@ -41,6 +54,7 @@ async def list_vital_signs(
     to_date: datetime | None = Query(None, description="End of date range"),
     skip: int = Query(0, ge=0, description="Pagination offset"),
     limit: int = Query(100, ge=1, le=1000, description="Page size"),
+    current_user=Depends(get_current_user),
 ) -> VitalSignsListResponse:
     """List vital signs for a patient.
 
@@ -59,6 +73,7 @@ async def list_vital_signs(
 async def get_vital_signs(
     composition_uid: str,
     patient_id: str = Query(..., description="Patient ID for EHR lookup"),
+    current_user=Depends(get_current_user),
 ) -> VitalSignsResponse:
     """Get a single vital signs reading by composition UID."""
     result = await observation_service.get_vital_signs(composition_uid, patient_id)
@@ -71,11 +86,18 @@ async def get_vital_signs(
 async def delete_vital_signs(
     composition_uid: str,
     patient_id: str = Query(..., description="Patient ID for EHR lookup"),
+    current_user=require_role("ADMIN", "CLINICIAN"),
 ) -> None:
     """Delete a vital signs composition."""
     success = await observation_service.delete_vital_signs(composition_uid, patient_id)
     if not success:
         raise HTTPException(status_code=404, detail="Vital signs not found or delete failed")
+    await log_action(
+        user_id=current_user.id,
+        action="DELETE",
+        resource="VitalSigns",
+        resource_id=composition_uid,
+    )
 
 
 # ============================================================================
@@ -84,7 +106,7 @@ async def delete_vital_signs(
 
 
 @router.get("/openehr/templates", response_model=TemplateListResponse)
-async def list_templates() -> TemplateListResponse:
+async def list_templates(current_user=Depends(get_current_user)) -> TemplateListResponse:
     """List all available operational templates in EHRBase."""
     templates = await ehrbase_client.list_templates()
     return TemplateListResponse(
@@ -100,7 +122,7 @@ async def list_templates() -> TemplateListResponse:
 
 
 @router.get("/openehr/templates/{template_id}")
-async def get_template_info(template_id: str) -> dict:
+async def get_template_info(template_id: str, current_user=Depends(get_current_user)) -> dict:
     """Get detailed information about a template.
 
     Returns the template structure with example paths.
@@ -114,7 +136,7 @@ async def get_template_info(template_id: str) -> dict:
 
 
 @router.get("/openehr/templates/{template_id}/webtemplate")
-async def get_web_template(template_id: str) -> dict:
+async def get_web_template(template_id: str, current_user=Depends(get_current_user)) -> dict:
     """Get the web template JSON showing all valid FLAT paths.
 
     Useful for debugging FLAT format composition building issues.
@@ -148,6 +170,7 @@ async def get_raw_composition(
     composition_uid: str,
     patient_id: str = Query(..., description="Patient ID for EHR lookup"),
     format: Literal["FLAT", "STRUCTURED"] = Query("FLAT", description="Composition format"),
+    current_user=Depends(get_current_user),
 ) -> RawCompositionResponse:
     """Get raw composition data for transparency.
 
@@ -165,6 +188,7 @@ async def get_raw_composition(
 async def get_composition_paths(
     composition_uid: str,
     patient_id: str = Query(..., description="Patient ID for EHR lookup"),
+    current_user=Depends(get_current_user),
 ) -> dict:
     """Get all paths in a composition for transparency.
 
@@ -196,7 +220,7 @@ async def get_composition_paths(
 
 
 @router.get("/openehr/archetypes/{archetype_id}")
-async def get_archetype_info(archetype_id: str) -> dict:
+async def get_archetype_info(archetype_id: str, current_user=Depends(get_current_user)) -> dict:
     """Get information about an archetype.
 
     Provides archetype details and link to Clinical Knowledge Manager (CKM).

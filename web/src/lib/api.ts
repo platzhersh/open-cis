@@ -26,6 +26,10 @@ interface RequestOptions extends RequestInit {
   params?: Record<string, string | number>
 }
 
+function getAuthToken(): string | null {
+  return localStorage.getItem('oidc_token')
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { params, ...fetchOptions } = options
 
@@ -38,13 +42,30 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     url += `?${searchParams.toString()}`
   }
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(fetchOptions.headers as Record<string, string>),
+  }
+
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(url, {
     ...fetchOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers,
-    },
+    headers,
   })
+
+  if (response.status === 401) {
+    // Clear auth state and redirect to login
+    localStorage.removeItem('oidc_token')
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/auth/callback') {
+      window.location.href = '/login'
+    }
+    const fallback: ApiErrorBody = { error: 'internal_error', message: 'Unauthorized' }
+    throw new ApiRequestError(401, fallback)
+  }
 
   if (!response.ok) {
     const fallback: ApiErrorBody = {

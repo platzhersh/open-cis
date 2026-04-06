@@ -1,38 +1,45 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { api } from '@/lib/api'
 
-interface User {
+export interface CurrentUser {
   id: string
   email: string
   name: string
-  role: string
+  role: 'ADMIN' | 'CLINICIAN' | 'NURSE' | 'READONLY'
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
-  const token = ref<string | null>(null)
+  const token = ref<string | null>(localStorage.getItem('oidc_token'))
+  const user = ref<CurrentUser | null>(null)
 
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!token.value)
+  const isAdmin = computed(() => user.value?.role === 'ADMIN')
+  const canWrite = computed(() =>
+    !!user.value && ['ADMIN', 'CLINICIAN', 'NURSE'].includes(user.value.role),
+  )
 
-  function setUser(userData: User) {
-    user.value = userData
+  function setToken(newToken: string) {
+    token.value = newToken
+    localStorage.setItem('oidc_token', newToken)
   }
 
-  function setToken(tokenValue: string) {
-    token.value = tokenValue
-  }
-
-  function logout() {
-    user.value = null
+  function clearAuth() {
     token.value = null
+    user.value = null
+    localStorage.removeItem('oidc_token')
   }
 
-  return {
-    user,
-    token,
-    isAuthenticated,
-    setUser,
-    setToken,
-    logout,
+  async function fetchMe(): Promise<boolean> {
+    try {
+      const data = await api.get<CurrentUser>('/api/auth/me')
+      user.value = data
+      return true
+    } catch {
+      clearAuth()
+      return false
+    }
   }
+
+  return { token, user, isAuthenticated, isAdmin, canWrite, setToken, clearAuth, fetchMe }
 })
