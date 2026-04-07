@@ -16,6 +16,8 @@ const { copy: copyPassword, copied: passwordCopied } = useClipboard()
     <span class="text-muted-foreground w-20 shrink-0">{{ label }}</span>
     <code class="flex-1 text-xs truncate">{{ email }}</code>
     <button
+      type="button"
+      :aria-label="`Copy ${label} email`"
       class="inline-flex items-center justify-center rounded text-xs px-2 py-1 hover:bg-accent text-muted-foreground shrink-0"
       @click="copyEmail(props.email)"
     >
@@ -23,6 +25,8 @@ const { copy: copyPassword, copied: passwordCopied } = useClipboard()
     </button>
     <code class="w-20 text-xs shrink-0">{{ password }}</code>
     <button
+      type="button"
+      :aria-label="`Copy ${label} password`"
       class="inline-flex items-center justify-center rounded text-xs px-2 py-1 hover:bg-accent text-muted-foreground shrink-0"
       @click="copyPassword(props.password)"
     >

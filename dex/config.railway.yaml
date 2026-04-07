@@ -14,7 +14,7 @@ staticClients:
     redirectURIs:
       - ${DEX_REDIRECT_URI}
     name: Open CIS Web
-    secret: open-cis-secret
+    public: true
 
 enablePasswordDB: true
 

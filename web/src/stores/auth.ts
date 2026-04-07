@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api } from '@/lib/api'
+import { api, ApiRequestError } from '@/lib/api'
 
 export interface CurrentUser {
   id: string
@@ -30,14 +30,23 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('oidc_token')
   }
 
+  /**
+   * Fetch the current user profile.
+   * Returns true on success, false on auth failure (401/403).
+   * Throws on network/server errors to allow retry.
+   */
   async function fetchMe(): Promise<boolean> {
     try {
       const data = await api.get<CurrentUser>('/api/auth/me')
       user.value = data
       return true
-    } catch {
-      clearAuth()
-      return false
+    } catch (e) {
+      if (e instanceof ApiRequestError && (e.status === 401 || e.status === 403)) {
+        clearAuth()
+        return false
+      }
+      // Network or server error — don't clear auth, propagate for retry
+      throw e
     }
   }
 

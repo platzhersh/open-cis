@@ -11,23 +11,39 @@ const auth = useAuthStore()
 
 const error = ref<string | null>(null)
 
+function cleanupSession() {
+  sessionStorage.removeItem('oidc_code_verifier')
+  sessionStorage.removeItem('oidc_state')
+}
+
 onMounted(async () => {
   const code = route.query.code as string | undefined
+  const returnedState = route.query.state as string | undefined
   const codeVerifier = sessionStorage.getItem('oidc_code_verifier')
+  const savedState = sessionStorage.getItem('oidc_state')
 
   if (!code) {
+    cleanupSession()
     error.value = 'No authorization code received. Please try logging in again.'
     return
   }
 
   if (!codeVerifier) {
+    cleanupSession()
     error.value = 'Login session expired. Please try again.'
+    return
+  }
+
+  // CSRF protection: validate state parameter
+  if (!savedState || savedState !== returnedState) {
+    cleanupSession()
+    error.value = 'Invalid state parameter. Possible CSRF attack. Please try again.'
     return
   }
 
   try {
     const token = await exchangeCodeForToken(code, codeVerifier)
-    sessionStorage.removeItem('oidc_code_verifier')
+    cleanupSession()
     auth.setToken(token)
 
     const success = await auth.fetchMe()
@@ -37,6 +53,7 @@ onMounted(async () => {
       error.value = 'Failed to load user profile. Please try again.'
     }
   } catch (e) {
+    cleanupSession()
     error.value = e instanceof Error ? e.message : 'Authentication failed'
   }
 })

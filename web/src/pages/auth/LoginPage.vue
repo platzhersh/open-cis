@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Loader2, LogIn } from 'lucide-vue-next'
 import { generateCodeVerifier, generateCodeChallenge } from '@/lib/pkce'
-import { getOidcDiscovery, OIDC_CLIENT_ID, OIDC_REDIRECT_URI } from '@/lib/oidc'
+import { getOidcDiscovery, generateState, OIDC_CLIENT_ID, OIDC_REDIRECT_URI } from '@/lib/oidc'
 import DemoCredentialRow from '@/components/auth/DemoCredentialRow.vue'
 
 const isDemoMode = import.meta.env.VITE_APP_MODE === 'demo'
@@ -16,9 +16,11 @@ async function startLogin() {
     const discovery = await getOidcDiscovery()
     const codeVerifier = generateCodeVerifier()
     const codeChallenge = await generateCodeChallenge(codeVerifier)
+    const state = generateState()
 
-    // Store verifier for the callback
+    // Store verifier and state for the callback
     sessionStorage.setItem('oidc_code_verifier', codeVerifier)
+    sessionStorage.setItem('oidc_state', state)
 
     const params = new URLSearchParams({
       response_type: 'code',
@@ -27,6 +29,7 @@ async function startLogin() {
       scope: 'openid email profile',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
+      state,
     })
 
     window.location.href = `${discovery.authorization_endpoint}?${params.toString()}`

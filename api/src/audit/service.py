@@ -1,5 +1,6 @@
 import logging
 
+from prisma import Json
 from src.db.client import prisma
 
 logger = logging.getLogger(__name__)
@@ -22,8 +23,8 @@ async def log_action(
                 "resource": resource,
                 "resourceId": resource_id,
                 "ehrId": ehr_id,
-                "metadata": metadata,  # type: ignore[typeddict-item]  # Prisma Json type
+                "metadata": Json(metadata) if metadata is not None else None,
             }
         )
-    except Exception as e:
-        logger.error(f"Failed to write audit log: {e}")
+    except Exception:
+        logger.exception("Failed to write audit log")

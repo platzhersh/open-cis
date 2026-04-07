@@ -60,8 +60,13 @@ router.beforeEach(async (to) => {
 
   // Fetch user profile if token exists but user not loaded
   if (!auth.user) {
-    const success = await auth.fetchMe()
-    if (!success) return '/login'
+    try {
+      const success = await auth.fetchMe()
+      if (!success) return '/login'
+    } catch {
+      // Network/server error — allow navigation, user can retry
+      return true
+    }
   }
 
   return true
