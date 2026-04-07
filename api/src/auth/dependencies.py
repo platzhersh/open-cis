@@ -77,7 +77,7 @@ async def get_current_user(
                 "externalId": sub,
                 "email": email,
                 "name": name,
-                "role": "CLINICIAN",
+                "role": "CLINICIAN",  # type: ignore[typeddict-item]  # Prisma accepts string for enum
             },
             "update": {
                 "email": email,

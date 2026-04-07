@@ -22,7 +22,7 @@ async def log_action(
                 "resource": resource,
                 "resourceId": resource_id,
                 "ehrId": ehr_id,
-                "metadata": metadata,
+                "metadata": metadata,  # type: ignore[typeddict-item]  # Prisma Json type
             }
         )
     except Exception as e:
