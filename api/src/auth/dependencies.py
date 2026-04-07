@@ -5,6 +5,7 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from prisma.enums import Role
 from prisma.models import User
 
 from src.config import settings
@@ -74,13 +75,19 @@ async def get_current_user(
         ) from e
 
     sub: str | None = payload.get("sub")
-    email: str = payload.get("email", "")
-    name: str = payload.get("name", email)
+    email: str | None = payload.get("email")
+    name: str = payload.get("name", email or sub or "")
 
     if not sub:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token missing sub claim",
+        )
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing email claim",
         )
 
     # Read-then-create: avoid writes on read paths
@@ -89,23 +96,31 @@ async def get_current_user(
         return user
 
     # First login — check if a legacy user with this email exists (migration)
-    if email:
-        existing = await prisma.user.find_unique(where={"email": email})
-        if existing is not None:
-            updated = await prisma.user.update(
-                where={"id": existing.id},
-                data={"externalId": sub, "name": name},
-            )
-            if updated is not None:
-                return updated
+    existing = await prisma.user.find_unique(where={"email": email})
+    if existing is not None and existing.externalId.startswith("legacy-"):
+        updated = await prisma.user.update(
+            where={"id": existing.id},
+            data={"externalId": sub, "name": name},
+        )
+        if updated is not None:
+            return updated
 
-    # Brand-new user
-    user = await prisma.user.create(
-        data={
-            "externalId": sub,
-            "email": email,
-            "name": name,
-            "role": "CLINICIAN",  # type: ignore[typeddict-item]
-        }
-    )
+    # Brand-new user — guard against unique constraint race
+    try:
+        user = await prisma.user.create(
+            data={
+                "externalId": sub,
+                "email": email,
+                "name": name,
+                "role": Role.CLINICIAN,
+            }
+        )
+    except Exception as e:
+        # Race condition: another request created the user first
+        user = await prisma.user.find_unique(where={"externalId": sub})
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create user account",
+            ) from e
     return user
