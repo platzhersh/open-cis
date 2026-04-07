@@ -42,7 +42,7 @@ async def record_vital_signs(
         user_id=current_user.id,
         action="CREATE",
         resource="VitalSigns",
-        resource_id=result.composition_uid,
+        resource_id=result.id,
     )
     return result
 

@@ -27,7 +27,7 @@ async def create_patient(
         action="CREATE",
         resource="Patient",
         resource_id=patient.id,
-        ehr_id=patient.ehrId,
+        ehr_id=patient.ehr_id,
     )
     return patient
 
