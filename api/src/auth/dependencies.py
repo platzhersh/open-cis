@@ -43,9 +43,10 @@ async def _get_jwks() -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.get(jwks_uri, timeout=10)
         response.raise_for_status()
-        _jwks_cache = response.json()
+        jwks: dict = response.json()
+        _jwks_cache = jwks
         _jwks_cache_time = now
-        return _jwks_cache  # type: ignore[return-value]
+        return jwks
 
 
 async def get_current_user(
