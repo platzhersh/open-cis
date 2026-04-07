@@ -92,11 +92,12 @@ async def get_current_user(
     if email:
         existing = await prisma.user.find_unique(where={"email": email})
         if existing is not None:
-            user = await prisma.user.update(
+            updated = await prisma.user.update(
                 where={"id": existing.id},
                 data={"externalId": sub, "name": name},
             )
-            return user
+            if updated is not None:
+                return updated
 
     # Brand-new user
     user = await prisma.user.create(
