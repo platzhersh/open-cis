@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { HealthChecksSection } from '@/types'
+import type { HealthChecksSection, TerminologySection } from '@/types'
 
 defineProps<{
   healthChecks: HealthChecksSection
+  terminology: TerminologySection
 }>()
 
 function statusColor(itemStatus: string): string {
@@ -15,6 +16,31 @@ function statusLabel(item: { status: string; data: { status: string } | null }):
     return s.charAt(0).toUpperCase() + s.slice(1)
   }
   return 'Unavailable'
+}
+
+function terminologyStatusColor(status: string): string {
+  if (status === 'ok') return 'bg-green-500'
+  if (status === 'partial') return 'bg-yellow-500'
+  return 'bg-red-500'
+}
+
+function terminologyLabel(section: TerminologySection): string {
+  if (section.status === 'ok') return 'Online'
+  if (section.status === 'partial') return 'Degraded'
+  return 'Offline'
+}
+
+function terminologyHostname(section: TerminologySection): string {
+  if (!section.data?.url) return 'Not configured'
+  try {
+    const url = new URL(section.data.url)
+    if (url.hostname === 'tx.fhir.ch') return 'tx.fhir.ch (Swiss)'
+    if (['localhost', '127.0.0.1'].includes(url.hostname) || url.hostname.startsWith('snowstorm'))
+      return 'Self-hosted'
+    return url.hostname
+  } catch {
+    return section.data.url
+  }
 }
 </script>
 
@@ -80,6 +106,33 @@ function statusLabel(item: { status: string; data: { status: string } | null }):
           </div>
         </div>
       </div>
+
+      <!-- Connection line from API down to Terminology row -->
+      <div class="flex items-center gap-3">
+        <div class="min-w-[140px]" />
+        <span class="invisible">&rarr;</span>
+        <div class="min-w-[140px] flex justify-center">
+          <span class="text-muted-foreground">&darr;</span>
+        </div>
+      </div>
+
+      <!-- Row 3: Terminology Server -->
+      <div class="flex items-center gap-3">
+        <div class="min-w-[140px]" />
+        <span class="invisible">&rarr;</span>
+        <div class="flex items-center gap-2 rounded-md border px-4 py-3 min-w-[140px]">
+          <span class="h-2.5 w-2.5 rounded-full shrink-0" :class="terminologyStatusColor(terminology.status)" />
+          <div>
+            <p class="text-sm font-medium">Terminology</p>
+            <p class="text-xs text-muted-foreground">{{ terminologyLabel(terminology) }}</p>
+          </div>
+        </div>
+        <span class="text-muted-foreground text-xs">&larr;</span>
+        <div class="text-xs text-muted-foreground">
+          <p>{{ terminologyHostname(terminology) }}</p>
+          <p v-if="terminology.data?.response_ms != null">{{ terminology.data.response_ms }}ms</p>
+        </div>
+      </div>
     </div>
 
     <!-- Mobile: stacked cards -->
@@ -91,6 +144,7 @@ function statusLabel(item: { status: string; data: { status: string } | null }):
           { name: 'App Database', status: healthChecks.data.database.status, desc: 'PostgreSQL', label: statusLabel(healthChecks.data.database) },
           { name: 'EHRBase', status: healthChecks.data.ehrbase.status, desc: 'openEHR CDR', label: statusLabel(healthChecks.data.ehrbase) },
           { name: 'EHRBase DB', status: healthChecks.data.ehrbase.status, desc: 'PostgreSQL', label: statusLabel(healthChecks.data.ehrbase) },
+          { name: 'Terminology', status: terminology.status === 'ok' ? 'ok' as const : 'error' as const, desc: terminologyHostname(terminology), label: terminologyLabel(terminology) },
         ]"
         :key="item.name"
         class="flex items-center gap-2 rounded-md border px-4 py-3"
