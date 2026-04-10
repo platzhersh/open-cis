@@ -42,6 +42,7 @@ class TemplateInfo(BaseModel):
 class VersionData(BaseModel):
     api: str = Field(..., description="Open CIS API version")
     ehrbase: str | None = Field(None, description="EHRBase version (null if unavailable)")
+    oehrpy: str | None = Field(None, description="oehrpy SDK version (null if unavailable)")
 
 
 class DbCountsData(BaseModel):

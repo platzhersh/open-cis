@@ -171,7 +171,12 @@ class SystemService:
         if not isinstance(ehrbase_result, BaseException):
             ehrbase_version = ehrbase_result.get("version")
 
-        data = VersionData(api=api_version, ehrbase=ehrbase_version)
+        try:
+            oehrpy_version: str | None = importlib.metadata.version("oehrpy")
+        except importlib.metadata.PackageNotFoundError:
+            oehrpy_version = None
+
+        data = VersionData(api=api_version, ehrbase=ehrbase_version, oehrpy=oehrpy_version)
 
         if ehrbase_version is not None:
             return VersionSection(status="ok", data=data, error=None)

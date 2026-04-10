@@ -92,6 +92,10 @@ onUnmounted(() => {
               <span class="text-muted-foreground">Frontend</span>
               <span class="font-mono">{{ frontendVersion }}</span>
             </div>
+            <div class="flex justify-between text-sm">
+              <a href="https://platzhersh.github.io/oehrpy/" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors hover:underline">oehrpy</a>
+              <span class="font-mono">{{ store.systemInfo.version.data.oehrpy ?? 'N/A' }}</span>
+            </div>
           </div>
           <p v-else class="text-sm text-muted-foreground">
             {{ store.systemInfo.version.error?.message ?? 'Could not determine versions' }}

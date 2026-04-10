@@ -108,6 +108,7 @@ export interface HealthChecksSection {
 export interface VersionData {
   api: string
   ehrbase: string | null
+  oehrpy: string | null
 }
 
 export interface VersionSection {
