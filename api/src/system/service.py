@@ -1,6 +1,7 @@
 import asyncio
 import importlib.metadata
 import logging
+import xml.etree.ElementTree as ET
 from typing import Any
 
 from src.config import settings
@@ -243,13 +244,15 @@ class SystemService:
         except Exception:
             return result
 
-        # Fetch version from EHRBase status endpoint
+        # Fetch version from EHRBase status endpoint (returns XML)
         try:
             client = await ehrbase_client._ensure_connected()
             response = await client.client.get("/rest/status")
             if response.status_code == 200:
-                data = response.json()
-                result["version"] = data.get("version", "unknown")
+                root = ET.fromstring(response.text)
+                version_el = root.find("ehrbase_version")
+                if version_el is not None and version_el.text:
+                    result["version"] = version_el.text
         except Exception as e:
             logger.debug("Could not fetch EHRBase version: %s", e)
 
