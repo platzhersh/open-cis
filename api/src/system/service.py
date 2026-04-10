@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+import json
 import logging
 import xml.etree.ElementTree as ET
 from typing import Any
@@ -244,15 +245,48 @@ class SystemService:
         except Exception:
             return result
 
-        # Fetch version from EHRBase status endpoint (returns XML)
+        # Fetch version from EHRBase /rest/status endpoint.
+        # The response may be XML (default) or JSON depending on the Accept
+        # header the HTTP client sends.  We try both formats to be safe.
         try:
             client = await ehrbase_client._ensure_connected()
             response = await client.client.get("/rest/status")
             if response.status_code == 200:
-                root = ET.fromstring(response.text)
-                version_el = root.find("ehrbase_version")
-                if version_el is not None and version_el.text:
-                    result["version"] = version_el.text
+                content_type = response.headers.get("content-type", "").lower()
+                text = response.text.strip()
+                logger.debug(
+                    "EHRBase /rest/status content-type=%s body=%s",
+                    content_type,
+                    text[:500],
+                )
+                # Try JSON (oehrpy client may request application/json)
+                if "json" in content_type or text.startswith("{"):
+                    try:
+                        data = json.loads(text)
+                        version = (
+                            data.get("ehrbaseVersion")
+                            or data.get("ehrbase_version")
+                        )
+                        if version:
+                            result["version"] = version
+                    except (json.JSONDecodeError, AttributeError):
+                        pass
+                # Try XML (EHRBase default Content-Type: application/xml)
+                if result["version"] is None and ("xml" in content_type or text.startswith("<")):
+                    try:
+                        root = ET.fromstring(text)
+                        version_el = root.find("ehrbase_version")
+                        if version_el is not None and version_el.text:
+                            result["version"] = version_el.text
+                    except ET.ParseError:
+                        pass
+                if result["version"] is None:
+                    logger.warning(
+                        "EHRBase /rest/status returned 200 but version could not "
+                        "be parsed. content-type=%s body=%s",
+                        content_type,
+                        text[:500],
+                    )
         except Exception as e:
             logger.debug("Could not fetch EHRBase version: %s", e)
 
