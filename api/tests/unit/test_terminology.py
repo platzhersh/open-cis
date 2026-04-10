@@ -1,5 +1,7 @@
 """Tests for the FHIR terminology client, enrichment, and system mapping."""
 
+from typing import Any
+
 import httpx
 import pytest
 
@@ -292,7 +294,7 @@ class TestEnrichment:
             base_url="http://test-tx",
         )
 
-        composition = {
+        composition: dict[str, Any] = {
             "_type": "COMPOSITION",
             "content": [
                 {
