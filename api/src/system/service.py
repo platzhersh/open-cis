@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+import json
 import logging
 import xml.etree.ElementTree as ET
 from typing import Any
@@ -244,15 +245,31 @@ class SystemService:
         except Exception:
             return result
 
-        # Fetch version from EHRBase status endpoint (returns XML)
+        # Fetch version from EHRBase status endpoint
+        # EHRBase v2 returns JSON with camelCase fields by default;
+        # fall back to XML parsing for v1 compatibility.
         try:
             client = await ehrbase_client._ensure_connected()
             response = await client.client.get("/rest/status")
             if response.status_code == 200:
-                root = ET.fromstring(response.text)
-                version_el = root.find("ehrbase_version")
-                if version_el is not None and version_el.text:
-                    result["version"] = version_el.text
+                text = response.text.strip()
+                # Try JSON first (EHRBase v2 default)
+                try:
+                    data = json.loads(text)
+                    version = data.get("ehrbaseVersion") or data.get("ehrbase_version")
+                    if version:
+                        result["version"] = version
+                except (json.JSONDecodeError, AttributeError):
+                    pass
+                # Fall back to XML (EHRBase v1)
+                if result["version"] is None and text.startswith("<"):
+                    try:
+                        root = ET.fromstring(text)
+                        version_el = root.find("ehrbase_version")
+                        if version_el is not None and version_el.text:
+                            result["version"] = version_el.text
+                    except ET.ParseError:
+                        pass
         except Exception as e:
             logger.debug("Could not fetch EHRBase version: %s", e)
 
