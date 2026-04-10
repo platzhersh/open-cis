@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.5.2] - 2026-04-10
+
+### Bug Fixes
+
+- Add EHRBase v2 JSON support with v1 XML fallback (#88) ([#88](https://github.com/platzhersh/open-cis/pull/88)) by @platzhersh
 ## [0.5.1] - 2026-04-10
 
 ### Bug Fixes
