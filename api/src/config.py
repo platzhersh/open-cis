@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     ehrbase_timeout: float = 30.0
     ehrbase_verify_ssl: bool = True
 
+    # FHIR Terminology Server (PRD-0012)
+    terminology_server_url: str = "https://tx.fhir.ch/r4"
+    terminology_enabled: bool = True
+    terminology_cache_ttl_seconds: int = 3600
+    terminology_timeout_seconds: float = 5.0
+
     class Config:
         env_file = ".env"
         extra = "ignore"  # Ignore extra env vars not in Settings
