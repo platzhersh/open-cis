@@ -245,24 +245,34 @@ class SystemService:
         except Exception:
             return result
 
-        # Fetch version from EHRBase status endpoint
-        # EHRBase v2 returns JSON with camelCase fields by default;
-        # fall back to XML parsing for v1 compatibility.
+        # Fetch version from EHRBase /rest/status endpoint.
+        # The response may be XML (default) or JSON depending on the Accept
+        # header the HTTP client sends.  We try both formats to be safe.
         try:
             client = await ehrbase_client._ensure_connected()
             response = await client.client.get("/rest/status")
             if response.status_code == 200:
+                content_type = response.headers.get("content-type", "")
                 text = response.text.strip()
-                # Try JSON first (EHRBase v2 default)
-                try:
-                    data = json.loads(text)
-                    version = data.get("ehrbaseVersion") or data.get("ehrbase_version")
-                    if version:
-                        result["version"] = version
-                except (json.JSONDecodeError, AttributeError):
-                    pass
-                # Fall back to XML (EHRBase v1)
-                if result["version"] is None and text.startswith("<"):
+                logger.debug(
+                    "EHRBase /rest/status content-type=%s body=%s",
+                    content_type,
+                    text[:500],
+                )
+                # Try JSON (oehrpy client may request application/json)
+                if "json" in content_type or text.startswith("{"):
+                    try:
+                        data = json.loads(text)
+                        version = (
+                            data.get("ehrbaseVersion")
+                            or data.get("ehrbase_version")
+                        )
+                        if version:
+                            result["version"] = version
+                    except (json.JSONDecodeError, AttributeError):
+                        pass
+                # Try XML (EHRBase default Content-Type: application/xml)
+                if result["version"] is None and ("xml" in content_type or text.startswith("<")):
                     try:
                         root = ET.fromstring(text)
                         version_el = root.find("ehrbase_version")
@@ -270,6 +280,13 @@ class SystemService:
                             result["version"] = version_el.text
                     except ET.ParseError:
                         pass
+                if result["version"] is None:
+                    logger.warning(
+                        "EHRBase /rest/status returned 200 but version could not "
+                        "be parsed. content-type=%s body=%s",
+                        content_type,
+                        text[:500],
+                    )
         except Exception as e:
             logger.debug("Could not fetch EHRBase version: %s", e)
 
