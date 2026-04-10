@@ -252,7 +252,7 @@ class SystemService:
             client = await ehrbase_client._ensure_connected()
             response = await client.client.get("/rest/status")
             if response.status_code == 200:
-                content_type = response.headers.get("content-type", "")
+                content_type = response.headers.get("content-type", "").lower()
                 text = response.text.strip()
                 logger.debug(
                     "EHRBase /rest/status content-type=%s body=%s",
