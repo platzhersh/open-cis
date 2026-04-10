@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI):
 try:
     _version = importlib.metadata.version("cis-api")
 except importlib.metadata.PackageNotFoundError:
-    _version = "0.5.0"
+    _version = "0.5.1"
 
 app = FastAPI(
     title="CIS API",
