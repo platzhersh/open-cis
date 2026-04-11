@@ -96,6 +96,7 @@ export interface HealthChecksData {
   api: HealthCheckItem
   database: HealthCheckItem
   ehrbase: HealthCheckItem
+  terminology: HealthCheckItem
 }
 
 export interface HealthChecksSection {
@@ -107,6 +108,7 @@ export interface HealthChecksSection {
 export interface VersionData {
   api: string
   ehrbase: string | null
+  oehrpy: string | null
 }
 
 export interface VersionSection {
@@ -140,11 +142,23 @@ export interface DbCountsSection {
   error: SectionError | null
 }
 
+export interface TerminologyData {
+  url: string
+  response_ms: number | null
+}
+
+export interface TerminologySection {
+  status: 'ok' | 'partial' | 'error'
+  data: TerminologyData | null
+  error: SectionError | null
+}
+
 export interface SystemInfo {
   healthChecks: HealthChecksSection
   version: VersionSection
   templates: TemplatesSection
   dbCounts: DbCountsSection
+  terminology: TerminologySection
 }
 
 // Re-export vitals types

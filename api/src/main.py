@@ -22,6 +22,9 @@ from src.errors import (
 from src.observations.router import router as observations_router
 from src.patients.router import router as patients_router
 from src.system.router import router as system_router
+from src.terminology.client import terminology_client
+from src.terminology.router import fhir_router as fhir_terminology_router
+from src.terminology.router import router as terminology_router
 
 # Configure logging
 logging.basicConfig(
@@ -63,12 +66,13 @@ async def lifespan(app: FastAPI):
     if prisma.is_connected():
         await prisma.disconnect()
     await ehrbase_client.close()
+    await terminology_client.close()
 
 
 try:
     _version = importlib.metadata.version("cis-api")
 except importlib.metadata.PackageNotFoundError:
-    _version = "0.4.0"
+    _version = "0.6.0"
 
 app = FastAPI(
     title="CIS API",
@@ -91,6 +95,8 @@ app.include_router(encounters_router, prefix="/api/encounters", tags=["encounter
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
 app.include_router(cave_router, prefix="/api/cave", tags=["cave"])
 app.include_router(system_router, prefix="/api/system", tags=["system"])
+app.include_router(terminology_router, prefix="/api/terminology", tags=["terminology"])
+app.include_router(fhir_terminology_router, prefix="/api/fhir", tags=["fhir-terminology"])
 
 
 @app.exception_handler(EHRBaseValidationError)

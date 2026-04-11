@@ -74,6 +74,7 @@ export default [
         document: 'readonly',
         navigator: 'readonly',
         fetch: 'readonly',
+        URL: 'readonly',
         URLSearchParams: 'readonly',
         RequestInit: 'readonly',
         Response: 'readonly',

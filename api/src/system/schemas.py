@@ -27,6 +27,7 @@ class HealthChecksData(BaseModel):
     api: HealthCheckItem
     database: HealthCheckItem
     ehrbase: HealthCheckItem
+    terminology: HealthCheckItem
 
 
 class TemplateInfo(BaseModel):
@@ -41,6 +42,7 @@ class TemplateInfo(BaseModel):
 class VersionData(BaseModel):
     api: str = Field(..., description="Open CIS API version")
     ehrbase: str | None = Field(None, description="EHRBase version (null if unavailable)")
+    oehrpy: str | None = Field(None, description="oehrpy SDK version (null if unavailable)")
 
 
 class DbCountsData(BaseModel):
@@ -73,8 +75,20 @@ class DbCountsSection(BaseModel):
     error: SectionError | None = None
 
 
+class TerminologyData(BaseModel):
+    url: str = Field(..., description="Configured terminology server URL")
+    response_ms: int | None = Field(None, description="Response time in milliseconds")
+
+
+class TerminologySection(BaseModel):
+    status: str
+    data: TerminologyData | None = None
+    error: SectionError | None = None
+
+
 class SystemInfoResponse(BaseModel):
     healthChecks: HealthChecksSection
     version: VersionSection
     templates: TemplatesSection
     dbCounts: DbCountsSection
+    terminology: TerminologySection

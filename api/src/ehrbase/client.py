@@ -246,6 +246,48 @@ class EHRBaseClient:
             ) from e
         return {"template_id": result.template_id, "status": "uploaded"}
 
+    async def get_template_opt(self, template_id: str) -> str | None:
+        """Fetch the raw OPT XML for a template from EHRBase.
+
+        Returns the OPT XML string, or None if not found.
+        """
+        client = await self._ensure_connected()
+        try:
+            response = await client.client.get(
+                f"/rest/openehr/v1/definition/template/adl1.4/{template_id}",
+                headers={"Accept": "application/xml"},
+            )
+            if response.status_code == 200:
+                return response.text
+            return None
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
+
+    async def update_template_opt(
+        self, template_id: str, template_content: str
+    ) -> bool:
+        """Update an existing OPT template in EHRBase via PUT.
+
+        Returns True if the update succeeded, False otherwise.
+        """
+        client = await self._ensure_connected()
+        try:
+            response = await client.client.put(
+                f"/rest/openehr/v1/definition/template/adl1.4/{template_id}",
+                content=template_content,
+                headers={"Content-Type": "application/xml"},
+            )
+            return response.status_code in (200, 204)
+        except EHRBaseError as e:
+            logger.error("EHRBase update template error: %s", e)
+            return False
+        except (httpx.RequestError, OSError) as e:
+            raise EHRBaseUnavailableError(
+                message="Cannot connect to EHRBase. Is it running?"
+            ) from e
+
     async def get_template_example(
         self, template_id: str, format: str = "FLAT"
     ) -> dict[str, Any]:

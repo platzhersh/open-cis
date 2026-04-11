@@ -1,5 +1,6 @@
 """Router for vital signs observations with openEHR transparency."""
 
+import logging
 from datetime import datetime
 from typing import Literal
 
@@ -8,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from src.audit.service import log_action
 from src.auth.dependencies import get_current_user
 from src.auth.permissions import require_role
+from src.config import settings
 from src.ehrbase.client import ehrbase_client
 from src.observations.schemas import (
     RawCompositionResponse,
@@ -18,6 +20,10 @@ from src.observations.schemas import (
     VitalSignsResponse,
 )
 from src.observations.service import observation_service
+from src.terminology.client import terminology_client
+from src.terminology.enrichment import enrich_flat_composition
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -170,17 +176,29 @@ async def get_raw_composition(
     composition_uid: str,
     patient_id: str = Query(..., description="Patient ID for EHR lookup"),
     format: Literal["FLAT", "STRUCTURED"] = Query("FLAT", description="Composition format"),
+    enrich: bool = Query(True, description="Enrich coded terms with display names"),
     current_user=Depends(get_current_user),
 ) -> RawCompositionResponse:
     """Get raw composition data for transparency.
 
     Returns the full composition in the requested format (FLAT or STRUCTURED).
+    When enrich=True (default), DV_CODED_TEXT values are resolved to display terms
+    via the configured FHIR terminology server.
     """
     result = await observation_service.get_raw_composition(
         composition_uid, patient_id, format
     )
     if not result:
         raise HTTPException(status_code=404, detail="Composition not found")
+
+    if enrich and settings.terminology_enabled and format == "FLAT":
+        try:
+            result["composition"] = await enrich_flat_composition(
+                result["composition"], terminology_client
+            )
+        except Exception as e:
+            logger.warning("Composition enrichment failed (non-blocking): %s", e)
+
     return RawCompositionResponse(**result)
 
 

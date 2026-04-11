@@ -69,7 +69,10 @@ onUnmounted(() => {
 
     <template v-if="store.systemInfo">
       <!-- Health Diagram -->
-      <SystemHealthDiagram :health-checks="store.systemInfo.healthChecks" />
+      <SystemHealthDiagram
+        :health-checks="store.systemInfo.healthChecks"
+        :terminology="store.systemInfo.terminology"
+      />
 
       <!-- Version Info + Data Stats -->
       <div class="grid gap-6 md:grid-cols-2">
@@ -89,10 +92,26 @@ onUnmounted(() => {
               <span class="text-muted-foreground">Frontend</span>
               <span class="font-mono">{{ frontendVersion }}</span>
             </div>
+            <div class="flex justify-between text-sm">
+              <a href="https://platzhersh.github.io/oehrpy/" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors hover:underline">oehrpy</a>
+              <span class="font-mono">{{ store.systemInfo.version.data.oehrpy ?? 'N/A' }}</span>
+            </div>
           </div>
           <p v-else class="text-sm text-muted-foreground">
             {{ store.systemInfo.version.error?.message ?? 'Could not determine versions' }}
           </p>
+          <!-- Terminology Server Info -->
+          <div v-if="store.systemInfo.terminology.data" class="border-t pt-3 mt-3 space-y-2">
+            <h3 class="text-sm font-medium">Terminology Server</h3>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">URL</span>
+              <span class="font-mono text-xs truncate max-w-[200px]">{{ store.systemInfo.terminology.data.url }}</span>
+            </div>
+            <div v-if="store.systemInfo.terminology.data.response_ms != null" class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Response</span>
+              <span class="font-mono">{{ store.systemInfo.terminology.data.response_ms }}ms</span>
+            </div>
+          </div>
         </div>
 
         <!-- Data Stats -->

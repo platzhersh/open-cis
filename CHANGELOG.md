@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.6.0] - 2026-04-10
+
+### Features
+
+- **api**: Compare templates before uploading to avoid 409/500 errors (#89) ([#89](https://github.com/platzhersh/open-cis/pull/89)) by @platzhersh
+## [0.5.2] - 2026-04-10
+
+### Bug Fixes
+
+- Add EHRBase v2 JSON support with v1 XML fallback (#88) ([#88](https://github.com/platzhersh/open-cis/pull/88)) by @platzhersh
+## [0.5.1] - 2026-04-10
+
+### Bug Fixes
+
+- Fix EHRBase status endpoint parsing from XML response (#87) ([#87](https://github.com/platzhersh/open-cis/pull/87)) by @platzhersh
+## [0.5.0] - 2026-04-10
+
+### Features
+
+- Add FHIR terminology server integration (PRD-0012) (#86) ([#86](https://github.com/platzhersh/open-cis/pull/86)) by @platzhersh
+
+### Build
+
+- **deps**: Bump pnpm/action-setup from 4 to 5 (#63) ([#63](https://github.com/platzhersh/open-cis/pull/63)) by @dependabot[bot]
+- **deps**: Bump actions/upload-pages-artifact from 3 to 4 (#64) ([#64](https://github.com/platzhersh/open-cis/pull/64)) by @dependabot[bot]
+- **deps**: Bump actions/setup-node from 4 to 6 (#65) ([#65](https://github.com/platzhersh/open-cis/pull/65)) by @dependabot[bot]
+- **deps**: Bump actions/checkout from 4 to 6 (#66) ([#66](https://github.com/platzhersh/open-cis/pull/66)) by @dependabot[bot]
+- **deps**: Bump actions/deploy-pages from 4 to 5 (#67) ([#67](https://github.com/platzhersh/open-cis/pull/67)) by @dependabot[bot]
+- **deps-dev**: Bump autoprefixer from 10.4.23 to 10.4.27 in /web (#68) ([#68](https://github.com/platzhersh/open-cis/pull/68)) by @dependabot[bot]
+- **deps**: Bump vue from 3.5.26 to 3.5.31 in /web (#69) ([#69](https://github.com/platzhersh/open-cis/pull/69)) by @dependabot[bot]
+- **deps-dev**: Bump vite from 5.4.21 to 6.4.2 in /web (#83) ([#83](https://github.com/platzhersh/open-cis/pull/83)) by @dependabot[bot]
 ## [0.4.0] - 2026-04-04
 
 ### Features

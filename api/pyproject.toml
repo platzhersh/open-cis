@@ -1,6 +1,6 @@
 [project]
 name = "cis-api"
-version = "0.4.0"
+version = "0.6.0"
 description = "Clinical Information System API"
 requires-python = ">=3.11"
 
@@ -16,6 +16,7 @@ dependencies = [
     "faker>=22.0.0",
     "oehrpy>=0.7.0",
     "python-jose[cryptography]>=3.3.0",
+    "cachetools>=5.3.0",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +26,7 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.8.0",
     "types-aiofiles>=23.2.0",
+    "types-cachetools>=5.3.0",
 ]
 
 [build-system]

@@ -1,6 +1,8 @@
 """Template management for EHRBase."""
 
+import hashlib
 import logging
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +13,21 @@ from openehr_sdk.client import EHRBaseError
 from src.ehrbase.client import ehrbase_client
 
 logger = logging.getLogger(__name__)
+
+
+def _xml_hash(xml_content: str) -> str:
+    """Compute a hash of XML content using C14N (canonical XML) for deterministic comparison.
+
+    This normalises whitespace, attribute order, and namespace declarations
+    so that semantically identical documents produce the same hash, even if
+    their raw text differs.
+    """
+    try:
+        canonical = ET.canonicalize(xml_data=xml_content)
+        return hashlib.sha256(canonical.encode()).hexdigest()
+    except ET.ParseError:
+        # Fallback: hash the stripped raw text if XML parsing fails
+        return hashlib.sha256(xml_content.strip().encode()).hexdigest()
 
 # Web template cache status, populated by warm_web_template_cache()
 _web_template_cache_status: dict[str, bool] = {}
@@ -68,11 +85,57 @@ async def upload_template_file(template_id: str, template_content: str) -> bool:
         return False
 
 
+async def _sync_template(template_id: str, local_content: str) -> bool:
+    """Sync a single template: skip if unchanged, update or upload as needed.
+
+    Returns True if the template is now in sync, False on failure.
+    """
+    # Try to fetch the currently registered OPT from EHRBase
+    try:
+        remote_opt = await ehrbase_client.get_template_opt(template_id)
+    except Exception as e:
+        logger.warning(f"Could not fetch existing OPT for {template_id}: {e}")
+        remote_opt = None
+
+    if remote_opt is not None:
+        # Template exists in EHRBase — compare with local version
+        local_hash = _xml_hash(local_content)
+        remote_hash = _xml_hash(remote_opt)
+
+        if local_hash == remote_hash:
+            logger.info(f"Template {template_id} is up to date")
+            return True
+
+        # Template has changed — attempt to update via PUT
+        logger.info(f"Template {template_id} has changed, updating...")
+        try:
+            updated = await ehrbase_client.update_template_opt(template_id, local_content)
+            if updated:
+                logger.info(f"Template {template_id} updated successfully")
+                return True
+            logger.warning(
+                f"EHRBase rejected PUT update for {template_id}, "
+                "template may be in use by existing compositions"
+            )
+            return False
+        except Exception as e:
+            logger.warning(f"Could not update template {template_id}: {e}")
+            return False
+    else:
+        # Template not yet registered — upload it
+        return await upload_template_file(template_id, local_content)
+
+
 async def ensure_templates_registered() -> dict[str, bool]:
     """
     Ensure all required templates are registered in EHRBase.
 
-    Called during API startup. Returns a dict mapping template_id to success status.
+    Called during API startup. For each template:
+    - If not registered: uploads it.
+    - If registered and unchanged: skips it.
+    - If registered and changed: attempts to update via PUT.
+
+    Returns a dict mapping template_id to success status.
     """
     results: dict[str, bool] = {}
 
@@ -97,7 +160,6 @@ async def ensure_templates_registered() -> dict[str, bool]:
         logger.warning(f"Could not connect to EHRBase to check templates: {e}")
         return results
 
-    # Upload all required templates (always re-upload to keep in sync)
     for template_id in REQUIRED_TEMPLATES:
         template_file = templates_dir / f"{template_id}.opt"
 
@@ -106,14 +168,10 @@ async def ensure_templates_registered() -> dict[str, bool]:
             results[template_id] = False
             continue
 
-        # Always upload to ensure the template matches the repo version.
-        # EHRBase returns 409 if the template already exists and is identical,
-        # which upload_template_file handles gracefully.
-        logger.info(f"Uploading template {template_id}...")
         try:
             async with aiofiles.open(template_file, encoding="utf-8") as f:
-                template_content = await f.read()
-            results[template_id] = await upload_template_file(template_id, template_content)
+                local_content = await f.read()
+            results[template_id] = await _sync_template(template_id, local_content)
         except Exception as e:
             logger.error(f"Failed to read template file {template_file}: {e}")
             results[template_id] = False
