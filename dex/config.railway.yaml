@@ -4,8 +4,8 @@ storage:
   type: memory
 
 web:
-  # Railway assigns a dynamic PORT at deploy time. The Dockerfile sets
-  # DEX_EXPAND_ENV=true so this placeholder is substituted at startup.
+  # Railway assigns a dynamic PORT at deploy time. The entrypoint script
+  # substitutes ${PORT} before starting Dex.
   http: 0.0.0.0:${PORT}
 
 oauth2:
