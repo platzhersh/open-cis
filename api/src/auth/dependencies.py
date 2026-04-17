@@ -31,15 +31,23 @@ async def _get_oidc_config() -> dict:
 
 
 async def _get_jwks() -> dict:
-    """Fetch JWKS from the OIDC provider with TTL-based caching."""
+    """Fetch JWKS from the OIDC provider with TTL-based caching.
+
+    Uses OIDC_JWKS_URL if set (for Railway internal networking),
+    otherwise falls back to the jwks_uri from the discovery document.
+    """
     global _jwks_cache, _jwks_cache_time
 
     now = time.monotonic()
     if _jwks_cache is not None and (now - _jwks_cache_time) < _JWKS_TTL_SECONDS:
         return _jwks_cache
 
-    config = await _get_oidc_config()
-    jwks_uri = config["jwks_uri"]
+    if settings.oidc_jwks_url:
+        jwks_uri = settings.oidc_jwks_url
+    else:
+        config = await _get_oidc_config()
+        jwks_uri = config["jwks_uri"]
+
     async with httpx.AsyncClient() as client:
         response = await client.get(jwks_uri, timeout=10)
         response.raise_for_status()
@@ -63,13 +71,26 @@ async def get_current_user(
             audience=settings.oidc_client_id,
         )
     except JWTError as e:
-        logger.debug(f"JWT validation failed: {e}")
+        # Log the underlying JWT error so we can diagnose validation failures
+        # (audience mismatch, signature failure, expired token, etc.) in CI/prod
+        logger.warning(f"JWT validation failed: {type(e).__name__}: {e}")
+        # Also log unverified claims for diagnostics — safe since we don't trust
+        # them for any decisions.
+        try:
+            unverified = jwt.get_unverified_claims(token)
+            logger.warning(
+                f"Unverified claims: iss={unverified.get('iss')!r} "
+                f"aud={unverified.get('aud')!r} exp={unverified.get('exp')!r} "
+                f"sub={unverified.get('sub')!r}"
+            )
+        except Exception:  # noqa: BLE001
+            pass
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         ) from e
     except Exception as e:  # noqa: BLE001
-        logger.error(f"OIDC validation error: {e}")
+        logger.error(f"OIDC validation error: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
