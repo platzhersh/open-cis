@@ -43,10 +43,13 @@ On the **dex** service, set:
 
 | Variable | Example value |
 |---|---|
+| `DEX_EXPAND_ENV` | `true` |
 | `DEX_ISSUER` | `https://dex-open-cis.up.railway.app/dex` |
 | `DEX_REDIRECT_URI` | `https://open-cis-web.up.railway.app/auth/callback` |
 | `DEX_DEMO_ADMIN_HASH` | *(see below)* |
 | `DEX_DEMO_CLINICIAN_HASH` | *(see below)* |
+
+> **Important:** `DEX_EXPAND_ENV=true` is required for Dex to substitute `${VAR}` placeholders in `config.railway.yaml`. Without it, Dex reads the config literally and you'll get errors like `malformed bcrypt hash: hashedSecret too short` (because the literal string `${DEX_DEMO_ADMIN_HASH}` is too short to be a valid bcrypt hash).
 
 `DEX_ISSUER` **must** match the public URL of the Dex service exactly (including `/dex` path).
 
