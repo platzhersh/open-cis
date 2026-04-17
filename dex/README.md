@@ -97,6 +97,19 @@ You should see a valid OIDC discovery document with `authorization_endpoint`, `t
 
 Then log into the web app — the Dex login page should appear, accept the demo credentials, and redirect back to the frontend authenticated.
 
+## Login Page Customization
+
+The login page branding is controlled by the `frontend:` block in both `config.yaml` and `config.railway.yaml`:
+
+```yaml
+frontend:
+  issuer: "Open CIS"       # Shown as the provider name
+  theme: "light"           # Built-in: "light" or "coreos"
+  # logoURL: "<public URL>"  # Optional — replaces the default Dex logo
+```
+
+For a full HTML/CSS rebrand, copy Dex's upstream [`web/`](https://github.com/dexidp/dex/tree/v2.39.1/web) directory into this repo (e.g. `dex/web/`), customize `templates/` and `static/`, bake it into `dex/Dockerfile` (`COPY dex/web /srv/dex/web`), and set `frontend.dir: /srv/dex/web` in `config.railway.yaml`.
+
 ## Storage: Memory vs Postgres
 
 The Railway config uses `storage: type: memory`. This is intentional for demo deployments:
