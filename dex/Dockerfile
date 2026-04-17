@@ -1,6 +1,6 @@
 FROM dexidp/dex:v2.39.1
 
-COPY config.railway.yaml /etc/dex/config.yaml
+COPY dex/config.railway.yaml /etc/dex/config.yaml
 
 EXPOSE 5556
 
