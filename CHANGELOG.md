@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.7.5] - 2026-04-17
+
+### Bug Fixes
+
+- Disable at_hash verification in JWT token validation (#104) ([#104](https://github.com/platzhersh/open-cis/pull/104)) by @platzhersh
 ## [0.7.4] - 2026-04-17
 
 ### Bug Fixes
