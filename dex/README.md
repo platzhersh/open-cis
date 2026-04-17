@@ -39,27 +39,22 @@ In the Railway project:
 
 ### 2. Set environment variables
 
-On the **dex** service, set:
+On the **dex** service, set only two variables:
 
 | Variable | Example value |
 |---|---|
-| `DEX_EXPAND_ENV` | `true` |
 | `DEX_ISSUER` | `https://dex-open-cis.up.railway.app/dex` |
 | `DEX_REDIRECT_URI` | `https://open-cis-web.up.railway.app/auth/callback` |
-| `DEX_DEMO_ADMIN_HASH` | *(see below)* |
-| `DEX_DEMO_CLINICIAN_HASH` | *(see below)* |
-
-> **Important:** `DEX_EXPAND_ENV=true` is required for Dex to substitute `${VAR}` placeholders in `config.railway.yaml`. Without it, Dex reads the config literally and you'll get errors like `malformed bcrypt hash: hashedSecret too short` (because the literal string `${DEX_DEMO_ADMIN_HASH}` is too short to be a valid bcrypt hash).
 
 `DEX_ISSUER` **must** match the public URL of the Dex service exactly (including `/dex` path).
 
 `DEX_REDIRECT_URI` **must** match the public URL of the `web` service + `/auth/callback`.
 
-### 3. Generate bcrypt password hashes
+> **Note:** `DEX_EXPAND_ENV=true` is already baked into the Dockerfile so Dex can substitute the two placeholders above. Demo password hashes are hardcoded in `config.railway.yaml` (they are not secrets — just one-way hashes of the known demo passwords `admin` and `clinician`).
 
-The demo passwords are hashed with bcrypt (cost 10). The default hashes in `.env.example` correspond to the passwords `admin` and `clinician`. **Replace them for any deployment you share a public URL for.**
+### 3. (Optional) Change the demo passwords
 
-To generate new hashes:
+The default demo accounts are `admin@open-cis.local` (password `admin`) and `clinician@open-cis.local` (password `clinician`). To change them, edit `dex/config.railway.yaml` and replace the bcrypt hashes:
 
 ```bash
 # Python one-liner (requires bcrypt: pip install bcrypt)
@@ -69,7 +64,7 @@ python3 -c "import bcrypt; print(bcrypt.hashpw(b'your-password', bcrypt.gensalt(
 htpasswd -bnBC 10 "" 'your-password' | tr -d ':\n'
 ```
 
-Copy each hash directly into the Railway env var panel. Hashes start with `$2b$10$…`. Escape any `$` signs if your deployment tool requires it (Railway's UI does not).
+Paste the result (starts with `$2b$10$…`, exactly 60 characters) into the `hash:` field in `config.railway.yaml`, commit, and redeploy.
 
 ### 4. Configure the `api` service
 

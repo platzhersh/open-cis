@@ -18,13 +18,18 @@ staticClients:
 
 enablePasswordDB: true
 
+# Demo password hashes are NOT secrets — they are one-way bcrypt hashes of
+# the public demo passwords "admin" and "clinician". Hardcoding them here
+# avoids env var substitution issues with $ characters and makes deployment
+# a single-step process. For non-demo deployments, replace these hashes and
+# change the passwords documented in README.md.
 staticPasswords:
   - email: admin@open-cis.local
-    hash: "${DEX_DEMO_ADMIN_HASH}"
+    hash: "$2b$10$0ZIL.9k.bCmO9SS.8hOFreuX32kXoTeAMQnUlPeX83aQwmB4/7VdC"
     username: admin
     userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
 
   - email: clinician@open-cis.local
-    hash: "${DEX_DEMO_CLINICIAN_HASH}"
+    hash: "$2b$10$dnqTBcl8.TMjpfcb7gsZGujBC/HMLxuExPcK4MaVKUwonsK6b9CPm"
     username: clinician
     userID: "6c3f0ed7-6cf4-4d81-9e64-c30f8e5a0f22"
