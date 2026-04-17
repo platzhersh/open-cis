@@ -14,11 +14,9 @@ oauth2:
 frontend:
   issuer: "Open CIS"
   theme: "light"
-  # logoURL must be reachable from the user's browser. Point at the web
-  # service's favicon or any CDN-hosted image to replace the default Dex logo.
-  # For a full HTML/CSS override, bake a custom theme into dex/Dockerfile and
-  # set `dir:` to that path.
-  # logoURL: "https://<web-host>/favicon.svg"
+  # Populated from DEX_LOGO_URL by entrypoint.sh. If unset, the entrypoint
+  # strips this line so Dex falls back to its built-in theme logo.
+  logoURL: "${DEX_LOGO_URL}"
 
 staticClients:
   - id: open-cis-web
