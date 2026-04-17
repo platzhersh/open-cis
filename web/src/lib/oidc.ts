@@ -1,36 +1,23 @@
 /**
  * OIDC configuration derived from environment variables.
+ *
+ * Endpoints are derived from the issuer URL using standard OIDC paths rather
+ * than fetching the discovery document from the browser, which would fail with
+ * CORS errors when Dex runs on a different origin (e.g. Railway deployment).
  */
 
 export const OIDC_ISSUER = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:5556/dex'
 export const OIDC_CLIENT_ID = import.meta.env.VITE_OIDC_CLIENT_ID || 'open-cis-web'
 export const OIDC_REDIRECT_URI = `${window.location.origin}/auth/callback`
 
-interface OidcDiscovery {
-  authorization_endpoint: string
-  token_endpoint: string
-  userinfo_endpoint: string
-  jwks_uri: string
-}
+export const OIDC_AUTH_ENDPOINT = `${OIDC_ISSUER}/auth`
+export const OIDC_TOKEN_ENDPOINT = `${OIDC_ISSUER}/token`
 
 interface TokenResponse {
   access_token: string
   id_token?: string
   token_type: string
   expires_in?: number
-}
-
-let cachedDiscovery: OidcDiscovery | null = null
-
-export async function getOidcDiscovery(): Promise<OidcDiscovery> {
-  if (cachedDiscovery) return cachedDiscovery
-
-  const response = await fetch(`${OIDC_ISSUER}/.well-known/openid-configuration`)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch OIDC discovery: ${response.status}`)
-  }
-  cachedDiscovery = await response.json() as OidcDiscovery
-  return cachedDiscovery
 }
 
 export function generateState(): string {
@@ -43,8 +30,6 @@ export async function exchangeCodeForToken(
   code: string,
   codeVerifier: string,
 ): Promise<string> {
-  const discovery = await getOidcDiscovery()
-
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
@@ -53,7 +38,9 @@ export async function exchangeCodeForToken(
     code_verifier: codeVerifier,
   })
 
-  const response = await fetch(discovery.token_endpoint, {
+  // Proxy through the API backend to avoid CORS issues with Dex
+  const API_URL = import.meta.env.VITE_API_URL || ''
+  const response = await fetch(`${API_URL}/api/auth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
