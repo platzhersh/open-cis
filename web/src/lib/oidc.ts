@@ -6,7 +6,9 @@
  * CORS errors when Dex runs on a different origin (e.g. Railway deployment).
  */
 
-export const OIDC_ISSUER = import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:5556/dex'
+const trimSlash = (s: string) => s.replace(/\/+$/, '')
+
+export const OIDC_ISSUER = trimSlash(import.meta.env.VITE_OIDC_ISSUER || 'http://localhost:5556/dex')
 export const OIDC_CLIENT_ID = import.meta.env.VITE_OIDC_CLIENT_ID || 'open-cis-web'
 export const OIDC_REDIRECT_URI = `${window.location.origin}/auth/callback`
 
@@ -39,7 +41,7 @@ export async function exchangeCodeForToken(
   })
 
   // Proxy through the API backend to avoid CORS issues with Dex
-  const API_URL = import.meta.env.VITE_API_URL || ''
+  const API_URL = trimSlash(import.meta.env.VITE_API_URL || '')
   const response = await fetch(`${API_URL}/api/auth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
