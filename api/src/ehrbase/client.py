@@ -8,8 +8,8 @@ import logging
 from typing import Any
 
 import httpx
-from openehr_sdk.client import EHRBaseClient as OehrpyClient
-from openehr_sdk.client import EHRBaseError
+from oehrpy.client import EHRBaseClient as OehrpyClient
+from oehrpy.client import EHRBaseError
 
 from src.config import settings
 from src.errors import EHRBaseUnavailableError, EHRBaseValidationError

@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     # Database (Prisma)
     database_url: str = "postgresql://cis:cis@localhost:5432/cis"
 
+    # OIDC
+    oidc_issuer: str = "http://localhost:5556/dex"
+    oidc_client_id: str = "open-cis-web"
+
     # EHRBase (oehrpy client configuration)
     ehrbase_url: str = "http://localhost:8080/ehrbase"
     ehrbase_user: str | None = None

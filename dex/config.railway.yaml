@@ -1,0 +1,30 @@
+issuer: ${DEX_ISSUER}
+
+storage:
+  type: memory
+
+web:
+  http: 0.0.0.0:5556
+
+oauth2:
+  skipApprovalScreen: true
+
+staticClients:
+  - id: open-cis-web
+    redirectURIs:
+      - ${DEX_REDIRECT_URI}
+    name: Open CIS Web
+    public: true
+
+enablePasswordDB: true
+
+staticPasswords:
+  - email: admin@open-cis.local
+    hash: "${DEX_DEMO_ADMIN_HASH}"
+    username: admin
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+
+  - email: clinician@open-cis.local
+    hash: "${DEX_DEMO_CLINICIAN_HASH}"
+    username: clinician
+    userID: "6c3f0ed7-6cf4-4d81-9e64-c30f8e5a0f22"

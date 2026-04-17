@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { RouterView } from 'vue-router'
-import { Github, Moon, Sun } from 'lucide-vue-next'
+import { ref, onMounted, computed } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { Github, Moon, Sun, LogOut } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
 
 const version = __APP_VERSION__
 const isDark = ref(false)
+const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
+
+const showNav = computed(() => !route.meta.public)
 
 function toggleDark() {
   isDark.value = !isDark.value
   document.documentElement.classList.toggle('dark', isDark.value)
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
+function handleLogout() {
+  auth.clearAuth()
+  router.push('/login')
 }
 
 onMounted(() => {
@@ -21,7 +32,7 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-background">
-    <header class="border-b">
+    <header v-if="showNav" class="border-b">
       <div class="container flex h-16 items-center justify-between px-4">
         <nav class="flex items-center space-x-6">
           <RouterLink
@@ -60,6 +71,16 @@ onMounted(() => {
           </RouterLink>
         </nav>
         <div class="flex items-center gap-4">
+          <!-- User info + role badge -->
+          <div v-if="auth.user" class="flex items-center gap-2">
+            <span class="text-sm text-muted-foreground hidden sm:inline">
+              {{ auth.user.name }}
+            </span>
+            <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              {{ auth.user.role }}
+            </span>
+          </div>
+
           <button
             class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:text-primary hover:bg-accent"
             :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
@@ -79,10 +100,18 @@ onMounted(() => {
           <Github :size="18" />
           <span class="hidden sm:inline">Open Source</span>
         </a>
+        <button
+          v-if="auth.isAuthenticated"
+          class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:text-destructive hover:bg-accent"
+          title="Sign out"
+          @click="handleLogout"
+        >
+          <LogOut :size="18" />
+        </button>
         </div>
       </div>
     </header>
-    <main class="container py-6">
+    <main :class="showNav ? 'container py-6' : ''">
       <RouterView />
     </main>
   </div>

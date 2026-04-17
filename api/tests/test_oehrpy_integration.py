@@ -1,8 +1,8 @@
 """Tests for oehrpy SDK integration."""
 
 import pytest
-from openehr_sdk.client import EHRBaseClient as OehrpyClient
-from openehr_sdk.templates import VitalSignsBuilder
+from oehrpy.client import EHRBaseClient as OehrpyClient
+from oehrpy.templates import VitalSignsBuilder
 
 from src.ehrbase.client import EHRBaseClient
 from src.openehr.compositions import VITAL_SIGNS_TEMPLATE_ID, build_vital_signs_flat

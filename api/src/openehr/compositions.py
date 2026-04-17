@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from openehr_sdk.templates import VitalSignsBuilder
+from oehrpy.templates import VitalSignsBuilder
 
 # VitalSignsBuilder FLAT path constants are sourced from the Web Template:
 #   IDCR - Vital Signs Encounter.v1

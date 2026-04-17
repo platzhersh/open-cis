@@ -8,7 +8,7 @@ from typing import Any
 
 import aiofiles
 import httpx
-from openehr_sdk.client import EHRBaseError
+from oehrpy.client import EHRBaseError
 
 from src.ehrbase.client import ehrbase_client
 

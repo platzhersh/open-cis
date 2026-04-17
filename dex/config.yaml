@@ -1,0 +1,38 @@
+issuer: http://localhost:5556/dex
+
+storage:
+  type: postgres
+  config:
+    host: app-db
+    port: 5432
+    database: cis
+    user: cis
+    password: cis
+    ssl:
+      mode: disable
+
+web:
+  http: 0.0.0.0:5556
+
+oauth2:
+  skipApprovalScreen: true
+
+staticClients:
+  - id: open-cis-web
+    redirectURIs:
+      - http://localhost:5173/auth/callback
+    name: Open CIS Web
+    public: true
+
+enablePasswordDB: true
+
+staticPasswords:
+  - email: admin@open-cis.local
+    hash: "$2b$10$0ZIL.9k.bCmO9SS.8hOFreuX32kXoTeAMQnUlPeX83aQwmB4/7VdC"
+    username: admin
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+
+  - email: clinician@open-cis.local
+    hash: "$2b$10$dnqTBcl8.TMjpfcb7gsZGujBC/HMLxuExPcK4MaVKUwonsK6b9CPm"
+    username: clinician
+    userID: "6c3f0ed7-6cf4-4d81-9e64-c30f8e5a0f22"

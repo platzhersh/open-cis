@@ -6,6 +6,7 @@ import { X, Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 import { usePatientStore } from '@/stores/patient'
 import { useEncounterStore } from '@/stores/encounter'
 import { useCaveStore } from '@/stores/cave'
+import { useAuthStore } from '@/stores/auth'
 import type { PatientUpdate } from '@/types'
 import VitalSignsPanel from '@/components/vitals/VitalSignsPanel.vue'
 import CaveBanner from '@/components/cave/CaveBanner.vue'
@@ -16,6 +17,7 @@ const router = useRouter()
 const store = usePatientStore()
 const encounterStore = useEncounterStore()
 const caveStore = useCaveStore()
+const authStore = useAuthStore()
 
 const patientId = route.params.id as string
 
@@ -468,8 +470,8 @@ const openDeleteDialog = () => {
         </div>
       </div>
 
-      <!-- Danger Zone -->
-      <div class="rounded-lg border border-destructive/50 p-6">
+      <!-- Danger Zone (admin only) -->
+      <div v-if="authStore.isAdmin" class="rounded-lg border border-destructive/50 p-6">
         <div class="flex items-start gap-4">
           <AlertTriangle class="h-5 w-5 text-destructive mt-0.5" />
           <div class="flex-1">

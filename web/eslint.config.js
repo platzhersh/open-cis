@@ -40,6 +40,12 @@ export default [
         Response: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly',
+        crypto: 'readonly',
+        TextEncoder: 'readonly',
+        Uint8Array: 'readonly',
+        ArrayBuffer: 'readonly',
       },
     },
     plugins: {
