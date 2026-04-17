@@ -69,6 +69,7 @@ async def get_current_user(
             jwks,
             algorithms=["RS256"],
             audience=settings.oidc_client_id,
+            options={"verify_at_hash": False},
         )
     except JWTError as e:
         # Log the underlying JWT error so we can diagnose validation failures
