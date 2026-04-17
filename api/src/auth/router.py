@@ -26,15 +26,26 @@ async def proxy_token_exchange(request: Request) -> JSONResponse:
     body = await request.body()
     token_url = f"{settings.oidc_issuer}/token"
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            token_url,
-            content=body,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=10,
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                token_url,
+                content=body,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=10,
+            )
+    except httpx.HTTPError:
+        return JSONResponse(
+            status_code=502,
+            content={"error": "OIDC provider unreachable"},
         )
+
+    try:
+        content = response.json()
+    except (ValueError, UnicodeDecodeError):
+        content = {"error": response.text}
 
     return JSONResponse(
         status_code=response.status_code,
-        content=response.json(),
+        content=content,
     )
