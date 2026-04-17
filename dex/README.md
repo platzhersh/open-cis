@@ -8,6 +8,8 @@
 |---|---|
 | `config.yaml` | Local development config. Used by `docker-compose.yml`. Concrete values, no env substitution. |
 | `config.railway.yaml` | Railway/production config. Uses `${VAR}` placeholders populated from Railway environment variables. |
+| `Dockerfile` | Image built for Railway — extends the upstream Dex image and copies `config.railway.yaml` into it. |
+| `railway.toml` | Railway service config (Dockerfile path, healthcheck, restart policy). |
 
 ## Local Development
 
@@ -31,20 +33,9 @@ Dex runs on Railway as a separate service alongside `api`, `web`, and `app-db`. 
 In the Railway project:
 
 1. **New → Empty Service** (name it `dex`)
-2. **Settings → Source**: connect the same GitHub repo
-3. **Settings → Build**: select *Dockerfile* and set:
-   ```
-   Root Directory: dex
-   Dockerfile Path: Dockerfile
-   ```
-4. Create a minimal `dex/Dockerfile` in the repo (if not already present):
-   ```Dockerfile
-   FROM ghcr.io/dex-idp/dex:v2.39.1
-   COPY config.railway.yaml /etc/dex/config.yaml
-   EXPOSE 5556
-   CMD ["dex", "serve", "/etc/dex/config.yaml"]
-   ```
-5. **Settings → Networking → Public Networking**: generate a domain (e.g. `dex-open-cis.up.railway.app`)
+2. **Settings → Source**: connect the same GitHub repo, branch `main`
+3. The `dex/railway.toml` file already configures the Dockerfile path and healthcheck — no extra Railway settings are needed
+4. **Settings → Networking → Public Networking**: generate a domain (e.g. `dex-open-cis.up.railway.app`)
 
 ### 2. Set environment variables
 
