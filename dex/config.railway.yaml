@@ -4,7 +4,9 @@ storage:
   type: memory
 
 web:
-  http: 0.0.0.0:5556
+  # Railway assigns a dynamic PORT at deploy time. The Dockerfile sets
+  # DEX_EXPAND_ENV=true so this placeholder is substituted at startup.
+  http: 0.0.0.0:${PORT}
 
 oauth2:
   skipApprovalScreen: true
