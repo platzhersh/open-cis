@@ -15,9 +15,11 @@ class Settings(BaseSettings):
     # OIDC
     oidc_issuer: str = "http://localhost:5556/dex"
     oidc_client_id: str = "open-cis-web"
-    # Server-to-server token endpoint — set on Railway to use internal networking
-    # e.g. http://dex.railway.internal:<port>/dex/token
+    # Server-to-server overrides — used on Railway where the public URL isn't
+    # reachable from within the private network. Each defaults to the endpoint
+    # derived from oidc_issuer if not set.
     oidc_token_url: str | None = None
+    oidc_jwks_url: str | None = None
 
     # EHRBase (oehrpy client configuration)
     ehrbase_url: str = "http://localhost:8080/ehrbase"
