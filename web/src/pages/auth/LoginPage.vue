@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Loader2, LogIn } from 'lucide-vue-next'
 import { generateCodeVerifier, generateCodeChallenge } from '@/lib/pkce'
-import { getOidcDiscovery, generateState, OIDC_CLIENT_ID, OIDC_REDIRECT_URI } from '@/lib/oidc'
+import { generateState, OIDC_AUTH_ENDPOINT, OIDC_CLIENT_ID, OIDC_REDIRECT_URI } from '@/lib/oidc'
 import DemoCredentialRow from '@/components/auth/DemoCredentialRow.vue'
 
 const isDemoMode = import.meta.env.VITE_APP_MODE === 'demo'
@@ -13,7 +13,6 @@ async function startLogin() {
   loading.value = true
   error.value = null
   try {
-    const discovery = await getOidcDiscovery()
     const codeVerifier = generateCodeVerifier()
     const codeChallenge = await generateCodeChallenge(codeVerifier)
     const state = generateState()
@@ -32,7 +31,7 @@ async function startLogin() {
       state,
     })
 
-    window.location.href = `${discovery.authorization_endpoint}?${params.toString()}`
+    window.location.href = `${OIDC_AUTH_ENDPOINT}?${params.toString()}`
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to start login'
     loading.value = false
