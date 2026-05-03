@@ -72,6 +72,7 @@ onUnmounted(() => {
       <SystemHealthDiagram
         :health-checks="store.systemInfo.healthChecks"
         :terminology="store.systemInfo.terminology"
+        :oidc="store.systemInfo.oidc"
       />
 
       <!-- Version Info + Data Stats -->
@@ -111,6 +112,44 @@ onUnmounted(() => {
               <span class="text-muted-foreground">Response</span>
               <span class="font-mono">{{ store.systemInfo.terminology.data.response_ms }}ms</span>
             </div>
+          </div>
+          <!-- OIDC Provider Info -->
+          <div v-if="store.systemInfo.oidc.data" class="border-t pt-3 mt-3 space-y-2">
+            <h3 class="text-sm font-medium">OpenID Connect</h3>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Issuer</span>
+              <span class="font-mono text-xs truncate max-w-[220px]" :title="store.systemInfo.oidc.data.issuer">
+                {{ store.systemInfo.oidc.data.issuer }}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Client ID</span>
+              <span class="font-mono text-xs">{{ store.systemInfo.oidc.data.client_id }}</span>
+            </div>
+            <div v-if="store.systemInfo.oidc.data.jwks_uri" class="flex justify-between text-sm">
+              <span class="text-muted-foreground">JWKS</span>
+              <span class="font-mono text-xs truncate max-w-[220px]" :title="store.systemInfo.oidc.data.jwks_uri">
+                {{ store.systemInfo.oidc.data.jwks_uri }}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">JWKS Cache</span>
+              <span
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                :class="store.systemInfo.oidc.data.jwks_cached
+                  ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300'
+                  : 'bg-muted text-muted-foreground'"
+              >
+                {{ store.systemInfo.oidc.data.jwks_cached ? 'Cached' : 'Not cached' }}
+              </span>
+            </div>
+            <div v-if="store.systemInfo.oidc.data.response_ms != null" class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Discovery</span>
+              <span class="font-mono">{{ store.systemInfo.oidc.data.response_ms }}ms</span>
+            </div>
+            <p v-if="store.systemInfo.oidc.error" class="text-xs text-destructive">
+              {{ store.systemInfo.oidc.error.message }}
+            </p>
           </div>
         </div>
 

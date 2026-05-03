@@ -28,6 +28,7 @@ class HealthChecksData(BaseModel):
     database: HealthCheckItem
     ehrbase: HealthCheckItem
     terminology: HealthCheckItem
+    oidc: HealthCheckItem
 
 
 class TemplateInfo(BaseModel):
@@ -86,9 +87,27 @@ class TerminologySection(BaseModel):
     error: SectionError | None = None
 
 
+class OidcData(BaseModel):
+    issuer: str = Field(..., description="Configured OIDC issuer URL")
+    client_id: str = Field(..., description="Configured OIDC client ID")
+    discovery_url: str = Field(..., description="OIDC discovery document URL")
+    jwks_uri: str | None = Field(None, description="JWKS endpoint URL")
+    jwks_cached: bool = Field(False, description="Whether JWKS has been fetched and cached")
+    response_ms: int | None = Field(
+        None, description="Discovery endpoint response time in milliseconds"
+    )
+
+
+class OidcSection(BaseModel):
+    status: str
+    data: OidcData | None = None
+    error: SectionError | None = None
+
+
 class SystemInfoResponse(BaseModel):
     healthChecks: HealthChecksSection
     version: VersionSection
     templates: TemplatesSection
     dbCounts: DbCountsSection
     terminology: TerminologySection
+    oidc: OidcSection

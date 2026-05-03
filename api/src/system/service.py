@@ -2,9 +2,13 @@ import asyncio
 import importlib.metadata
 import json
 import logging
+import time
 import xml.etree.ElementTree as ET
 from typing import Any
 
+import httpx
+
+from src.auth import dependencies as auth_dependencies
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
@@ -15,6 +19,8 @@ from src.system.schemas import (
     HealthCheckItem,
     HealthChecksData,
     HealthChecksSection,
+    OidcData,
+    OidcSection,
     SectionError,
     SystemInfoResponse,
     TemplateInfo,
@@ -32,25 +38,30 @@ logger = logging.getLogger(__name__)
 class SystemService:
     async def get_system_info(self) -> SystemInfoResponse:
         """Aggregate system health, versions, templates, and data stats."""
-        ehrbase_result, stats_result, terminology_result = await asyncio.gather(
+        ehrbase_result, stats_result, terminology_result, oidc_result = await asyncio.gather(
             self._get_ehrbase_info(),
             self._get_data_stats(),
             self._get_terminology_info(),
+            self._get_oidc_info(),
             return_exceptions=True,
         )
 
         return SystemInfoResponse(
-            healthChecks=self._build_health_checks(ehrbase_result, terminology_result),
+            healthChecks=self._build_health_checks(
+                ehrbase_result, terminology_result, oidc_result
+            ),
             version=self._build_version(ehrbase_result),
             templates=self._build_templates(ehrbase_result),
             dbCounts=self._build_db_counts(stats_result),
             terminology=self._build_terminology(terminology_result),
+            oidc=self._build_oidc(oidc_result),
         )
 
     def _build_health_checks(
         self,
         ehrbase_result: dict[str, Any] | BaseException,
         terminology_result: dict[str, Any] | BaseException | None = None,
+        oidc_result: dict[str, Any] | BaseException | None = None,
     ) -> HealthChecksSection:
         db_connected = prisma.is_connected()
 
@@ -131,7 +142,34 @@ class SystemService:
                     ),
                 )
 
-        items = [api_item, db_item, ehrbase_item, terminology_item]
+        # OIDC health check
+        if isinstance(oidc_result, BaseException) or oidc_result is None:
+            oidc_item = HealthCheckItem(
+                status="error",
+                data=None,
+                error=SectionError(
+                    code="OIDC_UNAVAILABLE",
+                    message="Cannot reach OIDC discovery endpoint",
+                ),
+            )
+        else:
+            oidc_status = oidc_result.get("status", "unavailable")
+            if oidc_status == "available":
+                oidc_item = HealthCheckItem(
+                    status="ok", data={"status": "available"}, error=None
+                )
+            else:
+                oidc_item = HealthCheckItem(
+                    status="error",
+                    data=None,
+                    error=SectionError(
+                        code="OIDC_UNAVAILABLE",
+                        message=oidc_result.get("error")
+                        or "OIDC provider is not responding",
+                    ),
+                )
+
+        items = [api_item, db_item, ehrbase_item, terminology_item, oidc_item]
         error_count = sum(1 for i in items if i.status == "error")
 
         if error_count == 0:
@@ -155,6 +193,7 @@ class SystemService:
                 database=db_item,
                 ehrbase=ehrbase_item,
                 terminology=terminology_item,
+                oidc=oidc_item,
             ),
             error=section_error,
         )
@@ -354,6 +393,85 @@ class SystemService:
 
         status, response_ms = await terminology_client.health_check()
         return {"status": status, "response_ms": response_ms}
+
+    async def _get_oidc_info(self) -> dict[str, Any]:
+        """Probe the OIDC discovery endpoint and report configuration."""
+        discovery_url = (
+            f"{settings.oidc_issuer.rstrip('/')}/.well-known/openid-configuration"
+        )
+        result: dict[str, Any] = {
+            "status": "unavailable",
+            "issuer": settings.oidc_issuer,
+            "client_id": settings.oidc_client_id,
+            "discovery_url": discovery_url,
+            "jwks_uri": settings.oidc_jwks_url,
+            "response_ms": None,
+            "error": None,
+        }
+
+        start = time.monotonic()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(discovery_url, timeout=5)
+            result["response_ms"] = int((time.monotonic() - start) * 1000)
+            response.raise_for_status()
+            config = response.json()
+            if not result["jwks_uri"]:
+                result["jwks_uri"] = config.get("jwks_uri")
+            result["status"] = "available"
+        except httpx.HTTPError as e:
+            result["error"] = f"{type(e).__name__}: {e}"
+            logger.debug("OIDC discovery probe failed: %s", e)
+        except Exception as e:  # noqa: BLE001
+            result["error"] = f"{type(e).__name__}: {e}"
+            logger.debug("OIDC discovery probe error: %s", e)
+        return result
+
+    def _build_oidc(
+        self, oidc_result: dict[str, Any] | BaseException
+    ) -> OidcSection:
+        if isinstance(oidc_result, BaseException):
+            logger.warning("OIDC info fetch failed: %s", oidc_result)
+            discovery_url = (
+                f"{settings.oidc_issuer.rstrip('/')}/.well-known/openid-configuration"
+            )
+            return OidcSection(
+                status="error",
+                data=OidcData(
+                    issuer=settings.oidc_issuer,
+                    client_id=settings.oidc_client_id,
+                    discovery_url=discovery_url,
+                    jwks_uri=settings.oidc_jwks_url,
+                    jwks_cached=auth_dependencies._jwks_cache is not None,
+                    response_ms=None,
+                ),
+                error=SectionError(
+                    code="OIDC_UNAVAILABLE",
+                    message="Cannot reach OIDC discovery endpoint",
+                ),
+            )
+
+        data = OidcData(
+            issuer=oidc_result["issuer"],
+            client_id=oidc_result["client_id"],
+            discovery_url=oidc_result["discovery_url"],
+            jwks_uri=oidc_result.get("jwks_uri"),
+            jwks_cached=auth_dependencies._jwks_cache is not None,
+            response_ms=oidc_result.get("response_ms"),
+        )
+
+        if oidc_result.get("status") == "available":
+            return OidcSection(status="ok", data=data, error=None)
+
+        return OidcSection(
+            status="error",
+            data=data,
+            error=SectionError(
+                code="OIDC_UNAVAILABLE",
+                message=oidc_result.get("error")
+                or "OIDC provider is not responding",
+            ),
+        )
 
     async def _get_data_stats(self) -> DbCountsData:
         """Fetch counts from the application database."""
