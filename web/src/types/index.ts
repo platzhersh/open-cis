@@ -97,6 +97,7 @@ export interface HealthChecksData {
   database: HealthCheckItem
   ehrbase: HealthCheckItem
   terminology: HealthCheckItem
+  oidc: HealthCheckItem
 }
 
 export interface HealthChecksSection {
@@ -153,12 +154,28 @@ export interface TerminologySection {
   error: SectionError | null
 }
 
+export interface OidcData {
+  issuer: string
+  client_id: string
+  discovery_url: string
+  jwks_uri: string | null
+  jwks_cached: boolean
+  response_ms: number | null
+}
+
+export interface OidcSection {
+  status: 'ok' | 'partial' | 'error'
+  data: OidcData | null
+  error: SectionError | null
+}
+
 export interface SystemInfo {
   healthChecks: HealthChecksSection
   version: VersionSection
   templates: TemplatesSection
   dbCounts: DbCountsSection
   terminology: TerminologySection
+  oidc: OidcSection
 }
 
 // Re-export vitals types

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { HealthChecksSection, TerminologySection } from '@/types'
+import type { HealthChecksSection, OidcSection, TerminologySection } from '@/types'
 
 defineProps<{
   healthChecks: HealthChecksSection
   terminology: TerminologySection
+  oidc: OidcSection
 }>()
 
 function statusColor(itemStatus: string): string {
@@ -40,6 +41,31 @@ function terminologyHostname(section: TerminologySection): string {
     return url.hostname
   } catch {
     return section.data.url
+  }
+}
+
+function oidcStatusColor(status: string): string {
+  if (status === 'ok') return 'bg-green-500'
+  if (status === 'partial') return 'bg-yellow-500'
+  return 'bg-red-500'
+}
+
+function oidcLabel(section: OidcSection): string {
+  if (section.status === 'ok') return 'Available'
+  if (section.status === 'partial') return 'Degraded'
+  return 'Unavailable'
+}
+
+function oidcHostname(section: OidcSection): string {
+  if (!section.data?.issuer) return 'Not configured'
+  try {
+    const url = new URL(section.data.issuer)
+    if (['localhost', '127.0.0.1'].includes(url.hostname)) {
+      return `${url.hostname} (Dex)`
+    }
+    return url.hostname
+  } catch {
+    return section.data.issuer
   }
 }
 </script>
@@ -107,6 +133,33 @@ function terminologyHostname(section: TerminologySection): string {
         </div>
       </div>
 
+      <!-- Connection line from API down to OIDC row -->
+      <div class="flex items-center gap-3">
+        <div class="min-w-[140px]" />
+        <span class="invisible">&rarr;</span>
+        <div class="min-w-[140px] flex justify-center">
+          <span class="text-muted-foreground">&darr;</span>
+        </div>
+      </div>
+
+      <!-- Row 3: OIDC Provider -->
+      <div class="flex items-center gap-3">
+        <div class="min-w-[140px]" />
+        <span class="invisible">&rarr;</span>
+        <div class="flex items-center gap-2 rounded-md border px-4 py-3 min-w-[140px]">
+          <span class="h-2.5 w-2.5 rounded-full shrink-0" :class="oidcStatusColor(oidc.status)" />
+          <div>
+            <p class="text-sm font-medium">OIDC Provider</p>
+            <p class="text-xs text-muted-foreground">{{ oidcLabel(oidc) }}</p>
+          </div>
+        </div>
+        <span class="text-muted-foreground text-xs">&larr;</span>
+        <div class="text-xs text-muted-foreground">
+          <p>{{ oidcHostname(oidc) }}</p>
+          <p v-if="oidc.data?.response_ms != null">{{ oidc.data.response_ms }}ms</p>
+        </div>
+      </div>
+
       <!-- Connection line from API down to Terminology row -->
       <div class="flex items-center gap-3">
         <div class="min-w-[140px]" />
@@ -116,7 +169,7 @@ function terminologyHostname(section: TerminologySection): string {
         </div>
       </div>
 
-      <!-- Row 3: Terminology Server -->
+      <!-- Row 4: Terminology Server -->
       <div class="flex items-center gap-3">
         <div class="min-w-[140px]" />
         <span class="invisible">&rarr;</span>
@@ -144,6 +197,7 @@ function terminologyHostname(section: TerminologySection): string {
           { name: 'App Database', status: healthChecks.data.database.status, desc: 'PostgreSQL', label: statusLabel(healthChecks.data.database) },
           { name: 'EHRBase', status: healthChecks.data.ehrbase.status, desc: 'openEHR CDR', label: statusLabel(healthChecks.data.ehrbase) },
           { name: 'EHRBase DB', status: healthChecks.data.ehrbase.status, desc: 'PostgreSQL', label: statusLabel(healthChecks.data.ehrbase) },
+          { name: 'OIDC Provider', status: oidc.status === 'ok' ? 'ok' as const : 'error' as const, desc: oidcHostname(oidc), label: oidcLabel(oidc) },
           { name: 'Terminology', status: terminology.status === 'ok' ? 'ok' as const : 'error' as const, desc: terminologyHostname(terminology), label: terminologyLabel(terminology) },
         ]"
         :key="item.name"
