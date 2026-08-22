@@ -1,5 +1,18 @@
 # Open CIS
 
+<p align="center">
+  <img src="docs/site/docs/assets/logo.svg" alt="Open CIS — a minimal Clinical Information System on openEHR" width="120">
+</p>
+
+<p align="center">
+  <a href="https://open-cis-web-staging.up.railway.app/"><img src="https://img.shields.io/website?url=https%3A%2F%2Fopen-cis-web-staging.up.railway.app%2F&up_message=online&down_message=offline&up_color=brightgreen&down_color=red&label=demo" alt="Live Demo"></a>
+  <a href="https://github.com/platzhersh/open-cis/actions/workflows/backend-ci.yml"><img src="https://github.com/platzhersh/open-cis/actions/workflows/backend-ci.yml/badge.svg" alt="Backend CI"></a>
+  <a href="https://github.com/platzhersh/open-cis/actions/workflows/frontend-ci.yml"><img src="https://github.com/platzhersh/open-cis/actions/workflows/frontend-ci.yml/badge.svg" alt="Frontend CI"></a>
+  <a href="https://github.com/platzhersh/open-cis/releases"><img src="https://img.shields.io/github/v/release/platzhersh/open-cis?color=blue" alt="Latest Release"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-latest-blue" alt="Changelog"></a>
+  <a href="https://platzhersh.github.io/open-cis/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
+</p>
+
 A minimal Clinical Information System built on openEHR/EHRBase for learning and experimentation.
 
 ## Blog Series
