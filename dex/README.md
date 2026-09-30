@@ -39,12 +39,13 @@ In the Railway project:
 
 ### 2. Set environment variables
 
-On the **dex** service, set only two variables:
+On the **dex** service, set:
 
-| Variable | Example value |
-|---|---|
-| `DEX_ISSUER` | `https://dex-open-cis.up.railway.app/dex` |
-| `DEX_REDIRECT_URI` | `https://open-cis-web.up.railway.app/auth/callback` |
+| Variable | Required | Example value |
+|---|---|---|
+| `DEX_ISSUER` | yes | `https://dex-open-cis.up.railway.app/dex` |
+| `DEX_REDIRECT_URI` | yes | `https://open-cis-web.up.railway.app/auth/callback` |
+| `DEX_LOGO_URL` | no | `https://open-cis-web.up.railway.app/favicon.svg` |
 
 `DEX_ISSUER` **must** match the public URL of the Dex service exactly (including `/dex` path).
 
@@ -96,6 +97,21 @@ curl https://dex-open-cis.up.railway.app/dex/.well-known/openid-configuration
 You should see a valid OIDC discovery document with `authorization_endpoint`, `token_endpoint`, and `jwks_uri` all pointing at the Dex public URL.
 
 Then log into the web app — the Dex login page should appear, accept the demo credentials, and redirect back to the frontend authenticated.
+
+## Login Page Customization
+
+The login page branding is controlled by the `frontend:` block in both `config.yaml` and `config.railway.yaml`:
+
+```yaml
+frontend:
+  issuer: "Open CIS"       # Shown as the provider name
+  theme: "light"           # Built-in: "light" or "coreos"
+  # logoURL: "<public URL>"  # Optional — replaces the default Dex logo
+```
+
+On Railway, `logoURL` is populated from the `DEX_LOGO_URL` environment variable at startup (see `entrypoint.sh`). Leave the variable unset to keep Dex's default logo. Locally, edit `config.yaml` directly.
+
+For a full HTML/CSS rebrand, copy Dex's upstream [`web/`](https://github.com/dexidp/dex/tree/v2.39.1/web) directory into this repo (e.g. `dex/web/`), customize `templates/` and `static/`, bake it into `dex/Dockerfile` (`COPY dex/web /srv/dex/web`), and set `frontend.dir: /srv/dex/web` in `config.railway.yaml`.
 
 ## Storage: Memory vs Postgres
 
