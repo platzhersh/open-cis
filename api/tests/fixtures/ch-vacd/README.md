@@ -1,0 +1,1 @@
+Synthetic CH VACD fixtures (no real personal data). DOC00006 is a patient-authored probable duplicate of DOC00003 with placeholder lot/performer/org. `build_xdm_zip()` in tests assembles an XDM package from these files.

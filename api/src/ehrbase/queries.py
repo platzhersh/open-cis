@@ -105,3 +105,14 @@ CONTAINS COMPOSITION c
 WHERE e/ehr_id/value = $ehr_id
 AND c/archetype_details/template_id/value = 'IDCR - Vital Signs Encounter.v1'
 """
+
+# Get composition UIDs of all vaccination records for a patient
+VACCINATIONS_QUERY = """
+SELECT
+    c/uid/value as composition_uid
+FROM EHR e
+CONTAINS COMPOSITION c
+WHERE e/ehr_id/value = $ehr_id
+AND c/archetype_details/template_id/value = 'Open CIS - Vaccination Record.v1'
+ORDER BY c/context/start_time/value DESC
+"""

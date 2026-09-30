@@ -1,0 +1,156 @@
+{
+ "resourceType": "Bundle",
+ "id": "fixture-05",
+ "type": "document",
+ "meta": {
+  "profile": [
+   "http://fhir.ch/ig/ch-vacd/StructureDefinition/ch-vacd-document-immunization-administration"
+  ]
+ },
+ "identifier": {
+  "system": "urn:ietf:rfc:3986",
+  "value": "urn:uuid:fixture-05"
+ },
+ "entry": [
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000001",
+   "resource": {
+    "resourceType": "Composition",
+    "id": "c",
+    "status": "final",
+    "type": {
+     "coding": [
+      {
+       "system": "http://snomed.info/sct",
+       "code": "41000179103"
+      }
+     ]
+    },
+    "author": [
+     {
+      "reference": "urn:uuid:00000000-0000-4000-8000-000500000003"
+     }
+    ],
+    "section": [
+     {
+      "code": {
+       "coding": [
+        {
+         "system": "http://loinc.org",
+         "code": "11369-6"
+        }
+       ]
+      },
+      "entry": [
+       {
+        "reference": "urn:uuid:00000000-0000-4000-8000-000500000006"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000002",
+   "resource": {
+    "resourceType": "Patient",
+    "id": "p",
+    "name": [
+     {
+      "family": "Testpatient",
+      "given": [
+       "Tina"
+      ]
+     }
+    ],
+    "identifier": [
+     {
+      "system": "urn:oid:2.16.756.5.30.1.127.3.10.3",
+      "value": "761337610000000001"
+     }
+    ]
+   }
+  },
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000003",
+   "resource": {
+    "resourceType": "PractitionerRole",
+    "id": "a",
+    "practitioner": {
+     "reference": "urn:uuid:00000000-0000-4000-8000-000500000004"
+    },
+    "organization": {
+     "reference": "urn:uuid:00000000-0000-4000-8000-000500000005"
+    }
+   }
+  },
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000004",
+   "resource": {
+    "resourceType": "Practitioner",
+    "id": "o",
+    "name": [
+     {
+      "family": "Muster",
+      "given": [
+       "Erika"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000005",
+   "resource": {
+    "resourceType": "Organization",
+    "id": "r",
+    "name": "Praxis Beispiel"
+   }
+  },
+  {
+   "fullUrl": "urn:uuid:00000000-0000-4000-8000-000500000006",
+   "resource": {
+    "resourceType": "Immunization",
+    "id": "imm-05",
+    "status": "completed",
+    "vaccineCode": {
+     "coding": [
+      {
+       "system": "http://fhir.ch/ig/ch-vacd/CodeSystem/ch-vacd-swissmedic-cs",
+       "code": "68267",
+       "display": "Spikevax"
+      }
+     ]
+    },
+    "patient": {
+     "reference": "urn:uuid:00000000-0000-4000-8000-000500000002"
+    },
+    "occurrenceDateTime": "2021-07-02",
+    "lotNumber": "B556",
+    "performer": [
+     {
+      "actor": {
+       "reference": "urn:uuid:00000000-0000-4000-8000-000500000003"
+      }
+     }
+    ],
+    "protocolApplied": [
+     {
+      "targetDisease": [
+       {
+        "coding": [
+         {
+          "system": "http://snomed.info/sct",
+          "code": "840539006",
+          "display": "COVID-19"
+         }
+        ]
+       }
+      ],
+      "doseNumberPositiveInt": 2
+     }
+    ]
+   }
+  }
+ ]
+}

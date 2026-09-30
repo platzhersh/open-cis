@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from src.auth.router import router as auth_router
 from src.cave.router import router as cave_router
+from src.vaccinations.router import router as vaccinations_router
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
@@ -91,6 +92,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
+app.include_router(vaccinations_router, prefix="/api/patients", tags=["vaccinations"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
 app.include_router(cave_router, prefix="/api/cave", tags=["cave"])
