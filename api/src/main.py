@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 
 from src.auth.router import router as auth_router
 from src.cave.router import router as cave_router
-from src.vaccinations.router import router as vaccinations_router
 from src.config import settings
 from src.db.client import prisma
 from src.ehrbase.client import ehrbase_client
@@ -26,6 +25,7 @@ from src.system.router import router as system_router
 from src.terminology.client import terminology_client
 from src.terminology.router import fhir_router as fhir_terminology_router
 from src.terminology.router import router as terminology_router
+from src.vaccinations.router import router as vaccinations_router
 
 # Configure logging
 logging.basicConfig(
