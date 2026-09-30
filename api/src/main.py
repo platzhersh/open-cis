@@ -25,6 +25,7 @@ from src.system.router import router as system_router
 from src.terminology.client import terminology_client
 from src.terminology.router import fhir_router as fhir_terminology_router
 from src.terminology.router import router as terminology_router
+from src.vaccinations.router import router as vaccinations_router
 
 # Configure logging
 logging.basicConfig(
@@ -91,6 +92,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(patients_router, prefix="/api/patients", tags=["patients"])
+app.include_router(vaccinations_router, prefix="/api/patients", tags=["vaccinations"])
 app.include_router(encounters_router, prefix="/api/encounters", tags=["encounters"])
 app.include_router(observations_router, prefix="/api/observations", tags=["observations"])
 app.include_router(cave_router, prefix="/api/cave", tags=["cave"])
