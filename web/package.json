@@ -21,7 +21,7 @@
     "lucide-vue-next": "^0.303.0",
     "pinia": "^2.1.0",
     "radix-vue": "^1.4.0",
-    "serve": "14.2.5",
+    "serve": "14.2.6",
     "tailwind-merge": "^2.2.0",
     "vue": "^3.5.31",
     "vue-chartjs": "^5.3.3",
