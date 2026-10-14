@@ -11,6 +11,13 @@ web:
 oauth2:
   skipApprovalScreen: true
 
+frontend:
+  issuer: "Open CIS"
+  theme: "light"
+  # Populated from DEX_LOGO_URL by entrypoint.sh. If unset, the entrypoint
+  # strips this line so Dex falls back to its built-in theme logo.
+  logoURL: "${DEX_LOGO_URL}"
+
 staticClients:
   - id: open-cis-web
     redirectURIs:

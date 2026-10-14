@@ -17,6 +17,15 @@ web:
 oauth2:
   skipApprovalScreen: true
 
+frontend:
+  issuer: "Open CIS"
+  theme: "light"
+  # logoURL must be reachable from the user's browser. Uncomment and point at
+  # any publicly served image (e.g. the web app's favicon) to replace the
+  # default Dex logo. For a full HTML/CSS override, also set `dir:` to a
+  # directory containing custom `templates/` and `static/` subdirs.
+  # logoURL: "http://localhost:5173/favicon.svg"
+
 staticClients:
   - id: open-cis-web
     redirectURIs:
