@@ -45,6 +45,7 @@ nav:
   - Getting Started: getting-started.md
   - Architecture:
       - Overview: architecture/overview.md
+      - arc42 Documentation: architecture/arc42.md
       - Data Model: architecture/data-model.md
       - openEHR Concepts: architecture/openehr.md
   - Guides:
